@@ -1148,10 +1148,10 @@ function htmlDocumentoCotizacionPdfProfesional(m){
   const cliDir=m.cliente.dir?`<div class="pdf-prof-cli-line">${escPdf(m.cliente.dir)}</div>`:'';
   return`<div class="pdf-doc-prof">
 <style type="text/css">
-.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.45;color:#1f2937;background:#fff;width:100%;max-width:720px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.45;color:#1f2937;background:#fff;width:100%;max-width:720px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision;}
 .pdf-doc-prof *{box-sizing:border-box;}
 .pdf-prof-top{display:grid;grid-template-columns:88px 1fr minmax(200px,240px);gap:20px 24px;align-items:start;padding-bottom:22px;border-bottom:3px solid #d4a017;margin-bottom:22px;}
-.pdf-prof-logo{width:88px;height:88px;border-radius:10px;object-fit:cover;display:block;border:1px solid #e5e7eb;}
+.pdf-prof-logo{width:88px;height:88px;border-radius:10px;object-fit:cover;object-position:center;display:block;border:1px solid #e5e7eb;image-rendering:auto;-ms-interpolation-mode:bicubic;}
 .pdf-prof-co-name{font-size:11px;font-weight:700;letter-spacing:.12em;color:#6b7280;text-transform:uppercase;margin-bottom:6px;}
 .pdf-prof-co-brand{font-size:20px;font-weight:800;color:#111827;letter-spacing:-.02em;line-height:1.15;}
 .pdf-prof-co-sub{font-size:12px;color:#4b5563;margin-top:6px;line-height:1.4;}
@@ -1192,7 +1192,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 .pdf-prof-footer{margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;}
 </style>
   <div class="pdf-prof-top">
-    <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88"/>
+    <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
     <div>
       <div class="pdf-prof-co-name">Servicios El\u00e9ctricos y Seguridad Tapia</div>
       <div class="pdf-prof-co-brand">SEST</div>
@@ -1248,19 +1248,27 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 </div>`;
 }
 
+function escalaCanvasPdf(){
+  try{
+    const dpr=typeof window!=='undefined'&&window.devicePixelRatio?window.devicePixelRatio:1;
+    return Math.min(4,Math.max(3,Math.round(dpr*2)));
+  }catch{ return 3; }
+}
 const html2pdfOptsPdf={
   margin:[8,8,8,8],
-  image:{type:'jpeg',quality:0.98},
+  image:{type:'png',quality:1},
   html2canvas:{
-    scale:2,
+    scale:3,
     useCORS:true,
     allowTaint:true,
     logging:false,
     backgroundColor:'#ffffff',
     scrollX:0,
-    scrollY:0
+    scrollY:0,
+    letterRendering:true,
+    imageTimeout:15000
   },
-  jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+  jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:false},
   pagebreak:{mode:['avoid-all','css','legacy']}
 };
 
@@ -1294,7 +1302,12 @@ async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
       toast('El navegador no dej\u00f3 pintar la cotizaci\u00f3n (tama\u00f1o 0). Recarga e int\u00e9ntalo de nuevo.','err');
       return;
     }
-    await html2pdf().set({...html2pdfOptsPdf,filename}).from(clone).save();
+    const scalePdf=escalaCanvasPdf();
+    await html2pdf().set({
+      ...html2pdfOptsPdf,
+      filename,
+      html2canvas:{...html2pdfOptsPdf.html2canvas,scale:scalePdf}
+    }).from(clone).save();
     toast('PDF descargado \u2713','ok');
   }catch(err){
     console.error(err);
