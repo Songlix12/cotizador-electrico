@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   try {
     if (req.method==='GET') {
       if (id) {
-        // Detalle completo con todos los datos del cliente para PDF
+        // Detalle completo con todos los datos del cliente para PDF COTES 
         const cots = await sql`
           SELECT c.*,
             cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa,
