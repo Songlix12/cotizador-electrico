@@ -162,6 +162,7 @@ tbody td{padding:10px 14px;font-size:13px;vertical-align:middle}
 .nc-right{position:sticky;top:70px;}
 /* NC Cards */
 .nc-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:14px;}
+.nc-card.nc-card-search-visible{overflow:visible;}
 .nc-card-head{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:linear-gradient(90deg,var(--s1),rgba(245,200,0,.03));}
 .nc-card-title{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:6px;}
 .nc-card-body{padding:14px 16px}
@@ -169,13 +170,13 @@ tbody td{padding:10px 14px;font-size:13px;vertical-align:middle}
 .g5{display:grid;grid-template-columns:120px 140px 70px 1fr 140px;gap:10px;margin-bottom:10px}
 .g3{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;margin-bottom:10px}
 /* Cabecera cols items */
-.icols{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;padding:0 9px 5px;margin-bottom:2px}
+.icols{display:grid;grid-template-columns:1fr 62px 110px 100px 96px 78px 26px;gap:5px;padding:0 9px 5px;margin-bottom:2px}
 .icol{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
 .icol.r{text-align:right}.icol.c{text-align:center}
 /* Item rows */
-.item-row{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;margin-bottom:5px;transition:border-color .15s;}
+.item-row{display:grid;grid-template-columns:1fr 62px 110px 100px 96px 78px 26px;gap:5px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;margin-bottom:5px;transition:border-color .15s;}
 .item-row:hover{border-color:var(--bd2)}
-.adic-row{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;align-items:center;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:6px 9px;margin-bottom:5px;}
+.adic-row{display:grid;grid-template-columns:1fr 62px 110px 100px 96px 78px 26px;gap:5px;align-items:center;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:6px 9px;margin-bottom:5px;}
 .item-inp{background:transparent;border:1px solid transparent;color:var(--t1);padding:5px 6px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;outline:none;width:100%;transition:border-color .15s;}
 .item-inp:focus{border-color:var(--acc);background:var(--s3)}
 .item-inp::placeholder{color:var(--t3)}
@@ -187,11 +188,13 @@ input[type="number"].num-plain::-webkit-inner-spin-button{-webkit-appearance:non
 .item-total{text-align:right;font-weight:700;font-size:12.5px;font-family:'DM Mono',monospace;padding-right:2px}
 .del-item{background:none;border:none;color:var(--t3);cursor:pointer;transition:color .15s;line-height:1;padding:4px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;}
 .del-item:hover{color:var(--err);background:rgba(239,68,68,.08)}
-.iva-wrap{display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer}
-.iva-wrap input{width:13px;height:13px;accent-color:var(--acc);cursor:pointer}
-.iva-wrap span{font-size:11px;color:var(--t2);font-weight:600;user-select:none}
-/* Dropdown */
-.results-drop{background:var(--s2);border:1px solid var(--bd2);border-radius:8px;margin-top:4px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);position:absolute;width:100%;z-index:50;}
+/* IVA por l\u00ednea (selector) */
+select.iva-sel.item-inp{appearance:none;-webkit-appearance:none;padding:6px 26px 6px 8px;font-size:11.5px;font-weight:600;border-radius:8px;border:1px solid var(--bd2);background:var(--s3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239090aa' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 7px center;color:var(--t1);cursor:pointer;min-width:0;text-align:center;text-align-last:center;}
+select.iva-sel.item-inp:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(245,200,0,.12);}
+select.iva-sel.item-inp:hover{border-color:var(--bd2);background-color:var(--s4);}
+/* Dropdown b\u00fasqueda r\u00e1pida: por encima de tarjetas y resumen */
+.nc-quick-search-wrap{position:relative;z-index:120;}
+.results-drop{background:var(--s2);border:1px solid var(--bd2);border-radius:10px;margin-top:6px;max-height:220px;overflow-y:auto;display:none;box-shadow:0 12px 40px rgba(0,0,0,.55);position:absolute;left:0;right:0;width:100%;z-index:200;}
 .ri{padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;transition:background .1s;}
 .ri:last-child{border-bottom:none}
 .ri:hover{background:var(--s3)}
@@ -370,7 +373,7 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               </div>
             </div>
             <!-- Materiales de la cotizacion -->
-            <div class="nc-card">
+            <div class="nc-card nc-card-search-visible">
               <div class="nc-card-head">
                 <div class="nc-card-title" style="gap:8px"><i data-lucide="shopping-cart" style="width:15px;height:15px"></i> Materiales en la Cotizaci&#243;n</div>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="irSubTab('base-mat')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar del cat&#225;logo</button>
@@ -378,10 +381,10 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <div class="nc-card-body">
                 <div class="icols">
                   <div class="icol">Descripci&#243;n</div><div class="icol c">Cant.</div><div class="icol">Unidad</div>
-                  <div class="icol r">P. Unitario</div><div class="icol c">IVA</div><div class="icol r">Subtotal</div><div class="icol"></div>
+                  <div class="icol r">P. Unitario</div><div class="icol c">IVA %</div><div class="icol r">Subtotal</div><div class="icol"></div>
                 </div>
                 <div id="nc-items-list"></div>
-                <div style="margin-top:10px;position:relative">
+                <div class="nc-quick-search-wrap" style="margin-top:10px">
                   <div class="search-wrap" style="width:100%">
                     <i data-lucide="search" style="position:absolute;left:10px;width:15px;height:15px;color:var(--t3);pointer-events:none"></i>
                     <input class="inp-search" id="nc-bi" style="width:100%;max-width:100%;padding-left:34px" placeholder="Buscar y agregar material r&#225;pido&#8230;" oninput="buscarNcItems()"/>
@@ -433,9 +436,9 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <div class="nc-card-body">
                 <div class="res-row"><span>Subtotal sin IVA</span><span class="v" id="nc-t-sub">$0.00</span></div>
                 <div class="res-row"><span id="nc-t-desc-lbl">Descuento (0%)</span><span class="v" id="nc-t-desc" style="color:var(--ok)">-$0.00</span></div>
-                <div class="res-row"><span>IVA 15% aplicado</span><span class="v" id="nc-t-iva">$0.00</span></div>
+                <div class="res-row"><span id="nc-t-iva-lbl">IVA (15% aplicado)</span><span class="v" id="nc-t-iva">$0.00</span></div>
                 <div class="res-total"><span>TOTAL</span><span class="v" id="nc-t-total">$0.00</span></div>
-                <div class="res-note" style="display:flex;gap:8px;align-items:flex-start"><i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;margin-top:2px"></i><span>El IVA se controla por &#237;tem. Si el material ya incluye IVA, desmarca la casilla.</span></div>
+                <div class="res-note" style="display:flex;gap:8px;align-items:flex-start"><i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;margin-top:2px"></i><span>El IVA se elige por &#237;tem (0%, 5%, 12% o 15%). Por defecto 15%.</span></div>
                 <button type="button" class="btn-guardar" id="btn-guardar-cot" onclick="guardarCot()"><i data-lucide="save" style="width:18px;height:18px;flex-shrink:0"></i><span class="btn-lbl">Guardar Cotizaci&#243;n</span></button>
                 <button type="button" class="btn btn-ghost" style="width:100%;margin-top:8px;justify-content:center" onclick="irSubTab('vista-previa');generarVP()"><i data-lucide="file-down" style="width:16px;height:16px"></i> Vista Previa &amp; PDF</button>
               </div>
@@ -554,6 +557,36 @@ let token=localStorage.getItem('token'),usuario=null,isAdmin=false;
 let mats=[],cats=[],clis=[],cots=[];
 let cotItems=[],cotAdic=[],cotActual=null;
 const UNIDADES=['metro','rollo','unidad','tramo 3m','caja','hora','kg','ml','par','juego','gl'];
+const IVA_OPCIONES=[0,5,12,15];
+function normalizarIvaPct(i){
+  if(!i)return 15;
+  let p=i.iva_pct;
+  if(p!==undefined&&p!==null&&p!==''){
+    p=parseFloat(p);
+    if(IVA_OPCIONES.includes(p))return p;
+  }
+  if(i.tiene_iva===false)return 0;
+  return 15;
+}
+function ivaValorDesdeLineas(todos,descPct){
+  const d=Math.max(0,Math.min(100,parseFloat(descPct)||0))/100;
+  return todos.reduce((sum,it)=>{
+    const pct=normalizarIvaPct(it);
+    if(pct<=0)return sum;
+    const line=(parseFloat(it.cantidad)||0)*(parseFloat(it.precio_unitario)||0);
+    return sum+line*(1-d)*(pct/100);
+  },0);
+}
+function textoResumenIva(todos,descPct,ivaVal,net){
+  const rates=[...new Set(todos.map(normalizarIvaPct).filter(p=>p>0))];
+  if(!rates.length)return 'IVA';
+  if(rates.length===1)return `IVA (${rates[0]}% aplicado)`;
+  if(net>0.009){
+    const eff=Math.round((ivaVal/net)*1000)/10;
+    return `IVA (${eff}% efectivo)`;
+  }
+  return 'IVA aplicado';
+}
 
 (function init(){
   if(!token){location.href='index.html';return;}
@@ -848,7 +881,7 @@ function renderNcMats(lista){
     <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'\u2014'}</span></td>
     <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
     <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--acc)">$${parseFloat(m.precio_venta).toFixed(2)}</td>
-    <td><button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});irSubTab('cotizacion');toast('Agregado \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar</button></td>
+    <td><button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});toast('Agregado \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar</button></td>
   </tr>`).join('')}</tbody></table>`;
   refreshIcons();
 }
@@ -858,7 +891,7 @@ function addItem(matId){
   const mat=mats.find(m=>m.id===matId);if(!mat)return;
   const ex=cotItems.find(i=>i.material_id===mat.id);
   if(ex){ex.cantidad=Math.max(1,(parseInt(ex.cantidad,10)||1)+1);renderItems();calcTotals();return;}
-  cotItems.push({material_id:mat.id,descripcion:mat.nombre,cantidad:1,unidad:mat.unidad||'unidad',precio_unitario:parseFloat(mat.precio_venta)||0,tiene_iva:true});
+  cotItems.push({material_id:mat.id,descripcion:mat.nombre,cantidad:1,unidad:mat.unidad||'unidad',precio_unitario:parseFloat(mat.precio_venta)||0,iva_pct:15,tiene_iva:true});
   renderItems();calcTotals();
 }
 function renderItems(){
@@ -879,10 +912,10 @@ function renderItems(){
       </select>
       <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right"
         onchange="cotItems[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderItems();calcTotals()"/>
-      <label class="iva-wrap">
-        <input type="checkbox" ${it.tiene_iva?'checked':''} onchange="cotItems[${i}].tiene_iva=this.checked;calcTotals()"/>
-        <span>IVA</span>
-      </label>
+      <select class="item-inp iva-sel" title="IVA"
+        onchange="var v=parseInt(this.value,10);cotItems[${i}].iva_pct=v;cotItems[${i}].tiene_iva=v>0;calcTotals()">
+        ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+      </select>
       <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
       <button type="button" class="del-item" title="Quitar" onclick="cotItems.splice(${i},1);renderItems();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
     </div>`).join('');
@@ -891,7 +924,7 @@ function renderItems(){
 
 /* Items adicionales */
 function agregarAdicional(){
-  cotAdic.push({descripcion:'',cantidad:1,unidad:'unidad',precio_unitario:0,tiene_iva:true});
+  cotAdic.push({descripcion:'',cantidad:1,unidad:'unidad',precio_unitario:0,iva_pct:15,tiene_iva:true});
   renderAdic();calcTotals();
 }
 function renderAdic(){
@@ -906,10 +939,10 @@ function renderAdic(){
       </select>
       <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right" placeholder="0"
         onchange="cotAdic[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderAdic();calcTotals()"/>
-      <label class="iva-wrap">
-        <input type="checkbox" ${it.tiene_iva?'checked':''} onchange="cotAdic[${i}].tiene_iva=this.checked;calcTotals()"/>
-        <span>IVA</span>
-      </label>
+      <select class="item-inp iva-sel" title="IVA"
+        onchange="var v=parseInt(this.value,10);cotAdic[${i}].iva_pct=v;cotAdic[${i}].tiene_iva=v>0;calcTotals()">
+        ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+      </select>
       <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
       <button type="button" class="del-item" title="Quitar" onclick="cotAdic.splice(${i},1);renderAdic();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
     </div>`).join('');
@@ -939,12 +972,13 @@ function calcTotals(){
   const todos=[...cotItems,...cotAdic];
   const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
   const dv=sub*(desc/100);
-  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
-  const ivaVal=(ivaBase-ivaBase*(desc/100))*0.15;
+  const net=sub-dv;
+  const ivaVal=ivaValorDesdeLineas(todos,desc);
   const total=sub-dv+ivaVal;
   sTxt('nc-t-sub',`$${sub.toFixed(2)}`);sTxt('nc-t-desc',`-$${dv.toFixed(2)}`);
   sTxt('nc-t-iva',`$${ivaVal.toFixed(2)}`);sTxt('nc-t-total',`$${total.toFixed(2)}`);
   const dl=document.getElementById('nc-t-desc-lbl');if(dl)dl.textContent=`Descuento (${desc}%)`;
+  const il=document.getElementById('nc-t-iva-lbl');if(il)il.textContent=textoResumenIva(todos,desc,ivaVal,net);
 }
 
 /* Vista previa */
@@ -962,9 +996,10 @@ function generarVP(){
   const notas=sGet('nc-notas'),forma=sGet('nc-forma-pago');
   const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
   const dv=sub*(descPct/100);
-  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
-  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
+  const net=sub-dv;
+  const ivaVal=ivaValorDesdeLineas(todos,descPct);
   const total=sub-dv+ivaVal;
+  const ivaLbl=textoResumenIva(todos,descPct,ivaVal,net);
   const fechaFmt=new Date(fecha+'T00:00:00').toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
   cont.innerHTML=`
     <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:14px">
@@ -1001,21 +1036,21 @@ function generarVP(){
       ${desc_txt?`<div style="margin-bottom:16px;padding:10px 14px;background:var(--s2);border-radius:8px;border-left:3px solid var(--acc);font-size:13px;color:var(--t2)">${desc_txt}</div>`:''}
       <div style="overflow-x:auto;margin-bottom:18px">
         <table><thead><tr><th>#</th><th>Descripci\u00f3n</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th style="text-align:center">IVA</th><th style="text-align:right">Subtotal</th></tr></thead>
-        <tbody>${todos.map((it,i)=>`<tr>
+        <tbody>${todos.map((it,i)=>{const ivp=normalizarIvaPct(it);return`<tr>
           <td style="color:var(--t3);font-size:12px">${i+1}</td>
           <td style="font-weight:500">${it.descripcion||'\u2014'}</td>
           <td style="text-align:center;font-family:'DM Mono',monospace">${it.cantidad}</td>
           <td style="color:var(--t3)">${it.unidad}</td>
           <td style="font-family:'DM Mono',monospace">$${it.precio_unitario.toFixed(2)}</td>
-          <td style="text-align:center">${it.tiene_iva?'<span style="color:var(--ok);font-size:11px;font-weight:600">\u2713 S\u00ed</span>':'<span style="color:var(--t3);font-size:11px">No</span>'}</td>
+          <td style="text-align:center;font-size:11px;font-weight:600;color:var(--t2)">${ivp<=0?'Exento':ivp+'%'}</td>
           <td style="font-family:'DM Mono',monospace;font-weight:700;text-align:right">$${(it.cantidad*it.precio_unitario).toFixed(2)}</td>
-        </tr>`).join('')}</tbody></table>
+        </tr>`;}).join('')}</tbody></table>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
         <div style="min-width:260px">
           <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2);font-size:13.5px"><span>Subtotal sin IVA</span><span style="font-family:'DM Mono',monospace">$${sub.toFixed(2)}</span></div>
           ${dv>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--ok);font-size:13.5px"><span>Descuento (${descPct}%)</span><span>-$${dv.toFixed(2)}</span></div>`:''}
-          <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2);font-size:13.5px"><span>IVA 15% aplicado</span><span style="font-family:'DM Mono',monospace">$${ivaVal.toFixed(2)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2);font-size:13.5px"><span>${ivaLbl}</span><span style="font-family:'DM Mono',monospace">$${ivaVal.toFixed(2)}</span></div>
           <div style="display:flex;justify-content:space-between;padding:12px 0 4px;border-top:2px solid rgba(245,200,0,.3);margin-top:6px;font-size:18px;font-weight:800;color:var(--acc)">
             <span>TOTAL</span><span style="font-family:'DM Mono',monospace">$${total.toFixed(2)}</span>
           </div>
@@ -1034,9 +1069,10 @@ async function guardarCot(){
   const titulo=sGet('nc-cliente').trim()||sGet('nc-descripcion').trim().slice(0,80)||'Nueva cotizaci\u00f3n';
   const descPct=parseFloat(sGet('nc-descuento'))||0;
   const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
-  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
-  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
-  const ivaPct=sub>0?Math.round((ivaVal/Math.max(sub-sub*(descPct/100),0.01))*100):15;
+  const dv=sub*(descPct/100);
+  const net=sub-dv;
+  const ivaVal=ivaValorDesdeLineas(todos,descPct);
+  const ivaPct=net>0.001?Math.round((ivaVal/net)*1000)/10:0;
   const notas=[sGet('nc-forma-pago')?`Forma de pago: ${sGet('nc-forma-pago')}`:'',sGet('nc-notas').trim(),sGet('nc-descripcion').trim()].filter(Boolean).join('\n');
   const body={titulo,descripcion:sGet('nc-descripcion').trim(),notas,descuento_pct:descPct,iva_pct:ivaPct,validez_dias:parseInt(sGet('nc-validez'))||30,items:todos};
   ['btn-guardar-top','btn-guardar-cot'].forEach(id=>setBL(id,true));
@@ -1070,18 +1106,23 @@ function construirModeloPdfNuevaCot(){
   const descPct=parseFloat(sGet('nc-descuento'))||0;
   const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
   const dv=sub*(descPct/100);
-  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
-  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
+  const net=sub-dv;
+  const ivaVal=ivaValorDesdeLineas(todos,descPct);
   const total=sub-dv+ivaVal;
+  const ivaSumarioText=textoResumenIva(todos,descPct,ivaVal,net);
   const fechaFmt=new Date(fecha+'T00:00:00').toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
-  const items=todos.map(it=>({
-    desc:it.descripcion||'',
-    cant:it.cantidad,
-    unidad:it.unidad||'',
-    pUnit:parseFloat(it.precio_unitario)||0,
-    ivaSi:!!it.tiene_iva,
-    sub:it.cantidad*(parseFloat(it.precio_unitario)||0)
-  }));
+  const items=todos.map(it=>{
+    const iv=normalizarIvaPct(it);
+    return{
+      desc:it.descripcion||'',
+      cant:it.cantidad,
+      unidad:it.unidad||'',
+      pUnit:parseFloat(it.precio_unitario)||0,
+      ivaPct:iv,
+      ivaSi:iv>0,
+      sub:it.cantidad*(parseFloat(it.precio_unitario)||0)
+    };
+  });
   return{
     numero:num,fechaFmt,validez,
     elaborador:sGet('nc-elaborado').trim()||usuario?.nombre||'',
@@ -1095,7 +1136,7 @@ function construirModeloPdfNuevaCot(){
     },
     descripcionTrabajo:sGet('nc-descripcion').trim(),
     items,
-    subtotal:sub,descuentoPct:descPct,descuentoValor:dv,ivaValor:ivaVal,ivaPctLabel:15,total,
+    subtotal:sub,descuentoPct:descPct,descuentoValor:dv,ivaValor:ivaVal,ivaSumarioText,total,
     formaPago:sGet('nc-forma-pago')||'',
     notas:sGet('nc-notas').trim()
   };
@@ -1128,7 +1169,7 @@ function construirModeloPdfGuardada(c){
     descuentoPct:parseFloat(c.descuento_pct)||0,
     descuentoValor:parseFloat(c.descuento_valor)||0,
     ivaValor:parseFloat(c.iva_valor)||0,
-    ivaPctLabel:parseFloat(c.iva_pct)||15,
+    ivaSumarioText:`IVA (${Number(c.iva_pct||0)}% aplicado)`,
     total:parseFloat(c.total)||0,
     formaPago:'',
     notas:(c.notas||'').trim()
@@ -1140,7 +1181,16 @@ function construirModeloPdfGuardada(c){
  * No depende del tema oscuro del dashboard (.pdf-doc-prof aísla estilos).
  */
 function htmlDocumentoCotizacionPdfProfesional(m){
-  const ivaTxt=it=>it.ivaSi===true?'S\u00ed':it.ivaSi===false?'No':'\u2014';
+  const ivaTxt=it=>{
+    if(it.ivaPct!=null&&it.ivaPct!==''){
+      const p=Number(it.ivaPct);
+      if(!isFinite(p))return '\u2014';
+      return p<=0?'Exento':p+'%';
+    }
+    if(it.ivaSi===true)return '15%';
+    if(it.ivaSi===false)return 'Exento';
+    return '\u2014';
+  };
   const filas=m.items.map((it,i)=>`
     <tr class="pdf-prof-tr">
       <td class="pdf-prof-td pdf-prof-td-c">${i+1}</td>
@@ -1252,7 +1302,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
           <th class="pdf-prof-th pdf-prof-th-c">Cant.</th>
           <th class="pdf-prof-th">Unidad</th>
           <th class="pdf-prof-th pdf-prof-th-r">P. unit.</th>
-          <th class="pdf-prof-th pdf-prof-th-c">IVA</th>
+          <th class="pdf-prof-th pdf-prof-th-c">IVA %</th>
           <th class="pdf-prof-th pdf-prof-th-r">Subtotal</th>
         </tr>
       </thead>
@@ -1262,7 +1312,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
   <div class="pdf-prof-sums">
     <div class="pdf-prof-sum-row"><span>Subtotal sin IVA</span><span class="pdf-prof-mono">$${Number(m.subtotal).toFixed(2)}</span></div>
     ${filaDesc}
-    <div class="pdf-prof-sum-row"><span>IVA (${Number(m.ivaPctLabel).toFixed(0)}% aplicado)</span><span class="pdf-prof-mono">$${Number(m.ivaValor).toFixed(2)}</span></div>
+    <div class="pdf-prof-sum-row"><span>${escPdf(m.ivaSumarioText||'IVA')}</span><span class="pdf-prof-mono">$${Number(m.ivaValor).toFixed(2)}</span></div>
     <div class="pdf-prof-total-row"><span>TOTAL</span><span>$${Number(m.total).toFixed(2)}</span></div>
   </div>
   ${bloqueForma}${bloqueNotas}
