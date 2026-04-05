@@ -209,9 +209,8 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 .btn-guardar:hover{background:var(--acc2);transform:translateY(-1px);box-shadow:var(--acc-g)}
 .btn-guardar:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .vp-toolbar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap}
-/* PDF template (off-DOM capture; never use opacity≈0 — html2canvas pinta en blanco) */
+/* PDF plantilla (solo relleno en memoria; la captura real se hace en overlay visible) */
 #pdf-template{display:none;width:794px;max-width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;box-sizing:border-box;}
-#pdf-template[data-pdf-live]{display:block!important;}
 .pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
 .pdf-logo{width:80px;height:80px;border-radius:8px;overflow:hidden}
 .pdf-logo img{width:100%;height:100%;object-fit:cover}
@@ -1026,15 +1025,6 @@ async function guardarCot(){
   toast(`Cotizaci\u00f3n ${r.numero} guardada \u2713`,'ok');
 }
 
-function posicionarNodoParaPdfCapture(el){
-  el.dataset.pdfLive='1';
-  el.style.cssText='display:block!important;position:absolute;left:-12000px;top:0;width:794px;max-width:794px;opacity:1!important;visibility:visible!important;pointer-events:none;z-index:0;box-sizing:border-box;overflow:visible;background:#ffffff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;';
-}
-function limpiarNodoPdfCapture(el){
-  delete el.dataset.pdfLive;
-  el.style.cssText='';
-  el.innerHTML='';
-}
 function esperarImagenesEn(root){
   if(!root)return Promise.resolve();
   const imgs=[...root.querySelectorAll('img')];
@@ -1046,9 +1036,7 @@ function esperarImagenesEn(root){
     });
   }));
 }
-function repintarAntesPdf(){
-  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-}
+function delayPdf(ms){return new Promise(r=>setTimeout(r,ms));}
 const html2pdfOptsPdf={
   margin:[10,10,10,10],
   image:{type:'jpeg',quality:0.98},
@@ -1064,29 +1052,58 @@ const html2pdfOptsPdf={
   jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
 };
 
-/* Exportar PDF desde vista previa: mismo HTML que ves en pantalla */
-async function exportarPDFNc(){
-  const todos=[...cotItems,...cotAdic];
-  if(!todos.length){toast('Sin materiales para generar PDF','err');return;}
-  const num=(sGet('nc-numero')||genNum()).replace(/[^\w.-]+/g,'_');
-  generarVP();
-  const src=document.getElementById('nc-preview-content');
-  const tpl=document.getElementById('pdf-template');
-  tpl.innerHTML=src.innerHTML;
-  if(!tpl.textContent.trim()){limpiarNodoPdfCapture(tpl);toast('Vista previa vac\u00eda; vuelve a generarla.','err');return;}
-  posicionarNodoParaPdfCapture(tpl);
-  toast('Generando PDF\u2026','ok');
+/**
+ * html2canvas suele dejar el PDF en blanco si el nodo está en display:none,
+ * fuera del viewport (left:-9999px) o aún sin pintar. Clonamos el contenido
+ * dentro de un overlay visible en pantalla y esperamos fuentes + imágenes.
+ */
+async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
+  if(!sourceEl){toast('No hay contenido para el PDF.','err');return;}
+  if(!sourceEl.textContent||!sourceEl.textContent.trim()){toast('Contenido vac\u00edo para exportar.','err');return;}
+  const wrap=document.createElement('div');
+  wrap.id='pdf-capture-overlay';
+  wrap.setAttribute('aria-hidden','true');
+  wrap.style.cssText='position:fixed;inset:0;z-index:999997;background:rgba(10,10,14,.45);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow:auto;box-sizing:border-box;';
+  const box=document.createElement('div');
+  box.style.cssText='flex-shrink:0;margin:0 auto 48px;box-shadow:0 12px 40px rgba(0,0,0,.35);';
+  const clone=sourceEl.cloneNode(true);
+  clone.removeAttribute('id');
+  clone.style.cssText='display:block;position:relative;opacity:1;visibility:visible;width:794px;max-width:calc(100vw - 48px);box-sizing:border-box;min-height:80px;background:#ffffff;color:#111;';
+  box.appendChild(clone);
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
   try{
-    await esperarImagenesEn(tpl);
-    await repintarAntesPdf();
-    await html2pdf().set({...html2pdfOptsPdf,filename:`${num}.pdf`}).from(tpl).save();
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready.catch(()=>{});
+    await esperarImagenesEn(clone);
+    await delayPdf(120);
+    for(let i=0;i<4;i++)await new Promise(r=>requestAnimationFrame(r));
+    const br=clone.getBoundingClientRect();
+    if(br.width<40||br.height<30){
+      toast('El navegador no dej\u00f3 pintar la cotizaci\u00f3n (tama\u00f1o 0). Recarga e int\u00e9ntalo de nuevo.','err');
+      return;
+    }
+    await html2pdf().set({...html2pdfOptsPdf,filename}).from(clone).save();
     toast('PDF descargado \u2713','ok');
   }catch(err){
     console.error(err);
     toast('Error al generar PDF','err');
   }finally{
-    limpiarNodoPdfCapture(tpl);
+    wrap.remove();
   }
+}
+
+/* Exportar PDF desde vista previa (#nc-preview-content debe existir) */
+async function exportarPDFNc(){
+  const todos=[...cotItems,...cotAdic];
+  if(!todos.length){toast('Sin materiales para generar PDF','err');return;}
+  const num=(sGet('nc-numero')||genNum()).replace(/[^\w.-]+/g,'_');
+  irSubTab('vista-previa');
+  generarVP();
+  const src=document.getElementById('nc-preview-content');
+  if(!src){toast('No se encontr\u00f3 #nc-preview-content en el DOM.','err');return;}
+  if(!src.innerHTML.trim()){toast('Vista previa vac\u00eda.','err');return;}
+  toast('Generando PDF\u2026','ok');
+  await htmlAPdfDesdeNodoFuente(src,`${num}.pdf`);
 }
 
 /* Exportar PDF cotización guardada (plantilla clara para impresión) */
@@ -1096,6 +1113,7 @@ async function exportarPDF(){
   const fecha=new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
   const fname=(c.numero||'cotizacion').replace(/[^\w.-]+/g,'_');
   const tpl=document.getElementById('pdf-template');
+  if(!tpl){toast('Contenedor PDF no encontrado.','err');return;}
   tpl.innerHTML=`
     <div class="pdf-header">
       <div class="pdf-logo"><img src="logo.jpg" alt="SEST"/></div>
@@ -1130,19 +1148,9 @@ async function exportarPDF(){
     </div>
     ${c.notas?`<div style="padding:10px 12px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;color:#555;margin-bottom:12px"><strong>Notas:</strong> ${c.notas}</div>`:''}
     <div class="pdf-footer">SEST &middot; Servicios El\u00e9ctricos y Seguridad Tapia &middot; Generado el ${new Date().toLocaleDateString('es-EC')}</div>`;
-  posicionarNodoParaPdfCapture(tpl);
   toast('Generando PDF\u2026','ok');
-  try{
-    await esperarImagenesEn(tpl);
-    await repintarAntesPdf();
-    await html2pdf().set({...html2pdfOptsPdf,filename:`${fname}.pdf`}).from(tpl).save();
-    toast('PDF descargado \u2713','ok');
-  }catch(err){
-    console.error(err);
-    toast('Error al generar PDF','err');
-  }finally{
-    limpiarNodoPdfCapture(tpl);
-  }
+  await htmlAPdfDesdeNodoFuente(tpl,`${fname}.pdf`);
+  tpl.innerHTML='';
 }
 
 /* Utilidades */
