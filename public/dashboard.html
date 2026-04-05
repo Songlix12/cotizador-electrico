@@ -269,6 +269,8 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
     <div class="nav-lbl">Gesti&#243;n</div>
     <div class="nav-item" data-nav="materiales" onclick="ir('materiales')"><span class="nav-ico"><i data-lucide="package"></i></span> Materiales</div>
     <div class="nav-item" data-nav="clientes" onclick="ir('clientes')"><span class="nav-ico"><i data-lucide="users"></i></span> Clientes</div>
+    <div class="nav-item admin-only" data-nav="categorias" onclick="ir('categorias')" style="display:none"><span class="nav-ico"><i data-lucide="tag"></i></span> Categor&#237;as</div>
+    <div class="nav-item admin-only" data-nav="usuarios" onclick="ir('usuarios')" style="display:none"><span class="nav-ico"><i data-lucide="shield"></i></span> Usuarios</div>
   </div>
   <div class="sb-foot">
     <div class="user-card">
@@ -355,7 +357,18 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
           <div>
             <!-- Info cliente -->
             <div class="nc-card">
-              <div class="nc-card-head"><div class="nc-card-title" style="gap:8px"><i data-lucide="user-circle" style="width:15px;height:15px"></i> Informaci&#243;n del Cliente</div></div>
+              <div class="nc-card-head"><div class="nc-card-title" style="gap:8px"><i data-lucide="user-circle" style="width:15px;height:15px"></i> Informaci&#243;n del Cliente</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <div style="position:relative">
+                    <div class="search-wrap">
+                      <i data-lucide="search" style="position:absolute;left:10px;width:15px;height:15px;color:var(--t3);pointer-events:none"></i>
+                      <input class="inp-search" id="nc-cli-buscar" style="width:200px;padding-left:34px" placeholder="Buscar cliente registrado&#8230;" oninput="buscarClienteNc()" autocomplete="off"/>
+                    </div>
+                    <div id="nc-cli-drop" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.55);min-width:260px"></div>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="limpiarClienteNc()" title="Limpiar datos del cliente"><i data-lucide="eraser" style="width:13px;height:13px"></i></button>
+                </div>
+              </div>
               <div class="nc-card-body">
                 <div class="g5">
                   <div class="fld"><label>N&#176; Cotizaci&#243;n</label><input id="nc-numero" readonly style="background:var(--s3);color:var(--acc);font-family:'DM Mono',monospace;font-size:12px;font-weight:700"/></div>
@@ -376,7 +389,16 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
             <div class="nc-card nc-card-search-visible">
               <div class="nc-card-head">
                 <div class="nc-card-title" style="gap:8px"><i data-lucide="shopping-cart" style="width:15px;height:15px"></i> Materiales en la Cotizaci&#243;n</div>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="irSubTab('base-mat')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar del cat&#225;logo</button>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <!-- IVA Toggle global -->
+                  <div style="display:flex;align-items:center;gap:6px;background:var(--s3);border:1px solid var(--bd2);border-radius:8px;padding:4px 10px;cursor:pointer" onclick="toggleIvaGlobal()" title="Aplicar o quitar IVA a todos los materiales">
+                    <div id="iva-toggle-dot" style="width:28px;height:16px;border-radius:99px;background:var(--acc);position:relative;transition:background .2s;flex-shrink:0">
+                      <div id="iva-toggle-knob" style="position:absolute;top:2px;left:14px;width:12px;height:12px;border-radius:50%;background:#000;transition:left .2s"></div>
+                    </div>
+                    <span id="iva-toggle-lbl" style="font-size:11px;font-weight:700;color:var(--acc);white-space:nowrap;letter-spacing:.5px">IVA 15%</span>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="irSubTab('base-mat')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar del cat&#225;logo</button>
+                </div>
               </div>
               <div class="nc-card-body">
                 <div class="icols">
@@ -493,6 +515,29 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
       </div>
     </div>
 
+    <!-- CATEGORIAS (admin) -->
+    <div class="sec" id="sec-categorias">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px"><i data-lucide="tag" style="width:18px;height:18px;stroke-width:2;color:var(--acc)"></i> Categor&#237;as de Materiales</div>
+          <div class="card-tools">
+            <button type="button" class="btn btn-acc" onclick="abrirModalCat()"><i data-lucide="plus" style="width:16px;height:16px"></i> Nueva Categor&#237;a</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="tbl-cats-admin"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+      </div>
+    </div>
+
+    <!-- USUARIOS (admin) -->
+    <div class="sec" id="sec-usuarios">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title" style="display:flex;align-items:center;gap:8px"><i data-lucide="shield" style="width:18px;height:18px;stroke-width:2;color:var(--acc)"></i> Gesti&#243;n de Usuarios</div>
+        </div>
+        <div class="tbl-wrap" id="tbl-usuarios"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -534,6 +579,18 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
       </div>
     </div>
     <div class="modal-ft"><button type="button" class="btn btn-ghost" onclick="closeModal('m-cli')">Cancelar</button><button type="button" class="btn btn-acc" id="btn-save-cli" onclick="guardarCli()">Guardar</button></div>
+  </div>
+</div>
+<!-- MODAL CATEGORÍA -->
+<div class="modal-bg" id="m-cat">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="m-cat-title">Nueva Categor&#237;a</div><button type="button" class="modal-x" onclick="closeModal('m-cat')" aria-label="Cerrar"><i data-lucide="x"></i></button></div>
+    <div class="modal-body">
+      <div id="cat-err" class="alert err"></div>
+      <div class="fld" style="margin-bottom:14px"><label>Nombre *</label><input id="cat-nombre" placeholder="Ej: Interruptores"/></div>
+      <div class="fld"><label>Descripci&#243;n</label><input id="cat-desc" placeholder="Descripci&#243;n opcional"/></div>
+    </div>
+    <div class="modal-ft"><button type="button" class="btn btn-ghost" onclick="closeModal('m-cat')">Cancelar</button><button type="button" class="btn btn-acc" id="btn-save-cat" onclick="guardarCat()">Guardar</button></div>
   </div>
 </div>
 <div class="modal-bg" id="m-ver">
@@ -597,10 +654,11 @@ function textoResumenIva(todos,descPct,ivaVal,net){
   if(!token){location.href='index.html';return;}
   try{usuario=JSON.parse(localStorage.getItem('usuario'));}catch{}
   if(!usuario){location.href='index.html';return;}
-  isAdmin=usuario.rol==='admin';
+  isAdmin=usuario.rol==='admin'||usuario.permisos==='admin';
   document.getElementById('user-nm').textContent=usuario.nombre;
   document.getElementById('user-av').textContent=usuario.nombre[0].toUpperCase();
-  const rb=document.getElementById('role-badge');rb.textContent=usuario.rol;rb.className='role-badge '+(isAdmin?'r-admin':'r-vendedor');
+  const rb=document.getElementById('role-badge');rb.textContent=usuario.rol;rb.className='role-badge '+(usuario.rol==='admin'?'r-admin':'r-vendedor');
+  if(isAdmin){document.querySelectorAll('.admin-only').forEach(el=>el.style.display='flex');}
   cargarTodo();
   refreshIcons();
   const neo=document.getElementById('nc-elaborado');
@@ -619,12 +677,14 @@ function ir(sec){
   document.querySelectorAll('.nav-item[data-nav]').forEach(n=>n.classList.toggle('on',n.dataset.nav===sec));
   const secEl=document.getElementById('sec-'+sec);
   if(secEl)secEl.classList.add('on');
-  const tit={inicio:'Dashboard',cotizaciones:'Mis Cotizaciones','nueva-cot':'Nueva Cotizaci\u00f3n',materiales:'Cat\u00e1logo de Materiales',clientes:'Mis Clientes'};
+  const tit={inicio:'Dashboard',cotizaciones:'Mis Cotizaciones','nueva-cot':'Nueva Cotizaci\u00f3n',materiales:'Cat\u00e1logo de Materiales',clientes:'Mis Clientes',categorias:'Categor\u00edas',usuarios:'Gesti\u00f3n de Usuarios'};
   document.getElementById('page-title').textContent=tit[sec]||sec;
   closeSidebar();
   if(sec==='materiales')renderMats(mats);
   if(sec==='clientes')renderClis(clis);
   if(sec==='cotizaciones')renderCots(cots);
+  if(sec==='categorias')renderCatsAdmin();
+  if(sec==='usuarios')cargarUsuarios();
   if(sec==='nueva-cot'){
     renderNcMats();
     const neo=document.getElementById('nc-elaborado');
@@ -779,18 +839,28 @@ function filtrarMats(){const q=sGet('bm'),cat=sGet('bm-cat');let l=mats;if(cat)l
 function renderMats(lista){
   const el=document.getElementById('tbl-mats');
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="package" style="width:36px;height:36px"></i></div><p>Sin materiales que coincidan</p></div>';refreshIcons();return;}
-  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th><th></th></tr></thead>
-  <tbody>${lista.map(m=>`<tr>
+  const adminCols=isAdmin?`<th>P. Costo</th><th>P. Venta</th><th>Margen</th><th>Stock</th>`:'';
+  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th>${adminCols}<th></th></tr></thead>
+  <tbody>${lista.map(m=>{
+    const margen=parseFloat(m.margen_ganancia||0).toFixed(1);
+    const margenColor=parseFloat(margen)>=20?'var(--ok)':parseFloat(margen)>=10?'var(--acc)':'var(--err)';
+    const adminTds=isAdmin?`
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t2)">$${parseFloat(m.precio_costo||0).toFixed(2)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--acc)">$${parseFloat(m.precio_venta||0).toFixed(2)}</td>
+      <td><span style="font-size:12px;font-weight:700;color:${margenColor}">${margen}%</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t3)">${m.stock||0}</td>`:'';
+    return`<tr>
     <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${m.codigo}</span></td>
     <td style="font-weight:500">${m.nombre}</td>
     <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'\u2014'}</span></td>
     <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
+    ${adminTds}
     <td><div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
       <button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});ir('nueva-cot');irSubTab('cotizacion');toast('Agregado \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> Cot.</button>
       <button type="button" class="btn btn-ghost btn-sm" onclick="editarMat(${m.id})" title="Editar"><i data-lucide="pencil" style="width:14px;height:14px"></i></button>
       ${isAdmin?`<button type="button" class="btn btn-danger btn-sm" onclick="eliminarMat(${m.id})" title="Eliminar"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>`:''}
     </div></td>
-  </tr>`).join('')}</tbody></table>`;
+  </tr>`;}).join('')}</tbody></table>`;
   refreshIcons();
 }
 function abrirModalMat(mat=null){
@@ -899,15 +969,28 @@ function renderNcMats(lista){
   const el=document.getElementById('nc-tbl-mats');if(!el)return;
   if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="package" style="width:36px;height:36px"></i></div><p>Sin resultados</p></div>';refreshIcons();return;}
   const q=sGet('nc-bm');
-  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th><th>P. Venta</th><th></th></tr></thead>
-  <tbody>${lista.map(m=>`<tr>
+  const addedIds=new Set(cotItems.map(i=>i.material_id));
+  const adminCols=isAdmin?`<th>P. Costo</th><th>Margen</th>`:'';
+  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th>${adminCols}<th>P. Venta</th><th></th></tr></thead>
+  <tbody>${lista.map(m=>{
+    const added=addedIds.has(m.id);
+    const margen=parseFloat(m.margen_ganancia||0).toFixed(1);
+    const margenColor=parseFloat(margen)>=20?'var(--ok)':parseFloat(margen)>=10?'var(--acc)':'var(--err)';
+    const adminTds=isAdmin?`
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t2)">$${parseFloat(m.precio_costo||0).toFixed(2)}</td>
+      <td><span style="font-size:12px;font-weight:700;color:${margenColor}">${margen}%</span></td>`:'';
+    return`<tr style="${added?'background:rgba(34,197,94,.06);':''}">
     <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${m.codigo}</span></td>
-    <td style="font-weight:500">${q?resaltar(m.nombre,q):m.nombre}</td>
+    <td style="font-weight:500">${q?resaltar(m.nombre,q):m.nombre}${added?` <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:var(--ok);font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;vertical-align:middle;margin-left:4px"><i data-lucide="check" style="width:10px;height:10px;stroke-width:3"></i> EN COT.</span>`:''}</td>
     <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'\u2014'}</span></td>
     <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
+    ${adminTds}
     <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--acc)">$${parseFloat(m.precio_venta).toFixed(2)}</td>
-    <td><button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});toast('Agregado \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar</button></td>
-  </tr>`).join('')}</tbody></table>`;
+    <td>${added
+      ?`<div style="display:flex;gap:5px"><button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});toast('+1 unidad \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> +1</button><button type="button" class="btn btn-danger btn-sm" onclick="quitarItemPorMatId(${m.id});toast('Quitado','ok')" title="Quitar"><i data-lucide="x" style="width:13px;height:13px"></i></button></div>`
+      :`<button type="button" class="btn btn-ok btn-sm" onclick="addItem(${m.id});toast('Agregado \u2713','ok')"><i data-lucide="plus" style="width:14px;height:14px"></i> Agregar</button>`
+    }</td>
+  </tr>`;}).join('')}</tbody></table>`;
   refreshIcons();
 }
 
@@ -915,9 +998,13 @@ function renderNcMats(lista){
 function addItem(matId){
   const mat=mats.find(m=>m.id===matId);if(!mat)return;
   const ex=cotItems.find(i=>i.material_id===mat.id);
-  if(ex){ex.cantidad=Math.max(1,(parseInt(ex.cantidad,10)||1)+1);renderItems();calcTotals();return;}
+  if(ex){ex.cantidad=Math.max(1,(parseInt(ex.cantidad,10)||1)+1);renderItems();calcTotals();renderNcMats();return;}
   cotItems.push({material_id:mat.id,descripcion:mat.nombre,cantidad:1,unidad:mat.unidad||'unidad',precio_unitario:parseFloat(mat.precio_venta)||0,iva_pct:15,tiene_iva:true});
-  renderItems();calcTotals();
+  renderItems();calcTotals();renderNcMats();
+}
+function quitarItemPorMatId(matId){
+  cotItems=cotItems.filter(i=>i.material_id!==matId);
+  renderItems();calcTotals();renderNcMats();
 }
 function renderItems(){
   const cont=document.getElementById('nc-items-list');if(!cont)return;
@@ -989,6 +1076,100 @@ function buscarNcItems(){
     </div>`).join('');
     drop.style.display='block';
   },120);
+}
+
+/* IVA Global Toggle */
+let ivaGlobalOn=true;
+function toggleIvaGlobal(){
+  ivaGlobalOn=!ivaGlobalOn;
+  const pct=ivaGlobalOn?15:0;
+  cotItems.forEach(i=>{i.iva_pct=pct;i.tiene_iva=ivaGlobalOn;});
+  cotAdic.forEach(i=>{i.iva_pct=pct;i.tiene_iva=ivaGlobalOn;});
+  renderItems();renderAdic();calcTotals();
+  const dot=document.getElementById('iva-toggle-dot');
+  const knob=document.getElementById('iva-toggle-knob');
+  const lbl=document.getElementById('iva-toggle-lbl');
+  if(dot)dot.style.background=ivaGlobalOn?'var(--acc)':'var(--s4)';
+  if(knob)knob.style.left=ivaGlobalOn?'14px':'2px';
+  if(lbl){lbl.textContent=ivaGlobalOn?'IVA 15%':'Sin IVA';lbl.style.color=ivaGlobalOn?'var(--acc)':'var(--t3)';}
+  toast(ivaGlobalOn?'IVA 15% aplicado a todos los \u00edtems':'IVA quitado de todos los \u00edtems','info');
+}
+
+/* Búsqueda de cliente registrado en cotización */
+let cliDropT;
+function buscarClienteNc(){
+  clearTimeout(cliDropT);
+  const q=sGet('nc-cli-buscar').trim();
+  const drop=document.getElementById('nc-cli-drop');
+  if(!q){drop.style.display='none';return;}
+  cliDropT=setTimeout(()=>{
+    const res=clis.filter(c=>match(`${c.nombre} ${c.empresa||''} ${c.ruc_cedula||''} ${c.email||''}`,q)).slice(0,8);
+    if(!res.length){drop.innerHTML=`<div style="padding:12px 14px;color:var(--t3);font-size:13px">Sin resultados</div>`;drop.style.display='block';return;}
+    drop.innerHTML=res.map(c=>`<div style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="seleccionarClienteNc(${c.id})">
+      <div style="font-size:13px;font-weight:600;color:var(--t1)">${c.nombre}${c.empresa?` <span style="font-weight:400;color:var(--t3);font-size:12px">/ ${c.empresa}</span>`:''}</div>
+      ${c.ruc_cedula?`<div style="font-size:11px;color:var(--t3)">RUC: ${c.ruc_cedula}${c.telefono?` · ${c.telefono}`:''}</div>`:''}
+    </div>`).join('');
+    drop.style.display='block';
+  },120);
+}
+function seleccionarClienteNc(id){
+  const c=clis.find(x=>x.id===id);if(!c)return;
+  sSet('nc-cliente',c.nombre+(c.empresa?` / ${c.empresa}`:''));
+  sSet('nc-ruc',c.ruc_cedula||'');
+  sSet('nc-telefono',c.telefono||'');
+  sSet('nc-email',c.email||'');
+  sSet('nc-direccion',c.direccion||'');
+  sSet('nc-cli-buscar','');
+  document.getElementById('nc-cli-drop').style.display='none';
+  toast(`Cliente "${c.nombre}" seleccionado \u2713`,'ok');
+}
+function limpiarClienteNc(){
+  sSet('nc-cliente','');sSet('nc-ruc','');sSet('nc-telefono','');sSet('nc-email','');sSet('nc-direccion','');sSet('nc-cli-buscar','');
+  document.getElementById('nc-cli-drop').style.display='none';
+}
+document.addEventListener('click',e=>{
+  const drop=document.getElementById('nc-cli-drop');
+  if(drop&&!drop.contains(e.target)&&e.target.id!=='nc-cli-buscar')drop.style.display='none';
+});
+
+/* Editar cotización guardada — carga todos los datos al builder */
+let cotEditandoId=null;
+async function prepEditarCot(id){
+  const r=await api(`quotes/index?id=${id}`);
+  if(isErr(r)){toast(r.msg,'err');return;}
+  cotEditandoId=id;
+  limpiarCot(false);
+  sSet('nc-numero',r.numero);
+  sSet('nc-fecha',(r.creado_en||new Date().toISOString()).split('T')[0]);
+  sSet('nc-validez',r.validez_dias||30);
+  sSet('nc-cliente',r.cliente_nombre||r.titulo||'');
+  sSet('nc-ruc',r.cliente_ruc||'');
+  sSet('nc-telefono',r.cliente_telefono||'');
+  sSet('nc-email',r.cliente_email||'');
+  sSet('nc-direccion',r.cliente_direccion||'');
+  // Extraer forma de pago y notas de notas guardadas
+  const notasRaw=r.notas||'';
+  const fpl=notasRaw.split('\n').find(l=>l.startsWith('Forma de pago:'));
+  if(fpl){const fpv=fpl.replace('Forma de pago:','').trim();const sel=document.getElementById('nc-forma-pago');if(sel){[...sel.options].forEach(o=>{if(o.value===fpv)o.selected=true;});}}
+  sSet('nc-notas',notasRaw.split('\n').filter(l=>!l.startsWith('Forma de pago:')).join('\n').trim());
+  sSet('nc-descripcion',r.descripcion||'');
+  sSet('nc-descuento',r.descuento_pct||0);
+  cotItems=(r.items||[]).map(it=>({material_id:it.material_id||null,descripcion:it.descripcion||it.material_nombre||'',cantidad:parseFloat(it.cantidad)||1,unidad:it.unidad||it.material_unidad||'unidad',precio_unitario:parseFloat(it.precio_unitario)||0,iva_pct:15,tiene_iva:true}));
+  cotAdic=[];
+  renderItems();renderAdic();calcTotals();
+  ir('nueva-cot');irSubTab('cotizacion');
+  // Update header title to indicate editing
+  const eyebrow=document.querySelector('.nc-eyebrow');
+  const title=document.querySelector('.nc-title');
+  if(eyebrow)eyebrow.textContent=`Editando cotizaci\u00f3n`;
+  if(title)title.innerHTML=`<i data-lucide="pencil" style="width:26px;height:26px;stroke-width:2;color:var(--acc)"></i> ${r.numero}`;
+  refreshIcons();
+  toast(`Editando ${r.numero} \u2014 guarda para actualizar`,'info');
+}
+function prepEditarCotDesdeModal(){
+  if(!cotActual)return;
+  closeModal('m-ver');
+  prepEditarCot(cotActual.id);
 }
 
 /* Totales */
@@ -1101,12 +1282,31 @@ async function guardarCot(){
   const notas=[sGet('nc-forma-pago')?`Forma de pago: ${sGet('nc-forma-pago')}`:'',sGet('nc-notas').trim(),sGet('nc-descripcion').trim()].filter(Boolean).join('\n');
   const body={titulo,descripcion:sGet('nc-descripcion').trim(),notas,descuento_pct:descPct,iva_pct:ivaPct,validez_dias:parseInt(sGet('nc-validez'))||30,items:todos};
   ['btn-guardar-top','btn-guardar-cot'].forEach(id=>setBL(id,true));
-  const r=await api('quotes/index',{method:'POST',body:JSON.stringify(body)});
+  let r;
+  if(cotEditandoId){
+    r=await api(`quotes/index?id=${cotEditandoId}`,{method:'PUT',body:JSON.stringify({...body,_fullEdit:true})});
+  } else {
+    r=await api('quotes/index',{method:'POST',body:JSON.stringify(body)});
+  }
   setBL('btn-guardar-top',false,'Guardar');
   setBL('btn-guardar-cot',false,'Guardar Cotizaci\u00f3n');
   if(isErr(r)){toast(r.msg,'err');return;}
-  cots.unshift({...r,cliente_nombre:titulo});sTxt('s-cots',cots.length);
-  toast(`Cotizaci\u00f3n ${r.numero} guardada \u2713`,'ok');
+  if(cotEditandoId){
+    const i=cots.findIndex(c=>c.id===cotEditandoId);
+    if(i>=0)cots[i]={...cots[i],...r,cliente_nombre:titulo};
+    toast(`Cotizaci\u00f3n ${r.numero||sGet('nc-numero')} actualizada \u2713`,'ok');
+    cotEditandoId=null;
+    const eyebrow=document.querySelector('.nc-eyebrow');
+    const title=document.querySelector('.nc-title');
+    if(eyebrow)eyebrow.textContent='Crear cotizaci\u00f3n';
+    if(title)title.innerHTML=`<i data-lucide="banknote" style="width:26px;height:26px;stroke-width:2;color:var(--acc)"></i> NUEVA COTIZACI\u00d3N`;
+    refreshIcons();
+  } else {
+    cots.unshift({...r,cliente_nombre:titulo});sTxt('s-cots',cots.length);
+    toast(`Cotizaci\u00f3n ${r.numero} guardada \u2713`,'ok');
+  }
+  sTxt('s-apro',cots.filter(c=>c.estado==='aprobada').length);
+  renderRecientes();
 }
 
 function esperarImagenesEn(root){
@@ -1442,7 +1642,7 @@ async function exportarPDF(){
   tpl.innerHTML='';
 }
 
-/* Utilidades */
+/* Utilidades jhonatan */
 function openModal(id){document.getElementById(id).classList.add('on');refreshIcons();}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function setBL(id,load,txt){
@@ -1466,6 +1666,69 @@ document.addEventListener('click',e=>{
   const d=document.getElementById('nc-results-drop');
   if(d&&!d.contains(e.target)&&e.target.id!=='nc-bi')d.style.display='none';
 });
+
+/* ═══════════ CATEGORÍAS (admin) ═══════════ */
+function renderCatsAdmin(){
+  const el=document.getElementById('tbl-cats-admin');if(!el)return;
+  if(!cats.length){el.innerHTML='<div class="empty"><p>Sin categor\u00edas</p></div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Nombre</th><th>Descripci\u00f3n</th><th>Materiales</th></tr></thead>
+  <tbody>${cats.map(c=>`<tr>
+    <td style="font-weight:600">${c.nombre}</td>
+    <td style="color:var(--t3)">${c.descripcion||'\u2014'}</td>
+    <td style="color:var(--t3);font-size:12px">${mats.filter(m=>m.categoria_id===c.id).length} materiales</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function abrirModalCat(){
+  sSet('cat-nombre','');sSet('cat-desc','');
+  document.getElementById('cat-err').className='alert err';
+  document.getElementById('m-cat-title').textContent='Nueva Categor\u00eda';
+  openModal('m-cat');
+}
+async function guardarCat(){
+  const nombre=sGet('cat-nombre').trim();
+  const desc=sGet('cat-desc').trim();
+  const errEl=document.getElementById('cat-err');
+  if(!nombre){errEl.textContent='El nombre es requerido';errEl.classList.add('show');return;}
+  errEl.classList.remove('show');setBL('btn-save-cat',true);
+  const r=await api('categories/index',{method:'POST',body:JSON.stringify({nombre,descripcion:desc})});
+  setBL('btn-save-cat',false,'Guardar');
+  if(isErr(r)){errEl.textContent=r.msg;errEl.classList.add('show');return;}
+  cats.push(r);poblarCats();renderCatsAdmin();
+  closeModal('m-cat');toast('Categor\u00eda creada \u2713','ok');
+}
+
+/* ═══════════ USUARIOS (admin) ═══════════ */
+let usuarios=[];
+async function cargarUsuarios(){
+  const el=document.getElementById('tbl-usuarios');if(!el)return;
+  el.innerHTML='<div class="loading"><div class="spin"></div><p>Cargando\u2026</p></div>';
+  const r=await api('users/index');
+  if(isErr(r)){el.innerHTML=`<div class="empty"><p>${r.msg}</p></div>`;return;}
+  usuarios=r;
+  el.innerHTML=`<table><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Permisos</th><th>Estado</th></tr></thead>
+  <tbody>${usuarios.map(u=>`<tr>
+    <td style="font-weight:600">${u.nombre}</td>
+    <td style="color:var(--t3);font-size:13px">${u.email}</td>
+    <td><span class="role-badge ${u.rol==='admin'?'r-admin':'r-vendedor'}">${u.rol}</span></td>
+    <td>${u.rol!=='admin'?`<div style="display:flex;align-items:center;gap:8px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--t2)">
+        <div onclick="togglePermisoAdmin(${u.id},${u.permisos==='admin'?'false':'true'})"
+          style="width:36px;height:20px;border-radius:99px;background:${u.permisos==='admin'?'var(--ok)':'var(--s4)'};position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:1px solid var(--bd2)">
+          <div style="position:absolute;top:3px;left:${u.permisos==='admin'?'18':'3'}px;width:12px;height:12px;border-radius:50%;background:${u.permisos==='admin'?'#fff':'var(--t3)'};transition:left .2s"></div>
+        </div>
+        <span style="color:${u.permisos==='admin'?'var(--ok)':'var(--t3)'};">${u.permisos==='admin'?'Acceso admin':'Vendedor normal'}</span>
+      </label>
+    </div>`:`<span style="font-size:12px;color:var(--t3)">Administrador completo</span>`}</td>
+    <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${u.activo?'var(--ok)':'var(--err)'};margin-right:6px"></span>${u.activo?'Activo':'Inactivo'}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+async function togglePermisoAdmin(userId,darPermiso){
+  const permisos=darPermiso?'admin':'vendedor';
+  const r=await api(`users/index?id=${userId}`,{method:'PUT',body:JSON.stringify({permisos})});
+  if(isErr(r)){toast(r.msg,'err');return;}
+  toast(darPermiso?'Permisos de admin otorgados \u2713':'Permisos revertidos','ok');
+  cargarUsuarios();
+}
 </script>
 </body>
 </html>

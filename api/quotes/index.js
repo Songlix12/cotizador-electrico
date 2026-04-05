@@ -73,7 +73,40 @@ export default async function handler(req, res) {
       if (!id) return res.status(400).json({error:'ID requerido'});
       const own = await sql`SELECT id FROM cotizaciones WHERE id=${parseInt(id)} AND usuario_id=${user.id}`;
       if (!own.length) return res.status(403).json({error:'No tienes permiso'});
-      const {estado,titulo,notas} = req.body;
+
+      const {estado, titulo, notas, _fullEdit, items, descuento_pct, iva_pct, validez_dias, descripcion} = req.body;
+
+      // Full edit mode: replace all items and recalculate totals
+      if (_fullEdit && items) {
+        const dp = parseFloat(descuento_pct)||0;
+        const ip = parseFloat(iva_pct)||0;
+        const sub = items.reduce((s,i)=>s+(parseFloat(i.cantidad)||0)*(parseFloat(i.precio_unitario)||0)*(1-(parseFloat(i.descuento_pct)||0)/100),0);
+        const dv = sub*(dp/100);
+        const base = sub-dv;
+        const iv = base*(ip/100);
+        const total = base+iv;
+        const r = await sql`UPDATE cotizaciones SET
+          titulo=COALESCE(${titulo||null},titulo),
+          descripcion=COALESCE(${descripcion||null},descripcion),
+          notas=COALESCE(${notas||null},notas),
+          subtotal=${sub},
+          descuento_pct=${dp},
+          descuento_valor=${dv},
+          iva_pct=${ip},
+          iva_valor=${iv},
+          total=${total},
+          validez_dias=COALESCE(${validez_dias||null},validez_dias),
+          actualizado_en=NOW()
+          WHERE id=${parseInt(id)} RETURNING *`;
+        // Delete old items and insert new ones
+        await sql`DELETE FROM cotizacion_items WHERE cotizacion_id=${parseInt(id)}`;
+        for (const item of items) {
+          await sql`INSERT INTO cotizacion_items(cotizacion_id,material_id,descripcion,cantidad,unidad,precio_unitario,descuento_pct) VALUES(${parseInt(id)},${item.material_id||null},${item.descripcion||''},${parseFloat(item.cantidad)||1},${item.unidad||'unidad'},${parseFloat(item.precio_unitario)||0},${parseFloat(item.descuento_pct)||0})`;
+        }
+        return res.status(200).json(r[0]);
+      }
+
+      // Simple state/title/notes update
       const r = await sql`UPDATE cotizaciones SET estado=COALESCE(${estado||null},estado),titulo=COALESCE(${titulo||null},titulo),notas=COALESCE(${notas||null},notas),actualizado_en=NOW() WHERE id=${parseInt(id)} RETURNING *`;
       return res.status(200).json(r[0]);
     }
@@ -81,7 +114,8 @@ export default async function handler(req, res) {
     if (req.method==='DELETE') {
       if (!id) return res.status(400).json({error:'ID requerido'});
       const own = await sql`SELECT id FROM cotizaciones WHERE id=${parseInt(id)} AND usuario_id=${user.id}`;
-      if (!own.length) return res.status(403).json({error:'No tienes permiso o la cotización no existe'});
+      if (!own.length) return res.status(403).json({error:'No tienes permiso'});
+      await sql`DELETE FROM cotizacion_items WHERE cotizacion_id=${parseInt(id)}`;
       await sql`DELETE FROM cotizaciones WHERE id=${parseInt(id)} AND usuario_id=${user.id}`;
       return res.status(200).json({success:true});
     }

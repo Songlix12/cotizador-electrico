@@ -20,7 +20,8 @@ export default async function handler(req, res) {
       return res.status(200).json(rows);
     }
     if (req.method==='POST') {
-      if (user.rol !== 'admin') return res.status(403).json({error:'Solo administradores pueden crear categorías'});
+      const isAdmin = user.rol === 'admin' || user.permisos === 'admin';
+      if (!isAdmin) return res.status(403).json({error:'Solo administradores pueden crear categorías'});
       const {nombre, descripcion=''} = req.body;
       if (!nombre) return res.status(400).json({error:'El nombre es requerido'});
       const exists = await sql`SELECT id FROM categorias WHERE nombre=${nombre.trim()}`;
