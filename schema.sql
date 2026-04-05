@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS clientes (
   direccion TEXT,
   ruc_cedula VARCHAR(20),
   notas TEXT,
+  usuario_id INTEGER REFERENCES usuarios(id),
   creado_en TIMESTAMP DEFAULT NOW()
 );
 
@@ -138,3 +139,4 @@ CREATE INDEX IF NOT EXISTS idx_materiales_categoria ON materiales(categoria_id);
 CREATE INDEX IF NOT EXISTS idx_cotizaciones_cliente ON cotizaciones(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_cotizaciones_usuario ON cotizaciones(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_items_cotizacion ON cotizacion_items(cotizacion_id);
+CREATE INDEX IF NOT EXISTS idx_clientes_usuario ON clientes(usuario_id);
