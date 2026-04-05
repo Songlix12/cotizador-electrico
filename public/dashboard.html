@@ -16,7 +16,6 @@
   --t1:#e2e2ec;--t2:#9090aa;--t3:#555570;
   --ok:#22c55e;--ok-d:rgba(34,197,94,.12);
   --info:#3b82f6;--info-d:rgba(59,130,246,.12);
-  --warn:#f59e0b;--warn-d:rgba(245,158,11,.12);
   --err:#ef4444;--err-d:rgba(239,68,68,.12);
   --sw:230px;--r:10px;--rl:14px;
 }
@@ -24,1301 +23,1104 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--s4);border-radius:9px}
-
-/* ── SIDEBAR ── */
-.sidebar{
-  position:fixed;top:0;left:0;bottom:0;width:var(--sw);
-  background:var(--s1);border-right:1px solid var(--bd);
-  display:flex;flex-direction:column;z-index:200;
-  transition:transform .25s ease;
-}
-.sb-brand{
-  padding:16px;border-bottom:1px solid var(--bd);
-  display:flex;align-items:center;gap:10px;
-}
-.sb-logo{
-  width:42px;height:42px;border-radius:10px;overflow:hidden;
-  flex-shrink:0;box-shadow:var(--acc-g);
-}
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:200;transition:transform .25s ease;}
+.sb-brand{padding:16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;}
+.sb-logo{width:42px;height:42px;border-radius:10px;overflow:hidden;flex-shrink:0;box-shadow:var(--acc-g);}
 .sb-logo img{width:100%;height:100%;object-fit:cover}
-.sb-name{font-size:15px;font-weight:700;letter-spacing:-.2px;line-height:1.1}
+.sb-name{font-size:15px;font-weight:700;line-height:1.1}
 .sb-tag{font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase}
-
 .nav{flex:1;padding:8px 0;overflow-y:auto}
 .nav-lbl{padding:14px 16px 5px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
-.nav-item{
-  display:flex;align-items:center;gap:9px;
-  padding:9px 16px;cursor:pointer;
-  color:var(--t2);font-size:13.5px;font-weight:500;
-  border-left:2px solid transparent;transition:all .13s;
-}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;border-left:2px solid transparent;transition:all .13s;}
 .nav-item:hover{color:var(--t1);background:rgba(255,255,255,.04)}
 .nav-item.on{color:var(--acc);border-left-color:var(--acc);background:var(--acc-d)}
-.nav-ico{width:18px;text-align:center;font-size:15px;opacity:.85}
-
+.nav-ico{width:18px;text-align:center;font-size:15px}
 .sb-foot{padding:14px 16px;border-top:1px solid var(--bd)}
-.user-card{
-  background:var(--s2);border-radius:var(--r);padding:10px;
-  display:flex;align-items:center;gap:9px;
-}
-.user-av{
-  width:34px;height:34px;border-radius:50%;
-  background:var(--acc);color:#000;font-weight:700;font-size:14px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
+.user-card{background:var(--s2);border-radius:var(--r);padding:10px;display:flex;align-items:center;gap:9px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:var(--acc);color:#000;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .user-nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.role-badge{
-  display:inline-block;padding:1px 7px;border-radius:4px;
-  font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
-}
-.r-admin  {background:rgba(245,200,0,.15);color:var(--acc)}
+.role-badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
+.r-admin{background:rgba(245,200,0,.15);color:var(--acc)}
 .r-vendedor{background:var(--info-d);color:var(--info)}
-.btn-out{
-  width:100%;margin-top:8px;
-  background:transparent;border:1px solid var(--bd2);
-  color:var(--t2);padding:8px;border-radius:var(--r);
-  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;
-  font-weight:500;transition:all .15s;
-}
+.btn-out{width:100%;margin-top:8px;background:transparent;border:1px solid var(--bd2);color:var(--t2);padding:8px;border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;transition:all .15s;}
 .btn-out:hover{border-color:var(--err);color:var(--err)}
-
-/* ── HAMBURGER ── */
-.hamburger{
-  display:none;position:fixed;top:12px;left:12px;z-index:300;
-  background:var(--s1);border:1px solid var(--bd2);
-  border-radius:8px;width:38px;height:38px;
-  align-items:center;justify-content:center;
-  cursor:pointer;font-size:18px;color:var(--t1);
-}
-.overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;
-}
-
-/* ── MAIN ── */
+/* HAMBURGER */
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--t1);}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;}
+/* MAIN */
 .main{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
-.topbar{
-  background:var(--s1);border-bottom:1px solid var(--bd);
-  padding:0 28px;height:54px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
-}
-.page-title{font-size:16px;font-weight:700;letter-spacing:-.2px}
-.content{padding:24px 28px;flex:1}
-
-/* ── SECTIONS ── */
+.topbar{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.page-title{font-size:16px;font-weight:700}
+.content{padding:22px 26px;flex:1}
 .sec{display:none}.sec.on{display:block}
-
-/* ── STATS ── */
+/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
-.stat{
-  background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);
-  padding:18px 20px;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:default;
-  position:relative;overflow:hidden;
-}
-.stat::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(245,200,0,.04) 0%,transparent 60%);
-  opacity:0;transition:opacity .2s;
-}
+.stat{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);padding:18px 20px;transition:all .2s;cursor:default;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,200,0,.04),transparent 60%);opacity:0;transition:opacity .2s;}
 .stat:hover{border-color:rgba(245,200,0,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .stat:hover::before{opacity:1}
 .stat-lbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
 .stat-val{font-size:28px;font-weight:700;color:var(--acc);line-height:1;font-family:'DM Mono',monospace}
 .stat-sub{font-size:12px;color:var(--t3);margin-top:4px}
-
-/* ── CARD ── */
-.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
-.card-head{
-  padding:16px 20px;border-bottom:1px solid var(--bd);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-  background:linear-gradient(90deg,var(--s1) 0%,rgba(245,200,0,.03) 100%);
-}
-.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:16px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg,var(--s1),rgba(245,200,0,.03));}
+.card-title{font-size:13px;font-weight:700}
 .card-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-
-/* ── SEARCH ── */
+/* SEARCH */
 .search-wrap{position:relative;display:flex;align-items:center}
-.search-wrap svg{position:absolute;left:10px;width:14px;height:14px;stroke:var(--t3);pointer-events:none;transition:stroke .15s}
+.search-wrap svg{position:absolute;left:10px;width:14px;height:14px;stroke:var(--t3);pointer-events:none}
 .search-wrap:focus-within svg{stroke:var(--acc)}
-.inp-search{
-  background:var(--s2);border:1px solid var(--bd2);
-  color:var(--t1);padding:8px 12px 8px 32px;
-  border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;
-  outline:none;width:240px;transition:border-color .15s,width .2s;
-}
-.inp-search:focus{border-color:var(--acc);width:280px}
+.inp-search{background:var(--s2);border:1px solid var(--bd2);color:var(--t1);padding:8px 12px 8px 32px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:240px;transition:border-color .15s;}
+.inp-search:focus{border-color:var(--acc)}
 .inp-search::placeholder{color:var(--t3)}
-.search-hint{font-size:11px;color:var(--t3);margin-top:3px;padding-left:2px}
-
-/* ── TABLE ── */
+/* TABLE */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-thead th{
-  padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:1px;
-  text-transform:uppercase;color:var(--t3);text-align:left;
-  border-bottom:1px solid var(--bd);background:var(--s2);white-space:nowrap;
-}
+thead th{padding:10px 14px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t3);text-align:left;border-bottom:1px solid var(--bd);background:var(--s2);white-space:nowrap;}
 tbody tr{border-bottom:1px solid var(--bd);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:rgba(255,255,255,.025)}
-tbody td{padding:11px 16px;font-size:13.5px;vertical-align:middle}
-
-/* ── BADGES ── */
-.badge{
-  display:inline-block;padding:3px 9px;border-radius:99px;
-  font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
-  white-space:nowrap;
-}
-.b-borrador  {background:rgba(90,90,120,.25);color:#9898c0}
-.b-enviada   {background:var(--info-d);color:var(--info)}
-.b-aprobada  {background:var(--ok-d);color:var(--ok)}
-.b-rechazada {background:var(--err-d);color:var(--err)}
-.b-facturada {background:var(--acc-d);color:var(--acc)}
-
-/* ── BUTTONS ── */
-.btn{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:8px 16px;border-radius:8px;border:none;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-}
+tbody td{padding:10px 14px;font-size:13px;vertical-align:middle}
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;text-transform:uppercase;white-space:nowrap;}
+.b-borrador{background:rgba(90,90,120,.25);color:#9898c0}
+.b-enviada{background:var(--info-d);color:var(--info)}
+.b-aprobada{background:var(--ok-d);color:var(--ok)}
+.b-rechazada{background:var(--err-d);color:var(--err)}
+.b-facturada{background:var(--acc-d);color:var(--acc)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .btn-acc{background:var(--acc);color:#000}
 .btn-acc:hover{background:var(--acc2);transform:translateY(-1px);box-shadow:var(--acc-g)}
 .btn-ghost{background:var(--s3);color:var(--t1);border:1px solid var(--bd2)}
-.btn-ghost:hover{border-color:var(--bd2);background:var(--s4)}
+.btn-ghost:hover{background:var(--s4)}
 .btn-danger{background:var(--err-d);color:var(--err);border:1px solid rgba(239,68,68,.25)}
 .btn-danger:hover{background:rgba(239,68,68,.2)}
 .btn-info{background:var(--info-d);color:var(--info);border:1px solid rgba(59,130,246,.25)}
 .btn-ok{background:var(--ok-d);color:var(--ok);border:1px solid rgba(34,197,94,.25)}
 .btn-sm{padding:5px 10px;font-size:12px}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
-
-/* ── MODAL ── */
-.modal-bg{
-  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
-  display:flex;align-items:flex-start;justify-content:center;
-  z-index:1000;padding:24px 16px;overflow-y:auto;
-  opacity:0;pointer-events:none;transition:opacity .2s;
-}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:24px 16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-bg.on{opacity:1;pointer-events:all}
-.modal{
-  background:var(--s1);border:1px solid var(--bd2);border-radius:var(--rl);
-  width:100%;max-width:640px;
-  transform:translateY(16px);transition:transform .2s;
-  margin:auto;
-}
+.modal{background:var(--s1);border:1px solid var(--bd2);border-radius:var(--rl);width:100%;max-width:640px;transform:translateY(16px);transition:transform .2s;margin:auto;}
 .modal-bg.on .modal{transform:translateY(0)}
 .modal-xl{max-width:860px}
-.modal-hd{
-  padding:20px 22px 0;
-  display:flex;justify-content:space-between;align-items:center;
-}
+.modal-hd{padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center;}
 .modal-title{font-size:15px;font-weight:700}
 .modal-x{background:none;border:none;color:var(--t2);font-size:20px;cursor:pointer;padding:2px;transition:color .15s;line-height:1}
 .modal-x:hover{color:var(--t1)}
 .modal-body{padding:20px 22px}
 .modal-ft{padding:0 22px 20px;display:flex;gap:10px;justify-content:flex-end}
-
-/* ── FORM GRID ── */
+/* FORM */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg .span2{grid-column:1/-1}
 .fld{display:flex;flex-direction:column;gap:5px}
-.fld label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t2)}
-.fld input,.fld select,.fld textarea{
-  background:var(--s2);border:1px solid var(--bd2);
-  color:var(--t1);padding:9px 12px;border-radius:8px;
-  font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;
-  transition:border-color .15s;
-}
+.fld label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--t2)}
+.fld input,.fld select,.fld textarea{background:var(--s2);border:1px solid var(--bd2);color:var(--t1);padding:9px 12px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;transition:border-color .15s;}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--acc)}
 .fld textarea{resize:vertical;min-height:72px}
 .fld select option{background:var(--s2)}
-.fld input::placeholder{color:var(--t3)}
-
-/* ── INLINE ALERT ── */
-.alert{
-  padding:10px 14px;border-radius:8px;font-size:13px;
-  margin-bottom:14px;display:none;
-}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--t3)}
+/* ALERT */
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
 .alert.err{background:var(--err-d);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
-.alert.ok {background:var(--ok-d);border:1px solid rgba(34,197,94,.3);color:#86efac}
 .alert.show{display:block}
-
-/* ── QUOTE BUILDER ── */
-.item-row{
-  display:grid;grid-template-columns:1fr 72px 110px 90px 28px;
-  gap:6px;align-items:center;
-  background:var(--s2);border:1px solid var(--bd);border-radius:8px;
-  padding:8px 10px;transition:border-color .15s;
-}
-.item-row:hover{border-color:var(--bd2)}
-.item-inp{
-  background:transparent;border:1px solid transparent;color:var(--t1);
-  padding:5px 7px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;
-  outline:none;width:100%;transition:border-color .15s;
-}
-.item-inp:focus{border-color:var(--acc);background:var(--s3)}
-.item-total{text-align:right;font-weight:700;font-size:13px;color:var(--t1);font-family:'DM Mono',monospace}
-.del-item{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;transition:color .15s;line-height:1}
-.del-item:hover{color:var(--err)}
-
-/* Dropdown resultados */
-.results-drop{
-  background:var(--s2);border:1px solid var(--bd2);border-radius:8px;
-  margin-top:4px;max-height:220px;overflow-y:auto;display:none;
-  box-shadow:0 8px 24px rgba(0,0,0,.4);
-}
-.ri{
-  padding:10px 14px;cursor:pointer;
-  border-bottom:1px solid var(--bd);display:flex;
-  justify-content:space-between;align-items:center;transition:background .1s;
-}
-.ri:last-child{border-bottom:none}
-.ri:hover{background:var(--s3)}
-.ri-name{font-size:13px;font-weight:500}
-.ri-meta{font-size:11px;color:var(--t3);margin-top:1px}
-.ri-price{font-family:'DM Mono',monospace;font-weight:700;color:var(--acc);font-size:13px;white-space:nowrap}
-mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 1px}
-
-/* ── TOTALS ── */
-.totals{
-  background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);
-  padding:14px 16px;margin-top:14px;
-}
-.trow{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0;color:var(--t2)}
-.trow.big{
-  font-size:17px;font-weight:700;color:var(--acc);padding-top:10px;
-  border-top:1px solid var(--bd);margin-top:6px;
-  font-family:'DM Mono',monospace;
-}
-
-/* ── PDF TEMPLATE ── */
-#pdf-template{
-  display:none;
-  width:794px;background:#fff;color:#111;
-  font-family:Arial,Helvetica,sans-serif;font-size:13px;
-  padding:48px;
-  line-height:1.5;
-}
-.pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px}
-.pdf-logo{width:80px;height:80px;border-radius:8px;overflow:hidden}
-.pdf-logo img{width:100%;height:100%;object-fit:cover}
-.pdf-title{text-align:right}
-.pdf-title h1{font-size:28px;font-weight:700;color:#0c0c12;letter-spacing:-1px}
-.pdf-title .num{font-size:14px;color:#666;margin-top:2px;font-family:'DM Mono',monospace}
-.pdf-divider{border:none;border-top:2px solid #f5c800;margin:0 0 24px}
-.pdf-parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
-.pdf-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:8px}
-.pdf-val{font-size:13px;color:#111;margin-bottom:3px}
-.pdf-val strong{font-weight:600}
-.pdf-table{width:100%;border-collapse:collapse;margin-bottom:24px}
-.pdf-table th{background:#0c0c12;color:#fff;padding:9px 12px;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;text-align:left}
-.pdf-table td{padding:9px 12px;border-bottom:1px solid #e8e8e8;font-size:13px}
-.pdf-table tr:nth-child(even) td{background:#fafafa}
-.pdf-totals{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.pdf-trow{display:flex;gap:48px;font-size:13px;color:#555}
-.pdf-trow.grand{color:#0c0c12;font-weight:700;font-size:16px;padding-top:6px;border-top:2px solid #f5c800;margin-top:6px}
-.pdf-footer{margin-top:32px;padding-top:16px;border-top:1px solid #e8e8e8;font-size:11px;color:#999;text-align:center}
-
-/* ── LOADING / EMPTY ── */
+/* LOADING */
 .loading{text-align:center;padding:48px;color:var(--t3)}
 .spin{display:inline-block;width:28px;height:28px;border:3px solid var(--s4);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:52px;color:var(--t3)}
+.empty{text-align:center;padding:48px 24px;color:var(--t3)}
 .empty-ico{font-size:32px;margin-bottom:10px}
-.empty p{font-size:13px}
-
-/* ── TOAST ── */
-#toast{
-  position:fixed;bottom:20px;right:20px;z-index:9999;
-  background:var(--s2);border:1px solid var(--bd2);border-radius:10px;
-  padding:12px 18px;font-size:13px;max-width:320px;min-width:220px;
-  box-shadow:0 8px 24px rgba(0,0,0,.5);
-  transform:translateY(80px);opacity:0;transition:all .3s;
-}
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;padding:12px 18px;font-size:13px;max-width:320px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.5);transform:translateY(80px);opacity:0;transition:all .3s;}
 #toast.show{transform:translateY(0);opacity:1}
 #toast.ok{border-left:3px solid var(--ok)}
 #toast.err{border-left:3px solid var(--err)}
 
-/* ── RESPONSIVE ── */
+/* ═══════════ COTIZACION FULL PAGE ═══════════ */
+.nc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.nc-eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+.nc-title{font-size:21px;font-weight:800;display:flex;align-items:center;gap:10px}
+/* Sub-pestañas */
+.cot-tabs{display:flex;gap:0;margin-bottom:20px;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:4px;width:fit-content;}
+.cot-tab{display:flex;align-items:center;gap:7px;padding:9px 22px;border-radius:9px;border:none;background:transparent;color:var(--t2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.cot-tab:hover{color:var(--t1);background:var(--s2)}
+.cot-tab.on{background:var(--acc);color:#000;box-shadow:0 2px 10px rgba(245,200,0,.3)}
+/* Layout 2 cols */
+.nc-layout{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start;}
+.nc-right{position:sticky;top:70px;}
+/* NC Cards */
+.nc-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:14px;}
+.nc-card-head{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:linear-gradient(90deg,var(--s1),rgba(245,200,0,.03));}
+.nc-card-title{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:6px;}
+.nc-card-body{padding:14px 16px}
+/* Grids del cliente */
+.g5{display:grid;grid-template-columns:120px 140px 70px 1fr 140px;gap:10px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;margin-bottom:10px}
+/* Cabecera cols items */
+.icols{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;padding:0 9px 5px;margin-bottom:2px}
+.icol{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.icol.r{text-align:right}.icol.c{text-align:center}
+/* Item rows */
+.item-row{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;align-items:center;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;margin-bottom:5px;transition:border-color .15s;}
+.item-row:hover{border-color:var(--bd2)}
+.adic-row{display:grid;grid-template-columns:1fr 62px 110px 100px 52px 86px 26px;gap:5px;align-items:center;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:6px 9px;margin-bottom:5px;}
+.item-inp{background:transparent;border:1px solid transparent;color:var(--t1);padding:5px 6px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;outline:none;width:100%;transition:border-color .15s;}
+.item-inp:focus{border-color:var(--acc);background:var(--s3)}
+.item-inp::placeholder{color:var(--t3)}
+.item-total{text-align:right;font-weight:700;font-size:12.5px;font-family:'DM Mono',monospace;padding-right:2px}
+.del-item{background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;transition:color .15s;line-height:1;padding:2px 4px;}
+.del-item:hover{color:var(--err)}
+.iva-wrap{display:flex;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+.iva-wrap input{width:13px;height:13px;accent-color:var(--acc);cursor:pointer}
+.iva-wrap span{font-size:11px;color:var(--t2);font-weight:600;user-select:none}
+/* Dropdown */
+.results-drop{background:var(--s2);border:1px solid var(--bd2);border-radius:8px;margin-top:4px;max-height:200px;overflow-y:auto;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);position:absolute;width:100%;z-index:50;}
+.ri{padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;transition:background .1s;}
+.ri:last-child{border-bottom:none}
+.ri:hover{background:var(--s3)}
+.ri-name{font-size:13px;font-weight:500}
+.ri-meta{font-size:11px;color:var(--t3)}
+.ri-price{font-family:'DM Mono',monospace;font-weight:700;color:var(--acc);font-size:13px;white-space:nowrap}
+mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 1px}
+/* Resumen */
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13.5px;color:var(--t2)}
+.res-row .v{font-family:'DM Mono',monospace;font-weight:700;color:var(--t1)}
+.res-total{display:flex;justify-content:space-between;align-items:center;padding:11px 0 4px;border-top:2px solid rgba(245,200,0,.25);margin-top:8px;font-size:19px;font-weight:800;color:var(--acc);}
+.res-total .v{font-family:'DM Mono',monospace}
+.res-note{margin-top:12px;padding:9px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;font-size:11.5px;color:#7eb3f7;line-height:1.5;}
+.btn-guardar{width:100%;margin-top:12px;padding:14px;background:var(--acc);color:#000;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-guardar:hover{background:var(--acc2);transform:translateY(-1px);box-shadow:var(--acc-g)}
+.btn-guardar:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.vp-toolbar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap}
+/* PDF template */
+#pdf-template{display:none;width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;}
+.pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
+.pdf-logo{width:80px;height:80px;border-radius:8px;overflow:hidden}
+.pdf-logo img{width:100%;height:100%;object-fit:cover}
+.pdf-title h1{font-size:26px;font-weight:700;color:#0c0c12;text-align:right}
+.pdf-title .num{font-size:13px;color:#666;font-family:monospace;text-align:right}
+.pdf-divider{border:none;border-top:2px solid #f5c800;margin:0 0 20px}
+.pdf-parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:22px}
+.pdf-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:6px}
+.pdf-val{font-size:12.5px;color:#111;margin-bottom:2px}
+.pdf-table{width:100%;border-collapse:collapse;margin-bottom:18px}
+.pdf-table th{background:#0c0c12;color:#fff;padding:8px 11px;font-size:10px;font-weight:600;text-transform:uppercase;text-align:left}
+.pdf-table td{padding:8px 11px;border-bottom:1px solid #e8e8e8;font-size:12.5px}
+.pdf-table tr:nth-child(even) td{background:#fafafa}
+.pdf-totals{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-bottom:16px}
+.pdf-trow{display:flex;gap:48px;font-size:12.5px;color:#555}
+.pdf-trow.grand{color:#111;font-weight:700;font-size:15px;padding-top:6px;border-top:2px solid #f5c800;margin-top:4px}
+.pdf-footer{margin-top:24px;padding-top:12px;border-top:1px solid #e8e8e8;font-size:11px;color:#999;text-align:center}
+/* RESPONSIVE */
+@media(max-width:1080px){.nc-layout{grid-template-columns:1fr}.nc-right{position:static}.g5{grid-template-columns:1fr 1fr 1fr}}
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .overlay{display:block}
-  .hamburger{display:flex}
-  .main{margin-left:0}
-  .content{padding:14px 12px}
-  .fg{grid-template-columns:1fr}
-  .stats{grid-template-columns:1fr 1fr}
-  .card-head{flex-direction:column;align-items:flex-start;gap:10px}
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .overlay{display:block}.hamburger{display:flex}
+  .main{margin-left:0}.content{padding:12px 10px}
+  .topbar{padding:0 10px 0 54px}
+  .fg{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}
+  .card-head,.nc-card-head{flex-direction:column;align-items:flex-start}
   .card-tools{width:100%}
   .inp-search{width:100%!important}
-  .inp-search:focus{width:100%!important}
-  .topbar{padding:0 12px 0 56px}
-  table{font-size:12px}
-  thead th,tbody td{padding:8px 10px}
-  .modal-bg{padding:10px 6px}
-  .modal,.modal-xl{max-width:100%;width:100%}
-  .modal-hd,.modal-body,.modal-ft{padding-left:14px;padding-right:14px}
-  .pdf-parties{grid-template-columns:1fr!important}
-  /* Item row: stack description then numeric columns */
-  .item-row{
-    grid-template-columns:1fr 56px 82px 24px;
-    grid-template-rows:auto auto;
-  }
-  .item-row input:first-child{grid-column:1/-1}
+  .cot-tabs{width:100%}.cot-tab{flex:1;justify-content:center;padding:9px 8px;font-size:12px}
+  .g5{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}
+  .icols{display:none}
+  .item-row,.adic-row{grid-template-columns:1fr 55px 26px}
+  table{display:block;overflow-x:auto}
+  .modal-bg{padding:8px}.modal,.modal-xl{max-width:100%}
+  .nc-header{flex-direction:column;align-items:flex-start}
 }
-@media(max-width:480px){
-  .stats{grid-template-columns:1fr}
-  .btn{padding:7px 12px;font-size:12px}
-  .topbar{padding:0 10px 0 52px}
-  .content{padding:12px 8px}
-  table{display:block;overflow-x:auto;white-space:nowrap}
-}
+@media(max-width:480px){.stats{grid-template-columns:1fr}.btn{padding:7px 12px;font-size:12px}.content{padding:10px 8px}}
 </style>
 </head>
 <body>
-
-<!-- ── HAMBURGER ── -->
-<button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">&#9776;</button>
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-<!-- ── SIDEBAR ── -->
 <nav class="sidebar" id="sidebar">
   <div class="sb-brand">
     <div class="sb-logo"><img src="logo.jpg" alt="SEST"/></div>
-    <div>
-      <div class="sb-name">SEST</div>
-      <div class="sb-tag">Serv. Eléctricos &amp; Seg.</div>
-    </div>
+    <div><div class="sb-name">SEST</div><div class="sb-tag">Serv. El&#233;ctricos &amp; Seg.</div></div>
   </div>
-
   <div class="nav">
     <div class="nav-lbl">Principal</div>
-    <div class="nav-item on" onclick="ir('inicio')">
-      <span class="nav-ico">🏠</span> Dashboard
-    </div>
-    <div class="nav-item" onclick="ir('cotizaciones')">
-      <span class="nav-ico">📋</span> Cotizaciones
-    </div>
-    <div class="nav-lbl">Gestión</div>
-    <div class="nav-item" onclick="ir('materiales')">
-      <span class="nav-ico">🔌</span> Materiales
-    </div>
-    <div class="nav-item" onclick="ir('clientes')">
-      <span class="nav-ico">👥</span> Clientes
-    </div>
+    <div class="nav-item on" onclick="ir('inicio')"><span class="nav-ico">&#127968;</span> Dashboard</div>
+    <div class="nav-item" onclick="ir('cotizaciones')"><span class="nav-ico">&#128203;</span> Cotizaciones</div>
+    <div class="nav-item" onclick="abrirNuevaCot()"><span class="nav-ico">&#9889;</span> Nueva Cotizaci&#243;n</div>
+    <div class="nav-lbl">Gesti&#243;n</div>
+    <div class="nav-item" onclick="ir('materiales')"><span class="nav-ico">&#128268;</span> Materiales</div>
+    <div class="nav-item" onclick="ir('clientes')"><span class="nav-ico">&#128101;</span> Clientes</div>
   </div>
-
   <div class="sb-foot">
     <div class="user-card">
       <div class="user-av" id="user-av">?</div>
-      <div style="flex:1;min-width:0">
-        <div class="user-nm" id="user-nm">Cargando…</div>
-        <span class="role-badge r-vendedor" id="role-badge">vendedor</span>
-      </div>
+      <div style="flex:1;min-width:0"><div class="user-nm" id="user-nm">Cargando&#8230;</div><span class="role-badge r-vendedor" id="role-badge">vendedor</span></div>
     </div>
-    <button class="btn-out" onclick="logout()">Cerrar sesión</button>
+    <button class="btn-out" onclick="logout()">Cerrar sesi&#243;n</button>
   </div>
 </nav>
-
-<!-- ── MAIN ── -->
 <div class="main">
-  <div class="topbar">
-    <div class="page-title" id="page-title">Dashboard</div>
-    <div id="topbar-actions"></div>
-  </div>
-
+  <div class="topbar"><div class="page-title" id="page-title">Dashboard</div><div id="topbar-actions"></div></div>
   <div class="content">
 
-    <!-- ══ INICIO ══ -->
+    <!-- INICIO -->
     <div class="sec on" id="sec-inicio">
       <div class="stats">
-        <div class="stat">
-          <div class="stat-lbl">Cotizaciones</div>
-          <div class="stat-val" id="s-cots">—</div>
-          <div class="stat-sub">Total registradas</div>
-        </div>
-        <div class="stat">
-          <div class="stat-lbl">Clientes</div>
-          <div class="stat-val" id="s-clis">—</div>
-          <div class="stat-sub">En tu base</div>
-        </div>
-        <div class="stat">
-          <div class="stat-lbl">Materiales</div>
-          <div class="stat-val" id="s-mats">—</div>
-          <div class="stat-sub">En catálogo</div>
-        </div>
-        <div class="stat">
-          <div class="stat-lbl">Aprobadas</div>
-          <div class="stat-val" id="s-apro" style="color:var(--ok)">—</div>
-          <div class="stat-sub">Cotizaciones aprobadas</div>
-        </div>
+        <div class="stat"><div class="stat-lbl">Cotizaciones</div><div class="stat-val" id="s-cots">&#8212;</div><div class="stat-sub">Total registradas</div></div>
+        <div class="stat"><div class="stat-lbl">Clientes</div><div class="stat-val" id="s-clis">&#8212;</div><div class="stat-sub">En tu base</div></div>
+        <div class="stat"><div class="stat-lbl">Materiales</div><div class="stat-val" id="s-mats">&#8212;</div><div class="stat-sub">En cat&#225;logo</div></div>
+        <div class="stat"><div class="stat-lbl">Aprobadas</div><div class="stat-val" id="s-apro" style="color:var(--ok)">&#8212;</div><div class="stat-sub">Cotizaciones aprobadas</div></div>
       </div>
       <div class="card">
-        <div class="card-head">
-          <div class="card-title">Últimas cotizaciones</div>
-          <button class="btn btn-ghost btn-sm" onclick="ir('cotizaciones')">Ver todas →</button>
-        </div>
-        <div id="tbl-recientes"><div class="loading"><div class="spin"></div><p>Cargando…</p></div></div>
+        <div class="card-head"><div class="card-title">&#128203; &#218;ltimas cotizaciones</div><button class="btn btn-ghost btn-sm" onclick="ir('cotizaciones')">Ver todas &#8594;</button></div>
+        <div id="tbl-recientes"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
       </div>
     </div>
 
-    <!-- ══ COTIZACIONES ══ -->
+    <!-- COTIZACIONES lista -->
     <div class="sec" id="sec-cotizaciones">
       <div class="card">
         <div class="card-head">
-          <div class="card-title">Mis Cotizaciones</div>
-          <div class="card-tools">
-            <div>
-              <div class="search-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input class="inp-search" id="bq" placeholder="número, cliente, título…" oninput="filtrarCots()"/>
-              </div>
-            </div>
-            <button class="btn btn-acc" onclick="abrirNuevaCot()">+ Nueva cotización</button>
-          </div>
-        </div>
-        <div class="tbl-wrap" id="tbl-cots"><div class="loading"><div class="spin"></div><p>Cargando…</p></div></div>
-      </div>
-    </div>
-
-    <!-- ══ MATERIALES ══ -->
-    <div class="sec" id="sec-materiales">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Catálogo de Materiales</div>
-          <div class="card-tools">
-            <div>
-              <div class="search-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input class="inp-search" id="bm" placeholder="cable 10 negro, breaker 20a…" oninput="filtrarMats()"/>
-              </div>
-              <div class="search-hint">Separa palabras: "cable negro 10" busca todo a la vez</div>
-            </div>
-            <select class="inp-search" id="bm-cat" style="width:160px;padding-left:10px" onchange="filtrarMats()">
-              <option value="">Todas las categorías</option>
-            </select>
-            <button class="btn btn-acc" onclick="abrirModalMat()">+ Material</button>
-          </div>
-        </div>
-        <div class="tbl-wrap" id="tbl-mats"><div class="loading"><div class="spin"></div><p>Cargando…</p></div></div>
-      </div>
-    </div>
-
-    <!-- ══ CLIENTES ══ -->
-    <div class="sec" id="sec-clientes">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Mis Clientes</div>
+          <div class="card-title">&#128203; Mis Cotizaciones</div>
           <div class="card-tools">
             <div class="search-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input class="inp-search" id="bc" placeholder="nombre, empresa, RUC…" oninput="filtrarClis()"/>
+              <input class="inp-search" id="bq" placeholder="n&#250;mero, cliente, t&#237;tulo&#8230;" oninput="filtrarCots()"/>
+            </div>
+            <button class="btn btn-acc" onclick="abrirNuevaCot()">&#9889; Nueva cotizaci&#243;n</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="tbl-cots"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+      </div>
+    </div>
+
+    <!-- NUEVA COTIZACION full page -->
+    <div class="sec" id="sec-nueva-cot">
+      <div class="nc-header">
+        <div>
+          <div class="nc-eyebrow">Crear cotizaci&#243;n</div>
+          <div class="nc-title"><span style="color:var(--acc)">&#128178;</span> NUEVA COTIZACI&#211;N</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="limpiarCot()">&#128465; Limpiar</button>
+          <button class="btn btn-ghost" onclick="irSubTab('vista-previa');generarVP()">&#128065; Vista Previa</button>
+          <button class="btn btn-acc" id="btn-guardar-top" onclick="guardarCot()">&#128190; Guardar</button>
+        </div>
+      </div>
+      <div class="cot-tabs">
+        <button class="cot-tab on" id="ctab-base-mat" onclick="irSubTab('base-mat')">&#128268; Base de Materiales</button>
+        <button class="cot-tab" id="ctab-cotizacion" onclick="irSubTab('cotizacion')">&#128203; Cotizaci&#243;n</button>
+        <button class="cot-tab" id="ctab-vista-previa" onclick="irSubTab('vista-previa');generarVP()">&#128065; Vista Previa &amp; PDF</button>
+      </div>
+
+      <!-- TAB 1 -->
+      <div id="ctab-content-base-mat">
+        <div class="nc-card">
+          <div class="nc-card-head">
+            <div class="nc-card-title">&#128268; Cat&#225;logo de Materiales</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <div class="search-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input class="inp-search" id="nc-bm" placeholder="cable 10, breaker, led 40w&#8230;" oninput="filtrarNcMats()" style="width:210px"/>
+              </div>
+              <select class="inp-search" id="nc-bm-cat" style="width:155px;padding-left:10px" onchange="filtrarNcMats()"><option value="">Todas las categor&#237;as</option></select>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="nc-tbl-mats"><div class="loading"><div class="spin"></div><p>Cargando cat&#225;logo&#8230;</p></div></div>
+        </div>
+      </div>
+
+      <!-- TAB 2 -->
+      <div id="ctab-content-cotizacion" style="display:none">
+        <div class="nc-layout">
+          <div>
+            <!-- Info cliente -->
+            <div class="nc-card">
+              <div class="nc-card-head"><div class="nc-card-title">&#128100; Informaci&#243;n del Cliente</div></div>
+              <div class="nc-card-body">
+                <div class="g5">
+                  <div class="fld"><label>N&#176; Cotizaci&#243;n</label><input id="nc-numero" readonly style="background:var(--s3);color:var(--acc);font-family:'DM Mono',monospace;font-size:12px;font-weight:700"/></div>
+                  <div class="fld"><label>Fecha</label><input type="date" id="nc-fecha"/></div>
+                  <div class="fld"><label>V&#225;lido (d&#237;as)</label><input type="number" id="nc-validez" value="30" min="1"/></div>
+                  <div class="fld"><label>Cliente</label><input id="nc-cliente" placeholder="Nombre o empresa"/></div>
+                  <div class="fld"><label>RUC / C&#233;dula</label><input id="nc-ruc" placeholder="0000000000001"/></div>
+                </div>
+                <div class="g3">
+                  <div class="fld"><label>Tel&#233;fono</label><input id="nc-telefono" placeholder="+593 99 000 0000"/></div>
+                  <div class="fld"><label>Email</label><input type="email" id="nc-email" placeholder="cliente@email.com"/></div>
+                  <div class="fld"><label>Direcci&#243;n</label><input id="nc-direccion" placeholder="Ciudad, sector, referencia"/></div>
+                </div>
+                <div class="fld"><label>Descripci&#243;n del Trabajo</label><textarea id="nc-descripcion" rows="3" placeholder="Descripci&#243;n detallada del trabajo a realizar&#8230;"></textarea></div>
+              </div>
+            </div>
+            <!-- Materiales de la cotizacion -->
+            <div class="nc-card">
+              <div class="nc-card-head">
+                <div class="nc-card-title">&#128722; Materiales en la Cotizaci&#243;n</div>
+                <button class="btn btn-ghost btn-sm" onclick="irSubTab('base-mat')">+ Agregar del cat&#225;logo</button>
+              </div>
+              <div class="nc-card-body">
+                <div class="icols">
+                  <div class="icol">Descripci&#243;n</div><div class="icol c">Cant.</div><div class="icol">Unidad</div>
+                  <div class="icol r">P. Unitario</div><div class="icol c">IVA</div><div class="icol r">Subtotal</div><div class="icol"></div>
+                </div>
+                <div id="nc-items-list"></div>
+                <div style="margin-top:10px;position:relative">
+                  <div class="search-wrap" style="width:100%">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input class="inp-search" id="nc-bi" style="width:100%;max-width:100%" placeholder="Buscar y agregar material r&#225;pido&#8230;" oninput="buscarNcItems()"/>
+                  </div>
+                  <div class="results-drop" id="nc-results-drop"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Adicionales -->
+            <div class="nc-card">
+              <div class="nc-card-head">
+                <div class="nc-card-title">&#10133; Materiales Adicionales</div>
+                <span style="font-size:11px;color:var(--t3)">Materiales o servicios que no est&#225;n en la base de datos</span>
+              </div>
+              <div class="nc-card-body">
+                <div id="nc-adic-list"></div>
+                <button class="btn btn-ok btn-sm" onclick="agregarAdicional()" style="width:100%;justify-content:center;border-style:dashed;margin-top:4px">&#10010; Agregar Material Adicional</button>
+              </div>
+            </div>
+            <!-- Pago y notas -->
+            <div class="nc-card">
+              <div class="nc-card-head"><div class="nc-card-title">&#9881; Opciones de Pago y Notas</div></div>
+              <div class="nc-card-body">
+                <div style="display:grid;grid-template-columns:1fr 130px;gap:12px;margin-bottom:12px">
+                  <div class="fld"><label>Forma de Pago</label>
+                    <select id="nc-forma-pago">
+                      <option>50% anticipo, 50% contra entrega</option>
+                      <option>100% al contado</option>
+                      <option>Cr&#233;dito 30 d&#237;as</option>
+                      <option>Cr&#233;dito 60 d&#237;as</option>
+                      <option>Transferencia bancaria</option>
+                    </select>
+                  </div>
+                  <div class="fld"><label>Descuento General (%)</label><input type="number" id="nc-descuento" value="0" min="0" max="100" step="0.5" oninput="calcTotals()"/></div>
+                </div>
+                <div class="fld"><label>Notas y Condiciones</label><textarea id="nc-notas" rows="3" placeholder="Garant&#237;as, condiciones, observaciones&#8230;"></textarea></div>
+              </div>
+            </div>
+          </div><!-- /col izq -->
+
+          <!-- Resumen -->
+          <div class="nc-right">
+            <div class="nc-card">
+              <div class="nc-card-head"><div class="nc-card-title">&#128202; Resumen</div></div>
+              <div class="nc-card-body">
+                <div class="res-row"><span>Subtotal sin IVA</span><span class="v" id="nc-t-sub">$0.00</span></div>
+                <div class="res-row"><span id="nc-t-desc-lbl">Descuento (0%)</span><span class="v" id="nc-t-desc" style="color:var(--ok)">-$0.00</span></div>
+                <div class="res-row"><span>IVA 15% aplicado</span><span class="v" id="nc-t-iva">$0.00</span></div>
+                <div class="res-total"><span>TOTAL</span><span class="v" id="nc-t-total">$0.00</span></div>
+                <div class="res-note">&#8505;&#65039; El IVA se controla por &#237;tem. Si el material ya incluye IVA, desmarca la casilla.</div>
+                <button class="btn-guardar" id="btn-guardar-cot" onclick="guardarCot()">&#128190; Guardar Cotizaci&#243;n</button>
+                <button class="btn btn-ghost" style="width:100%;margin-top:8px;justify-content:center" onclick="irSubTab('vista-previa');generarVP()">&#128065; Vista Previa &amp; PDF</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3 -->
+      <div id="ctab-content-vista-previa" style="display:none">
+        <div class="vp-toolbar">
+          <button class="btn btn-ghost" onclick="irSubTab('cotizacion')">&#8592; Volver a editar</button>
+          <button class="btn btn-info" onclick="exportarPDFNc()">&#8659; Exportar PDF</button>
+          <button class="btn btn-acc" onclick="guardarCot()">&#128190; Guardar Cotizaci&#243;n</button>
+        </div>
+        <div id="nc-preview-content"><div class="empty"><div class="empty-ico">&#128065;</div><p>Agrega materiales y datos del cliente para ver la vista previa</p></div></div>
+      </div>
+    </div><!-- /sec-nueva-cot -->
+
+    <!-- MATERIALES -->
+    <div class="sec" id="sec-materiales">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">&#128268; Cat&#225;logo de Materiales</div>
+          <div class="card-tools">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input class="inp-search" id="bm" placeholder="cable negro 10, breaker&#8230;" oninput="filtrarMats()"/>
+            </div>
+            <select class="inp-search" id="bm-cat" style="width:155px;padding-left:10px" onchange="filtrarMats()"><option value="">Todas las categor&#237;as</option></select>
+            <button class="btn btn-acc" onclick="abrirModalMat()">+ Material</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="tbl-mats"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="sec" id="sec-clientes">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">&#128101; Mis Clientes</div>
+          <div class="card-tools">
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input class="inp-search" id="bc" placeholder="nombre, empresa, RUC&#8230;" oninput="filtrarClis()"/>
             </div>
             <button class="btn btn-acc" onclick="abrirModalCli()">+ Cliente</button>
           </div>
         </div>
-        <div class="tbl-wrap" id="tbl-clis"><div class="loading"><div class="spin"></div><p>Cargando…</p></div></div>
+        <div class="tbl-wrap" id="tbl-clis"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div>
+</div>
 
-<!-- ════════════════════════════════════════════════
-  MODALES
-════════════════════════════════════════════════ -->
-
-<!-- Modal: Material -->
+<!-- MODALES -->
 <div class="modal-bg" id="m-mat">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="m-mat-title">Nuevo material</div>
-      <button class="modal-x" onclick="closeModal('m-mat')">✕</button>
-    </div>
+    <div class="modal-hd"><div class="modal-title" id="m-mat-title">Nuevo material</div><button class="modal-x" onclick="closeModal('m-mat')">&#10005;</button></div>
     <div class="modal-body">
       <input type="hidden" id="mat-id"/>
       <div id="mat-err" class="alert err"></div>
       <div class="fg">
-        <div class="fld"><label>Código *</label><input id="mat-codigo" placeholder="CAB-1X12"/></div>
-        <div class="fld"><label>Categoría</label><select id="mat-cat"><option value="">Sin categoría</option></select></div>
+        <div class="fld"><label>C&#243;digo *</label><input id="mat-codigo" placeholder="CAB-1X12"/></div>
+        <div class="fld"><label>Categor&#237;a</label><select id="mat-cat"><option value="">Sin categor&#237;a</option></select></div>
         <div class="fld span2"><label>Nombre *</label><input id="mat-nombre" placeholder="Cable THHN #12 AWG negro"/></div>
-        <div class="fld span2"><label>Descripción</label><input id="mat-desc" placeholder="Descripción opcional"/></div>
-        <div class="fld"><label>Unidad</label>
-          <select id="mat-unidad">
-            <option>metro</option><option>unidad</option><option>rollo</option>
-            <option>tramo 3m</option><option>caja</option><option>hora</option><option>kg</option>
-          </select>
-        </div>
+        <div class="fld span2"><label>Descripci&#243;n</label><input id="mat-desc" placeholder="Descripci&#243;n opcional"/></div>
+        <div class="fld"><label>Unidad</label><select id="mat-unidad"><option>metro</option><option>rollo</option><option>unidad</option><option>tramo 3m</option><option>caja</option><option>hora</option><option>kg</option></select></div>
         <div class="fld"><label>Stock</label><input type="number" id="mat-stock" placeholder="0" min="0"/></div>
         <div class="fld"><label>Precio costo ($)</label><input type="number" id="mat-costo" placeholder="0.00" step="0.01" min="0"/></div>
         <div class="fld"><label>Precio venta ($) *</label><input type="number" id="mat-venta" placeholder="0.00" step="0.01" min="0"/></div>
       </div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('m-mat')">Cancelar</button>
-      <button class="btn btn-acc" id="btn-save-mat" onclick="guardarMat()">Guardar</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('m-mat')">Cancelar</button><button class="btn btn-acc" id="btn-save-mat" onclick="guardarMat()">Guardar</button></div>
   </div>
 </div>
-
-<!-- Modal: Cliente -->
 <div class="modal-bg" id="m-cli">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="m-cli-title">Nuevo cliente</div>
-      <button class="modal-x" onclick="closeModal('m-cli')">✕</button>
-    </div>
+    <div class="modal-hd"><div class="modal-title" id="m-cli-title">Nuevo cliente</div><button class="modal-x" onclick="closeModal('m-cli')">&#10005;</button></div>
     <div class="modal-body">
       <input type="hidden" id="cli-id"/>
       <div id="cli-err" class="alert err"></div>
       <div class="fg">
-        <div class="fld"><label>Nombre *</label><input id="cli-nombre" placeholder="Juan Pérez"/></div>
+        <div class="fld"><label>Nombre *</label><input id="cli-nombre" placeholder="Juan P&#233;rez"/></div>
         <div class="fld"><label>Empresa</label><input id="cli-empresa" placeholder="Constructora XYZ"/></div>
-        <div class="fld"><label>RUC / Cédula</label><input id="cli-ruc" placeholder="0900000000"/></div>
-        <div class="fld"><label>Teléfono</label><input type="tel" id="cli-tel" placeholder="0999000000"/></div>
+        <div class="fld"><label>RUC / C&#233;dula</label><input id="cli-ruc" placeholder="0900000000"/></div>
+        <div class="fld"><label>Tel&#233;fono</label><input type="tel" id="cli-tel" placeholder="0999000000"/></div>
         <div class="fld"><label>Email</label><input type="email" id="cli-email" placeholder="cliente@email.com"/></div>
-        <div class="fld"><label>Dirección</label><input id="cli-dir" placeholder="Av. Principal 123"/></div>
-        <div class="fld span2"><label>Notas</label><textarea id="cli-notas" placeholder="Observaciones…"></textarea></div>
+        <div class="fld"><label>Direcci&#243;n</label><input id="cli-dir" placeholder="Av. Principal 123"/></div>
+        <div class="fld span2"><label>Notas</label><textarea id="cli-notas" placeholder="Observaciones&#8230;"></textarea></div>
       </div>
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('m-cli')">Cancelar</button>
-      <button class="btn btn-acc" id="btn-save-cli" onclick="guardarCli()">Guardar</button>
-    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('m-cli')">Cancelar</button><button class="btn btn-acc" id="btn-save-cli" onclick="guardarCli()">Guardar</button></div>
   </div>
 </div>
-
-<!-- Modal: Nueva Cotización -->
-<div class="modal-bg" id="m-cot">
-  <div class="modal modal-xl">
-    <div class="modal-hd">
-      <div class="modal-title">Nueva cotización</div>
-      <button class="modal-x" onclick="closeModal('m-cot')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="cot-err" class="alert err"></div>
-      <div class="fg">
-        <div class="fld"><label>Cliente</label><select id="cot-cli"><option value="">Sin cliente</option></select></div>
-        <div class="fld"><label>Título / Proyecto *</label><input id="cot-titulo" placeholder="Instalación eléctrica residencial"/></div>
-        <div class="fld"><label>Descuento (%)</label><input type="number" id="cot-desc" value="0" min="0" max="100" step="0.5" oninput="calcTotals()"/></div>
-        <div class="fld"><label>IVA (%)</label><input type="number" id="cot-iva" value="15" min="0" step="0.5" oninput="calcTotals()"/></div>
-        <div class="fld span2"><label>Notas / Condiciones</label><textarea id="cot-notas" placeholder="Validez 30 días. Precios no incluyen transporte…"></textarea></div>
-      </div>
-
-      <!-- Buscador de materiales -->
-      <div style="margin-top:18px">
-        <div class="search-wrap" style="width:100%">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="inp-search" id="bi" style="width:100%;max-width:100%"
-                 placeholder="Buscar material: cable negro 10, led 40w, breaker 2p…"
-                 oninput="buscarItems()"/>
-        </div>
-        <div class="search-hint">Escribe varias palabras para filtrar más rápido</div>
-        <div class="results-drop" id="results-drop"></div>
-      </div>
-
-      <!-- Items -->
-      <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px" id="items-list"></div>
-
-      <!-- Totales -->
-      <div class="totals">
-        <div class="trow"><span>Subtotal</span><span id="t-sub" style="font-family:'DM Mono',monospace">$0.00</span></div>
-        <div class="trow"><span id="t-desc-lbl">Descuento (0%)</span><span id="t-desc" style="font-family:'DM Mono',monospace">-$0.00</span></div>
-        <div class="trow"><span id="t-iva-lbl">IVA (15%)</span><span id="t-iva" style="font-family:'DM Mono',monospace">$0.00</span></div>
-        <div class="trow big"><span>TOTAL</span><span id="t-total">$0.00</span></div>
-      </div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('m-cot')">Cancelar</button>
-      <button class="btn btn-acc" id="btn-save-cot" onclick="guardarCot()">Crear cotización</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Ver Cotización (PDF-ready) -->
 <div class="modal-bg" id="m-ver">
   <div class="modal modal-xl">
-    <div class="modal-hd">
-      <div class="modal-title" id="ver-title">Cotización</div>
-      <button class="modal-x" onclick="closeModal('m-ver')">✕</button>
-    </div>
-    <div class="modal-body" id="ver-body">
-      <div class="loading"><div class="spin"></div><p>Cargando…</p></div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal('m-ver')">Cerrar</button>
-      <button class="btn btn-info" onclick="exportarPDF()">⬇ Exportar PDF</button>
-    </div>
+    <div class="modal-hd"><div class="modal-title" id="ver-title">Cotizaci&#243;n</div><button class="modal-x" onclick="closeModal('m-ver')">&#10005;</button></div>
+    <div class="modal-body" id="ver-body"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('m-ver')">Cerrar</button><button class="btn btn-info" onclick="exportarPDF()">&#8659; Exportar PDF</button></div>
   </div>
 </div>
-
-<!-- Template oculto para PDF -->
 <div id="pdf-template"></div>
-
-<!-- Toast -->
 <div id="toast"></div>
-
 <script>
-// ══════════════════════════════════════════════════════
-//  ESTADO GLOBAL
-// ══════════════════════════════════════════════════════
-const API = window.location.origin;
-let token    = localStorage.getItem('token');
-let usuario  = null;
-let isAdmin  = false;
+const API=window.location.origin;
+let token=localStorage.getItem('token'),usuario=null,isAdmin=false;
+let mats=[],cats=[],clis=[],cots=[];
+let cotItems=[],cotAdic=[],cotActual=null;
+const UNIDADES=['metro','rollo','unidad','tramo 3m','caja','hora','kg','ml','par','juego','gl'];
 
-// Datos en memoria
-let mats = [], cats = [], clis = [], cots = [];
-let cotItems = [];       // ítems del builder de cotización
-let preselMatId = null;  // ID de material pre-seleccionado desde catálogo
-let cotActual = null;    // cotización cargada en modal "ver"
-
-// ══ INIT ══════════════════════════════════════════════
-(function init() {
-  if (!token) { location.href = 'index.html'; return; }
-  try { usuario = JSON.parse(localStorage.getItem('usuario')); } catch {}
-  if (!usuario) { location.href = 'index.html'; return; }
-  isAdmin = usuario.rol === 'admin';
-  document.getElementById('user-nm').textContent  = usuario.nombre;
-  document.getElementById('user-av').textContent  = usuario.nombre[0].toUpperCase();
-  const rb = document.getElementById('role-badge');
-  rb.textContent = usuario.rol;
-  rb.className   = 'role-badge ' + (isAdmin ? 'r-admin' : 'r-vendedor');
+(function init(){
+  if(!token){location.href='index.html';return;}
+  try{usuario=JSON.parse(localStorage.getItem('usuario'));}catch{}
+  if(!usuario){location.href='index.html';return;}
+  isAdmin=usuario.rol==='admin';
+  document.getElementById('user-nm').textContent=usuario.nombre;
+  document.getElementById('user-av').textContent=usuario.nombre[0].toUpperCase();
+  const rb=document.getElementById('role-badge');rb.textContent=usuario.rol;rb.className='role-badge '+(isAdmin?'r-admin':'r-vendedor');
   cargarTodo();
 })();
 
-// ══ SIDEBAR RESPONSIVE ════════════════════════════════
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').style.display =
-    document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').style.display = 'none';
-}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none';}
 
-// ══ NAV ═══════════════════════════════════════════════
-function ir(sec) {
-  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+function ir(sec){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   document.getElementById('sec-'+sec).classList.add('on');
-  const map = {inicio:0,cotizaciones:1,materiales:2,clientes:3};
+  const map={inicio:0,cotizaciones:1,'nueva-cot':2,materiales:3,clientes:4};
   document.querySelectorAll('.nav-item')[map[sec]]?.classList.add('on');
-  const tit = {inicio:'Dashboard',cotizaciones:'Mis Cotizaciones',materiales:'Catálogo de Materiales',clientes:'Mis Clientes'};
-  document.getElementById('page-title').textContent = tit[sec] || sec;
+  const tit={inicio:'Dashboard',cotizaciones:'Mis Cotizaciones','nueva-cot':'Nueva Cotizaci\u00f3n',materiales:'Cat\u00e1logo de Materiales',clientes:'Mis Clientes'};
+  document.getElementById('page-title').textContent=tit[sec]||sec;
   closeSidebar();
-  if (sec==='materiales')   renderMats(mats);
-  if (sec==='clientes')     renderClis(clis);
-  if (sec==='cotizaciones') renderCots(cots);
+  if(sec==='materiales')renderMats(mats);
+  if(sec==='clientes')renderClis(clis);
+  if(sec==='cotizaciones')renderCots(cots);
+  if(sec==='nueva-cot')renderNcMats();
 }
 
-// ══ API ═══════════════════════════════════════════════
-async function api(ep, opts={}) {
-  try {
-    const r = await fetch(`${API}/api/${ep}`, {
-      ...opts,
-      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token, ...(opts.headers||{}) }
-    });
-    if (r.status===401) { logout(); return null; }
-    const d = await r.json();
-    if (!r.ok) return { _err: true, msg: d.error||'Error del servidor' };
+function irSubTab(tab){
+  ['base-mat','cotizacion','vista-previa'].forEach(t=>{
+    document.getElementById('ctab-content-'+t).style.display='none';
+    document.getElementById('ctab-'+t).classList.remove('on');
+  });
+  document.getElementById('ctab-content-'+tab).style.display='block';
+  document.getElementById('ctab-'+tab).classList.add('on');
+  if(tab==='base-mat')renderNcMats();
+}
+
+async function api(ep,opts={}){
+  try{
+    const r=await fetch(`${API}/api/${ep}`,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,...(opts.headers||{})}});
+    if(r.status===401){logout();return null;}
+    const d=await r.json();
+    if(!r.ok)return{_err:true,msg:d.error||'Error del servidor'};
     return d;
-  } catch(e) { return { _err:true, msg:'Sin conexión con el servidor' }; }
+  }catch(e){return{_err:true,msg:'Sin conexi\u00f3n con el servidor'};}
 }
-const isErr = d => !d || d._err===true;
+const isErr=d=>!d||d._err===true;
+function match(h,q){if(!q.trim())return true;const hl=h.toLowerCase();return q.trim().toLowerCase().split(/\s+/).every(t=>hl.includes(t));}
+function resaltar(text,q){let r=text;q.trim().toLowerCase().split(/\s+/).filter(Boolean).forEach(t=>{r=r.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');});return r;}
+function esc(s){return(s||'').replace(/"/g,'&quot;');}
+function sGet(id){const el=document.getElementById(id);return el?el.value:'';}
+function sSet(id,v){const el=document.getElementById(id);if(el)el.value=v;}
+function sTxt(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 
-// ══ BÚSQUEDA MULTIPALABRA ═════════════════════════════
-function match(haystack, query) {
-  if (!query.trim()) return true;
-  const h = haystack.toLowerCase();
-  return query.trim().toLowerCase().split(/\s+/).every(t => h.includes(t));
-}
-
-function resaltar(text, query) {
-  let r = text;
-  query.trim().toLowerCase().split(/\s+/).filter(Boolean).forEach(t => {
-    r = r.replace(new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
-      '<mark>$1</mark>');
-  });
-  return r;
-}
-
-// ══ CARGA INICIAL ════════════════════════════════════
-async function cargarTodo() {
-  const [dc, dm, dq] = await Promise.all([
-    api('clients/index'),
-    api('materials/index'),
-    api('quotes/index'),
-  ]);
-  if (!isErr(dc))  { clis = Array.isArray(dc) ? dc : [];             }
-  if (!isErr(dm))  { mats = dm.materiales||[]; cats = dm.categorias||[]; poblarCats(); }
-  if (!isErr(dq))  { cots = Array.isArray(dq) ? dq : [];             }
-  document.getElementById('s-cots').textContent = cots.length;
-  document.getElementById('s-clis').textContent = clis.length;
-  document.getElementById('s-mats').textContent = mats.length;
-  document.getElementById('s-apro').textContent = cots.filter(c=>c.estado==='aprobada').length;
+async function cargarTodo(){
+  const[dc,dm,dq]=await Promise.all([api('clients/index'),api('materials/index'),api('quotes/index')]);
+  if(!isErr(dc))clis=Array.isArray(dc)?dc:[];
+  if(!isErr(dm)){mats=dm.materiales||[];cats=dm.categorias||[];poblarCats();}
+  if(!isErr(dq))cots=Array.isArray(dq)?dq:[];
+  sTxt('s-cots',cots.length);sTxt('s-clis',clis.length);sTxt('s-mats',mats.length);
+  sTxt('s-apro',cots.filter(c=>c.estado==='aprobada').length);
   renderRecientes();
-  if (isErr(dc)) toast(dc?.msg||'Error cargando clientes','err');
-  if (isErr(dm)) toast(dm?.msg||'Error cargando materiales','err');
-  if (isErr(dq)) toast(dq?.msg||'Error cargando cotizaciones','err');
 }
-
-function poblarCats() {
-  ['bm-cat','mat-cat'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const v = sel.value;
-    sel.innerHTML = (id==='bm-cat'?'<option value="">Todas las categorías</option>':'<option value="">Sin categoría</option>')
-      + cats.map(c=>`<option value="${c.id}"${c.id==v?' selected':''}>${c.nombre}</option>`).join('');
+function poblarCats(){
+  ['bm-cat','mat-cat','nc-bm-cat'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const v=sel.value;
+    const def=(id==='bm-cat'||id==='nc-bm-cat')?'<option value="">Todas las categor\u00edas</option>':'<option value="">Sin categor\u00eda</option>';
+    sel.innerHTML=def+cats.map(c=>`<option value="${c.id}"${c.id==v?' selected':''}>${c.nombre}</option>`).join('');
   });
 }
 
-// ══ RENDER RECIENTES ═════════════════════════════════
-function renderRecientes() {
-  const el  = document.getElementById('tbl-recientes');
-  const top = cots.slice(0,8);
-  if (!top.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">📋</div><p>Sin cotizaciones aún — crea la primera desde el menú</p></div>';
-    return;
-  }
-  el.innerHTML = tablaCotsHTML(top, false);
+function renderRecientes(){
+  const el=document.getElementById('tbl-recientes'),top=cots.slice(0,8);
+  if(!top.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128203;</div><p>Sin cotizaciones a\u00fan</p></div>';return;}
+  el.innerHTML=tablaCotsHTML(top,false);
 }
-
-// ══ COTIZACIONES ════════════════════════════════════
-function filtrarCots() {
-  const q = document.getElementById('bq').value;
-  renderCots(q ? cots.filter(c => match(`${c.numero} ${c.titulo||''} ${c.cliente_nombre||''} ${c.cliente_empresa||''} ${c.estado}`, q)) : cots);
+function filtrarCots(){const q=sGet('bq');renderCots(q?cots.filter(c=>match(`${c.numero} ${c.titulo||''} ${c.cliente_nombre||''} ${c.estado}`,q)):cots);}
+function renderCots(lista){
+  const el=document.getElementById('tbl-cots');
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128203;</div><p>Sin cotizaciones</p></div>';return;}
+  el.innerHTML=tablaCotsHTML(lista,true);
 }
-
-function renderCots(lista) {
-  const el = document.getElementById('tbl-cots');
-  if (!lista.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">📋</div><p>Sin cotizaciones. Haz clic en "+ Nueva cotización"</p></div>';
-    return;
-  }
-  el.innerHTML = tablaCotsHTML(lista, true);
+function tablaCotsHTML(lista,acc){
+  return`<table><thead><tr><th>N\u00famero</th><th>Cliente</th><th>T\u00edtulo</th><th>Estado</th><th>Total</th><th>Fecha</th>${acc?'<th></th>':''}</tr></thead><tbody>${lista.map(c=>`
+  <tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${c.numero}</span></td>
+    <td><div style="font-weight:500">${c.cliente_nombre||'\u2014'}</div>${c.cliente_empresa?`<div style="font-size:11px;color:var(--t3)">${c.cliente_empresa}</div>`:''}</td>
+    <td>${c.titulo||'\u2014'}</td>
+    <td><select style="background:transparent;border:none;cursor:pointer;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--t2)" onchange="cambiarEstado(${c.id},this.value)">
+      ${['borrador','enviada','aprobada','rechazada','facturada'].map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}
+    </select></td>
+    <td style="font-family:'DM Mono',monospace;font-weight:700">$${parseFloat(c.total||0).toFixed(2)}</td>
+    <td style="font-size:12px;color:var(--t3)">${new Date(c.creado_en).toLocaleDateString('es-EC')}</td>
+    ${acc?`<td><button class="btn btn-ghost btn-sm" onclick="verCot(${c.id})">Ver / PDF</button></td>`:''}
+  </tr>`).join('')}</tbody></table>`;
 }
-
-function tablaCotsHTML(lista, acciones) {
-  return `<table>
-    <thead><tr>
-      <th>Número</th><th>Cliente</th><th>Título</th><th>Estado</th>
-      <th>Total</th><th>Fecha</th>${acciones?'<th></th>':''}
-    </tr></thead>
-    <tbody>${lista.map(c=>`
-      <tr>
-        <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${c.numero}</span></td>
-        <td>
-          <div style="font-weight:500">${c.cliente_nombre||'—'}</div>
-          ${c.cliente_empresa?`<div style="font-size:11px;color:var(--t3)">${c.cliente_empresa}</div>`:''}
-        </td>
-        <td>${c.titulo||'—'}</td>
-        <td>
-          <select style="background:transparent;border:none;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--t2)"
-            onchange="cambiarEstado(${c.id},this.value)">
-            ${['borrador','enviada','aprobada','rechazada','facturada'].map(e=>`<option value="${e}"${e===c.estado?' selected':''}>${e}</option>`).join('')}
-          </select>
-        </td>
-        <td style="font-family:'DM Mono',monospace;font-weight:700">$${parseFloat(c.total||0).toFixed(2)}</td>
-        <td style="font-size:12px;color:var(--t3)">${new Date(c.creado_en).toLocaleDateString('es-EC')}</td>
-        ${acciones?`<td><button class="btn btn-ghost btn-sm" onclick="verCot(${c.id})">Ver / PDF</button></td>`:''}
-      </tr>`).join('')}
-    </tbody></table>`;
+async function cambiarEstado(id,estado){
+  const r=await api(`quotes/index?id=${id}`,{method:'PUT',body:JSON.stringify({estado})});
+  if(!isErr(r)){const i=cots.findIndex(c=>c.id===id);if(i>=0)cots[i].estado=estado;sTxt('s-apro',cots.filter(c=>c.estado==='aprobada').length);toast('Estado actualizado','ok');}else toast(r.msg,'err');
 }
-
-async function cambiarEstado(id, estado) {
-  const r = await api(`quotes/index?id=${id}`,{method:'PUT',body:JSON.stringify({estado})});
-  if (!isErr(r)) {
-    const idx = cots.findIndex(c=>c.id===id);
-    if (idx>=0) cots[idx].estado = estado;
-    document.getElementById('s-apro').textContent = cots.filter(c=>c.estado==='aprobada').length;
-    toast('Estado actualizado','ok');
-  } else toast(r.msg,'err');
+async function verCot(id){
+  openModal('m-ver');document.getElementById('ver-body').innerHTML='<div class="loading"><div class="spin"></div><p>Cargando\u2026</p></div>';
+  const r=await api(`quotes/index?id=${id}`);
+  if(isErr(r)){document.getElementById('ver-body').innerHTML=`<div class="empty"><p>${r.msg}</p></div>`;return;}
+  cotActual=r;document.getElementById('ver-title').textContent=r.numero;
+  document.getElementById('ver-body').innerHTML=cotDetailHTML(r);
 }
-
-// ══ VER COTIZACIÓN + PDF ════════════════════════════
-async function verCot(id) {
-  openModal('m-ver');
-  document.getElementById('ver-body').innerHTML = '<div class="loading"><div class="spin"></div><p>Cargando…</p></div>';
-  const r = await api(`quotes/index?id=${id}`);
-  if (isErr(r)) { document.getElementById('ver-body').innerHTML = `<div class="empty"><p>${r.msg}</p></div>`; return; }
-  cotActual = r;
-  document.getElementById('ver-title').textContent = r.numero;
-  document.getElementById('ver-body').innerHTML = cotDetailHTML(r);
-}
-
-function cotDetailHTML(c) {
-  const items = c.items||[];
-  const fecha = new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
-  return `
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-    <div>
-      <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">DATOS DEL CLIENTE</div>
+function cotDetailHTML(c){
+  const items=c.items||[],fecha=new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
+  return`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div><div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">DATOS DEL CLIENTE</div>
       <div style="font-size:14px;font-weight:600;margin-bottom:4px">${c.cliente_nombre||'Sin cliente'}</div>
-      ${c.cliente_empresa?`<div style="color:var(--t2);font-size:13px">${c.cliente_empresa}</div>`:''}
       ${c.cliente_ruc?`<div style="color:var(--t3);font-size:12px">RUC/C.I.: ${c.cliente_ruc}</div>`:''}
       ${c.cliente_telefono?`<div style="color:var(--t3);font-size:12px">Tel: ${c.cliente_telefono}</div>`:''}
       ${c.cliente_email?`<div style="color:var(--t3);font-size:12px">${c.cliente_email}</div>`:''}
-      ${c.cliente_direccion?`<div style="color:var(--t3);font-size:12px">${c.cliente_direccion}</div>`:''}
     </div>
-    <div>
-      <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">DATOS DE COTIZACIÓN</div>
+    <div><div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">COTIZACI\u00d3N</div>
       <div style="font-size:14px;font-weight:600;font-family:'DM Mono',monospace;color:var(--acc)">${c.numero}</div>
       <div style="color:var(--t2);font-size:13px;margin-top:4px">${c.titulo}</div>
       <div style="color:var(--t3);font-size:12px;margin-top:4px">Fecha: ${fecha}</div>
-      <div style="color:var(--t3);font-size:12px">Elaborado por: ${c.usuario_nombre}</div>
       <div style="margin-top:8px"><span class="badge b-${c.estado}">${c.estado}</span></div>
     </div>
   </div>
-  <div style="overflow-x:auto;margin-bottom:16px">
-    <table>
-      <thead><tr>
-        <th>#</th><th>Descripción</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th>Subtotal</th>
-      </tr></thead>
-      <tbody>
-        ${items.map((it,i)=>`
-          <tr>
-            <td style="color:var(--t3);font-size:12px">${i+1}</td>
-            <td>${it.descripcion||it.material_nombre||'—'}</td>
-            <td style="text-align:center;font-family:'DM Mono',monospace">${parseFloat(it.cantidad).toFixed(2)}</td>
-            <td style="color:var(--t3)">${it.unidad||it.material_unidad||'—'}</td>
-            <td style="font-family:'DM Mono',monospace">$${parseFloat(it.precio_unitario).toFixed(2)}</td>
-            <td style="font-family:'DM Mono',monospace;font-weight:700">$${parseFloat(it.subtotal).toFixed(2)}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-  </div>
-  <div style="display:flex;justify-content:flex-end">
-    <div style="min-width:240px">
-      <div class="trow"><span>Subtotal</span><span style="font-family:'DM Mono',monospace">$${parseFloat(c.subtotal||0).toFixed(2)}</span></div>
-      ${parseFloat(c.descuento_valor||0)>0?`<div class="trow"><span>Descuento (${c.descuento_pct}%)</span><span style="font-family:'DM Mono',monospace;color:var(--ok)">-$${parseFloat(c.descuento_valor).toFixed(2)}</span></div>`:''}
-      <div class="trow"><span>IVA (${c.iva_pct}%)</span><span style="font-family:'DM Mono',monospace">$${parseFloat(c.iva_valor||0).toFixed(2)}</span></div>
-      <div class="trow big"><span>TOTAL</span><span>$${parseFloat(c.total||0).toFixed(2)}</span></div>
-    </div>
-  </div>
-  ${c.notas?`<div style="margin-top:16px;padding:12px;background:var(--s2);border-radius:8px;font-size:12px;color:var(--t2)"><strong>Notas:</strong> ${c.notas}</div>`:''}`;
+  <div style="overflow-x:auto;margin-bottom:16px"><table><thead><tr><th>#</th><th>Descripci\u00f3n</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th>Subtotal</th></tr></thead>
+  <tbody>${items.map((it,i)=>`<tr><td style="color:var(--t3);font-size:12px">${i+1}</td><td>${it.descripcion||it.material_nombre||'\u2014'}</td>
+    <td style="text-align:center;font-family:'DM Mono',monospace">${parseFloat(it.cantidad).toFixed(2)}</td>
+    <td style="color:var(--t3)">${it.unidad||it.material_unidad||'\u2014'}</td>
+    <td style="font-family:'DM Mono',monospace">$${parseFloat(it.precio_unitario).toFixed(2)}</td>
+    <td style="font-family:'DM Mono',monospace;font-weight:700">$${parseFloat(it.subtotal).toFixed(2)}</td></tr>`).join('')}</tbody></table></div>
+  <div style="display:flex;justify-content:flex-end"><div style="min-width:240px">
+    <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2)"><span>Subtotal</span><span style="font-family:'DM Mono',monospace">$${parseFloat(c.subtotal||0).toFixed(2)}</span></div>
+    ${parseFloat(c.descuento_valor||0)>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--ok)"><span>Descuento (${c.descuento_pct}%)</span><span>-$${parseFloat(c.descuento_valor).toFixed(2)}</span></div>`:''}
+    <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2)"><span>IVA (${c.iva_pct}%)</span><span style="font-family:'DM Mono',monospace">$${parseFloat(c.iva_valor||0).toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:1px solid var(--bd);margin-top:6px;font-size:17px;font-weight:700;color:var(--acc)"><span>TOTAL</span><span style="font-family:'DM Mono',monospace">$${parseFloat(c.total||0).toFixed(2)}</span></div>
+  </div></div>
+  ${c.notas?`<div style="margin-top:14px;padding:12px;background:var(--s2);border-radius:8px;font-size:12px;color:var(--t2)"><strong>Notas:</strong> ${c.notas}</div>`:''}`;
 }
 
-function exportarPDF() {
-  if (!cotActual) return;
-  const c = cotActual;
-  const items = c.items||[];
-  const fecha = new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
-  const tpl = document.getElementById('pdf-template');
-  tpl.innerHTML = `
+/* MATERIALES GESTIÓN */
+function filtrarMats(){const q=sGet('bm'),cat=sGet('bm-cat');let l=mats;if(cat)l=l.filter(m=>String(m.categoria_id)===cat);if(q)l=l.filter(m=>match(`${m.nombre} ${m.codigo} ${m.categoria_nombre||''}`,q));renderMats(l);}
+function renderMats(lista){
+  const el=document.getElementById('tbl-mats');
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128268;</div><p>Sin materiales que coincidan</p></div>';return;}
+  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th><th></th></tr></thead>
+  <tbody>${lista.map(m=>`<tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${m.codigo}</span></td>
+    <td style="font-weight:500">${m.nombre}</td>
+    <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'\u2014'}</span></td>
+    <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn btn-ok btn-sm" onclick="addItem(${m.id});ir('nueva-cot');irSubTab('cotizacion');toast('Agregado \u2713','ok')">+ Cot.</button>
+      <button class="btn btn-ghost btn-sm" onclick="editarMat(${m.id})">&#9999;</button>
+      ${isAdmin?`<button class="btn btn-danger btn-sm" onclick="eliminarMat(${m.id})">&#128465;</button>`:''}
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function abrirModalMat(mat=null){
+  poblarCats();sSet('mat-id',mat?.id||'');sSet('mat-codigo',mat?.codigo||'');sSet('mat-nombre',mat?.nombre||'');
+  sSet('mat-desc',mat?.descripcion||'');sSet('mat-stock',mat?.stock||0);sSet('mat-costo',mat?.precio_costo||'');sSet('mat-venta',mat?.precio_venta||'');
+  document.getElementById('mat-err').className='alert err';
+  document.getElementById('m-mat-title').textContent=mat?'Editar material':'Nuevo material';
+  if(mat?.categoria_id)sSet('mat-cat',mat.categoria_id);if(mat?.unidad)sSet('mat-unidad',mat.unidad);
+  openModal('m-mat');
+}
+function editarMat(id){const m=mats.find(x=>x.id===id);if(m)abrirModalMat(m);}
+async function guardarMat(){
+  const id=sGet('mat-id');
+  const body={codigo:sGet('mat-codigo').trim(),nombre:sGet('mat-nombre').trim(),descripcion:sGet('mat-desc').trim(),categoria_id:sGet('mat-cat')||null,unidad:sGet('mat-unidad'),precio_costo:parseFloat(sGet('mat-costo'))||0,precio_venta:parseFloat(sGet('mat-venta'))||0,stock:parseInt(sGet('mat-stock'))||0};
+  const errEl=document.getElementById('mat-err');
+  if(!body.codigo||!body.nombre||!body.precio_venta){errEl.textContent='C\u00f3digo, nombre y precio de venta son requeridos';errEl.classList.add('show');return;}
+  errEl.classList.remove('show');setBL('btn-save-mat',true);
+  const r=await api(id?`materials/index?id=${id}`:'materials/index',{method:id?'PUT':'POST',body:JSON.stringify(body)});
+  setBL('btn-save-mat',false,'Guardar');
+  if(isErr(r)){errEl.textContent=r.msg;errEl.classList.add('show');return;}
+  if(id){const i=mats.findIndex(m=>m.id===parseInt(id));if(i>=0)mats[i]={...mats[i],...r,categoria_nombre:cats.find(c=>c.id==r.categoria_id)?.nombre};}
+  else mats.push({...r,categoria_nombre:cats.find(c=>c.id==r.categoria_id)?.nombre});
+  sTxt('s-mats',mats.length);closeModal('m-mat');filtrarMats();toast(id?'Material actualizado \u2713':'Material creado \u2713','ok');
+}
+async function eliminarMat(id){
+  if(!isAdmin){toast('Solo administradores pueden eliminar','err');return;}
+  if(!confirm('\u00bfEliminar este material?'))return;
+  const r=await api(`materials/index?id=${id}`,{method:'DELETE'});
+  if(isErr(r)){toast(r.msg,'err');return;}
+  mats=mats.filter(m=>m.id!==id);sTxt('s-mats',mats.length);filtrarMats();toast('Material eliminado','ok');
+}
+
+/* CLIENTES */
+function filtrarClis(){const q=sGet('bc');renderClis(q?clis.filter(c=>match(`${c.nombre} ${c.empresa||''} ${c.ruc_cedula||''} ${c.email||''}`,q)):clis);}
+function renderClis(lista){
+  const el=document.getElementById('tbl-clis');
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128101;</div><p>Sin clientes</p></div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Nombre</th><th>Empresa</th><th>RUC/C\u00e9dula</th><th>Tel\u00e9fono</th><th>Email</th><th></th></tr></thead>
+  <tbody>${lista.map(c=>`<tr>
+    <td style="font-weight:500">${c.nombre}</td><td style="color:var(--t2)">${c.empresa||'\u2014'}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t3)">${c.ruc_cedula||'\u2014'}</td>
+    <td style="color:var(--t3);font-size:13px">${c.telefono||'\u2014'}</td>
+    <td style="color:var(--t3);font-size:13px">${c.email||'\u2014'}</td>
+    <td><div style="display:flex;gap:5px"><button class="btn btn-ghost btn-sm" onclick="editarCli(${c.id})">&#9999;</button><button class="btn btn-danger btn-sm" onclick="eliminarCli(${c.id})">&#128465;</button></div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function abrirModalCli(cli=null){
+  sSet('cli-id',cli?.id||'');sSet('cli-nombre',cli?.nombre||'');sSet('cli-empresa',cli?.empresa||'');
+  sSet('cli-ruc',cli?.ruc_cedula||'');sSet('cli-tel',cli?.telefono||'');sSet('cli-email',cli?.email||'');
+  sSet('cli-dir',cli?.direccion||'');sSet('cli-notas',cli?.notas||'');
+  document.getElementById('cli-err').className='alert err';
+  document.getElementById('m-cli-title').textContent=cli?'Editar cliente':'Nuevo cliente';
+  openModal('m-cli');
+}
+function editarCli(id){const c=clis.find(x=>x.id===id);if(c)abrirModalCli(c);}
+async function guardarCli(){
+  const id=sGet('cli-id');
+  const body={nombre:sGet('cli-nombre').trim(),empresa:sGet('cli-empresa').trim(),ruc_cedula:sGet('cli-ruc').trim(),telefono:sGet('cli-tel').trim(),email:sGet('cli-email').trim(),direccion:sGet('cli-dir').trim(),notas:sGet('cli-notas').trim()};
+  const errEl=document.getElementById('cli-err');
+  if(!body.nombre){errEl.textContent='El nombre es requerido';errEl.classList.add('show');return;}
+  errEl.classList.remove('show');setBL('btn-save-cli',true);
+  const r=await api(id?`clients/index?id=${id}`:'clients/index',{method:id?'PUT':'POST',body:JSON.stringify(body)});
+  setBL('btn-save-cli',false,'Guardar');
+  if(isErr(r)){errEl.textContent=r.msg;errEl.classList.add('show');return;}
+  if(id){const i=clis.findIndex(c=>c.id===parseInt(id));if(i>=0)clis[i]=r;}else clis.push(r);
+  sTxt('s-clis',clis.length);closeModal('m-cli');filtrarClis();toast(id?'Cliente actualizado \u2713':'Cliente creado \u2713','ok');
+}
+async function eliminarCli(id){
+  if(!confirm('\u00bfEliminar este cliente?'))return;
+  const r=await api(`clients/index?id=${id}`,{method:'DELETE'});
+  if(isErr(r)){toast(r.msg,'err');return;}
+  clis=clis.filter(c=>c.id!==id);sTxt('s-clis',clis.length);filtrarClis();toast('Cliente eliminado','ok');
+}
+
+/* ═══════════ COTIZACION BUILDER ═══════════ */
+function genNum(){const d=new Date();return`SEST-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${Math.floor(Math.random()*9000)+1000}`;}
+
+function abrirNuevaCot(matId=null){
+  ir('nueva-cot');irSubTab('base-mat');
+  if(cotItems.length===0&&cotAdic.length===0)limpiarCot();
+  if(matId){addItem(matId);irSubTab('cotizacion');}
+}
+
+function limpiarCot(){
+  cotItems=[];cotAdic=[];
+  sSet('nc-numero',genNum());sSet('nc-fecha',new Date().toISOString().split('T')[0]);
+  sSet('nc-validez','30');sSet('nc-cliente','');sSet('nc-ruc','');sSet('nc-telefono','');
+  sSet('nc-email','');sSet('nc-direccion','');sSet('nc-descripcion','');
+  sSet('nc-descuento','0');sSet('nc-notas','');sSet('nc-bi','');
+  const d=document.getElementById('nc-results-drop');if(d)d.style.display='none';
+  renderItems();renderAdic();calcTotals();
+}
+
+/* Base de materiales */
+function filtrarNcMats(){
+  const q=sGet('nc-bm'),cat=sGet('nc-bm-cat');
+  let l=mats;if(cat)l=l.filter(m=>String(m.categoria_id)===cat);if(q)l=l.filter(m=>match(`${m.nombre} ${m.codigo} ${m.categoria_nombre||''}`,q));
+  renderNcMats(l);
+}
+function renderNcMats(lista){
+  if(!lista){filtrarNcMats();return;}
+  const el=document.getElementById('nc-tbl-mats');if(!el)return;
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="empty-ico">&#128268;</div><p>Sin resultados</p></div>';return;}
+  const q=sGet('nc-bm');
+  el.innerHTML=`<table><thead><tr><th>C\u00f3digo</th><th>Nombre</th><th>Categor\u00eda</th><th>Unidad</th><th>P. Venta</th><th></th></tr></thead>
+  <tbody>${lista.map(m=>`<tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${m.codigo}</span></td>
+    <td style="font-weight:500">${q?resaltar(m.nombre,q):m.nombre}</td>
+    <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'\u2014'}</span></td>
+    <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
+    <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--acc)">$${parseFloat(m.precio_venta).toFixed(2)}</td>
+    <td><button class="btn btn-ok btn-sm" onclick="addItem(${m.id});irSubTab('cotizacion');toast('Agregado \u2713','ok')">+ Agregar</button></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+/* Items del catálogo */
+function addItem(matId){
+  const mat=mats.find(m=>m.id===matId);if(!mat)return;
+  const ex=cotItems.find(i=>i.material_id===mat.id);
+  if(ex){ex.cantidad+=1;renderItems();calcTotals();return;}
+  cotItems.push({material_id:mat.id,descripcion:mat.nombre,cantidad:1,unidad:mat.unidad||'unidad',precio_unitario:parseFloat(mat.precio_venta),tiene_iva:true});
+  renderItems();calcTotals();
+}
+function renderItems(){
+  const cont=document.getElementById('nc-items-list');if(!cont)return;
+  if(!cotItems.length){
+    cont.innerHTML=`<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;background:var(--s2);border-radius:8px;border:1px dashed var(--bd2)">
+      <div style="font-size:22px;margin-bottom:6px">&#128722;</div>
+      Sin materiales \u2014 ve a <strong style="color:var(--acc);cursor:pointer" onclick="irSubTab('base-mat')">Base de Materiales</strong> y presiona <strong>+ Agregar</strong>
+    </div>`;return;
+  }
+  cont.innerHTML=cotItems.map((it,i)=>`
+    <div class="item-row">
+      <input class="item-inp" value="${esc(it.descripcion)}" placeholder="Descripci\u00f3n" onchange="cotItems[${i}].descripcion=this.value"/>
+      <input class="item-inp" type="number" value="${it.cantidad}" min="0.01" step="0.01" style="text-align:center"
+        onchange="cotItems[${i}].cantidad=parseFloat(this.value)||1;renderItems();calcTotals()"/>
+      <select class="item-inp" onchange="cotItems[${i}].unidad=this.value">
+        ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
+      </select>
+      <input class="item-inp" type="number" value="${it.precio_unitario}" min="0" step="0.01" style="text-align:right"
+        onchange="cotItems[${i}].precio_unitario=parseFloat(this.value)||0;renderItems();calcTotals()"/>
+      <label class="iva-wrap">
+        <input type="checkbox" ${it.tiene_iva?'checked':''} onchange="cotItems[${i}].tiene_iva=this.checked;calcTotals()"/>
+        <span>IVA</span>
+      </label>
+      <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
+      <button class="del-item" onclick="cotItems.splice(${i},1);renderItems();calcTotals()">&#10005;</button>
+    </div>`).join('');
+}
+
+/* Items adicionales */
+function agregarAdicional(){
+  cotAdic.push({descripcion:'',cantidad:1,unidad:'unidad',precio_unitario:0,tiene_iva:true});
+  renderAdic();calcTotals();
+}
+function renderAdic(){
+  const cont=document.getElementById('nc-adic-list');if(!cont)return;
+  cont.innerHTML=cotAdic.map((it,i)=>`
+    <div class="adic-row">
+      <input class="item-inp" value="${esc(it.descripcion)}" placeholder="Material o servicio adicional" onchange="cotAdic[${i}].descripcion=this.value"/>
+      <input class="item-inp" type="number" value="${it.cantidad}" min="0.01" step="0.01" style="text-align:center"
+        onchange="cotAdic[${i}].cantidad=parseFloat(this.value)||1;renderAdic();calcTotals()"/>
+      <select class="item-inp" onchange="cotAdic[${i}].unidad=this.value">
+        ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
+      </select>
+      <input class="item-inp" type="number" value="${it.precio_unitario}" min="0" step="0.01" style="text-align:right" placeholder="0.00"
+        onchange="cotAdic[${i}].precio_unitario=parseFloat(this.value)||0;renderAdic();calcTotals()"/>
+      <label class="iva-wrap">
+        <input type="checkbox" ${it.tiene_iva?'checked':''} onchange="cotAdic[${i}].tiene_iva=this.checked;calcTotals()"/>
+        <span>IVA</span>
+      </label>
+      <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
+      <button class="del-item" onclick="cotAdic.splice(${i},1);renderAdic();calcTotals()">&#10005;</button>
+    </div>`).join('');
+}
+
+/* Buscador rápido dentro del tab cotización */
+let biT;
+function buscarNcItems(){
+  clearTimeout(biT);
+  const q=sGet('nc-bi'),drop=document.getElementById('nc-results-drop');
+  if(!q){drop.style.display='none';return;}
+  biT=setTimeout(()=>{
+    const res=mats.filter(m=>match(`${m.nombre} ${m.codigo} ${m.categoria_nombre||''}`,q)).slice(0,10);
+    if(!res.length){drop.innerHTML=`<div style="padding:12px 14px;color:var(--t3);font-size:13px">Sin resultados para "${q}"</div>`;drop.style.display='block';return;}
+    drop.innerHTML=res.map(m=>`<div class="ri" onclick="addItem(${m.id});sSet('nc-bi','');document.getElementById('nc-results-drop').style.display='none';toast('Agregado \u2713','ok')">
+      <div><div class="ri-name">${resaltar(m.nombre,q)}</div><div class="ri-meta">${m.codigo} \u00b7 ${m.unidad} \u00b7 ${m.categoria_nombre||'Sin cat.'}</div></div>
+      <div class="ri-price">$${parseFloat(m.precio_venta).toFixed(2)}</div>
+    </div>`).join('');
+    drop.style.display='block';
+  },120);
+}
+
+/* Totales */
+function calcTotals(){
+  const desc=parseFloat(sGet('nc-descuento'))||0;
+  const todos=[...cotItems,...cotAdic];
+  const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
+  const dv=sub*(desc/100);
+  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
+  const ivaVal=(ivaBase-ivaBase*(desc/100))*0.15;
+  const total=sub-dv+ivaVal;
+  sTxt('nc-t-sub',`$${sub.toFixed(2)}`);sTxt('nc-t-desc',`-$${dv.toFixed(2)}`);
+  sTxt('nc-t-iva',`$${ivaVal.toFixed(2)}`);sTxt('nc-t-total',`$${total.toFixed(2)}`);
+  const dl=document.getElementById('nc-t-desc-lbl');if(dl)dl.textContent=`Descuento (${desc}%)`;
+}
+
+/* Vista previa */
+function generarVP(){
+  const cont=document.getElementById('nc-preview-content');if(!cont)return;
+  const todos=[...cotItems,...cotAdic];
+  if(!todos.length){cont.innerHTML='<div class="empty"><div class="empty-ico">&#128065;</div><p>Agrega materiales para ver la vista previa</p></div>';return;}
+  const num=sGet('nc-numero')||genNum();
+  const fecha=sGet('nc-fecha')||new Date().toISOString().split('T')[0];
+  const validez=sGet('nc-validez')||'30';
+  const cliente=sGet('nc-cliente')||'Sin cliente';
+  const ruc=sGet('nc-ruc'),tel=sGet('nc-telefono'),eml=sGet('nc-email'),dir=sGet('nc-direccion');
+  const desc_txt=sGet('nc-descripcion');
+  const descPct=parseFloat(sGet('nc-descuento'))||0;
+  const notas=sGet('nc-notas'),forma=sGet('nc-forma-pago');
+  const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
+  const dv=sub*(descPct/100);
+  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
+  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
+  const total=sub-dv+ivaVal;
+  const fechaFmt=new Date(fecha+'T00:00:00').toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
+  cont.innerHTML=`
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:14px">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="logo.jpg" alt="SEST" style="width:60px;height:60px;border-radius:10px;object-fit:cover;box-shadow:var(--acc-g)"/>
+          <div>
+            <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:2px">Servicios El\u00e9ctricos y Seguridad Tapia</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${usuario?.nombre||''}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;color:var(--t1)">COTIZACI\u00d3N</div>
+          <div style="font-family:'DM Mono',monospace;color:var(--acc);font-size:14px;font-weight:700">${num}</div>
+          <div style="color:var(--t3);font-size:12px;margin-top:3px">${fechaFmt} &middot; V\u00e1lida ${validez} d\u00edas</div>
+        </div>
+      </div>
+      <div style="border-top:2px solid var(--acc);margin-bottom:18px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px">
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">ELABORADO POR</div>
+          <div style="font-weight:600;font-size:14px">SEST</div>
+          <div style="color:var(--t2);font-size:12.5px">Servicios El\u00e9ctricos y Seguridad Tapia</div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">CLIENTE</div>
+          <div style="font-weight:600;font-size:14px">${cliente}</div>
+          ${ruc?`<div style="color:var(--t2);font-size:12px">RUC/C.I.: ${ruc}</div>`:''}
+          ${tel?`<div style="color:var(--t2);font-size:12px">Tel: ${tel}</div>`:''}
+          ${eml?`<div style="color:var(--t2);font-size:12px">${eml}</div>`:''}
+          ${dir?`<div style="color:var(--t2);font-size:12px">${dir}</div>`:''}
+        </div>
+      </div>
+      ${desc_txt?`<div style="margin-bottom:16px;padding:10px 14px;background:var(--s2);border-radius:8px;border-left:3px solid var(--acc);font-size:13px;color:var(--t2)">${desc_txt}</div>`:''}
+      <div style="overflow-x:auto;margin-bottom:18px">
+        <table><thead><tr><th>#</th><th>Descripci\u00f3n</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th style="text-align:center">IVA</th><th style="text-align:right">Subtotal</th></tr></thead>
+        <tbody>${todos.map((it,i)=>`<tr>
+          <td style="color:var(--t3);font-size:12px">${i+1}</td>
+          <td style="font-weight:500">${it.descripcion||'\u2014'}</td>
+          <td style="text-align:center;font-family:'DM Mono',monospace">${it.cantidad}</td>
+          <td style="color:var(--t3)">${it.unidad}</td>
+          <td style="font-family:'DM Mono',monospace">$${it.precio_unitario.toFixed(2)}</td>
+          <td style="text-align:center">${it.tiene_iva?'<span style="color:var(--ok);font-size:11px;font-weight:600">\u2713 S\u00ed</span>':'<span style="color:var(--t3);font-size:11px">No</span>'}</td>
+          <td style="font-family:'DM Mono',monospace;font-weight:700;text-align:right">$${(it.cantidad*it.precio_unitario).toFixed(2)}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+        <div style="min-width:260px">
+          <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2);font-size:13.5px"><span>Subtotal sin IVA</span><span style="font-family:'DM Mono',monospace">$${sub.toFixed(2)}</span></div>
+          ${dv>0?`<div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--ok);font-size:13.5px"><span>Descuento (${descPct}%)</span><span>-$${dv.toFixed(2)}</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--t2);font-size:13.5px"><span>IVA 15% aplicado</span><span style="font-family:'DM Mono',monospace">$${ivaVal.toFixed(2)}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0 4px;border-top:2px solid rgba(245,200,0,.3);margin-top:6px;font-size:18px;font-weight:800;color:var(--acc)">
+            <span>TOTAL</span><span style="font-family:'DM Mono',monospace">$${total.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+      ${forma?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px"><strong style="color:var(--t1)">Forma de pago:</strong> ${forma}</div>`:''}
+      ${notas?`<div style="padding:12px 14px;background:var(--s2);border-radius:8px;font-size:13px;color:var(--t2)"><strong style="color:var(--t1)">Notas y condiciones:</strong><br/>${notas}</div>`:''}
+    </div>`;
+}
+
+/* Guardar cotización */
+async function guardarCot(){
+  const todos=[...cotItems.map(i=>({...i})),...cotAdic.map(i=>({...i,material_id:null}))];
+  if(!todos.length){toast('Agrega al menos un material','err');return;}
+  const titulo=sGet('nc-cliente').trim()||sGet('nc-descripcion').trim().slice(0,80)||'Nueva cotizaci\u00f3n';
+  const descPct=parseFloat(sGet('nc-descuento'))||0;
+  const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
+  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
+  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
+  const ivaPct=sub>0?Math.round((ivaVal/Math.max(sub-sub*(descPct/100),0.01))*100):15;
+  const notas=[sGet('nc-forma-pago')?`Forma de pago: ${sGet('nc-forma-pago')}`:'',sGet('nc-notas').trim(),sGet('nc-descripcion').trim()].filter(Boolean).join('\n');
+  const body={titulo,descripcion:sGet('nc-descripcion').trim(),notas,descuento_pct:descPct,iva_pct:ivaPct,validez_dias:parseInt(sGet('nc-validez'))||30,items:todos};
+  ['btn-guardar-top','btn-guardar-cot'].forEach(id=>setBL(id,true));
+  const r=await api('quotes/index',{method:'POST',body:JSON.stringify(body)});
+  ['btn-guardar-top','btn-guardar-cot'].forEach(id=>setBL(id,false,'\uD83D\uDCBE Guardar'));
+  if(isErr(r)){toast(r.msg,'err');return;}
+  cots.unshift({...r,cliente_nombre:titulo});sTxt('s-cots',cots.length);
+  toast(`Cotizaci\u00f3n ${r.numero} guardada \u2713`,'ok');
+}
+
+/* Exportar PDF desde vista previa */
+function exportarPDFNc(){
+  const todos=[...cotItems,...cotAdic];
+  if(!todos.length){toast('Sin materiales para generar PDF','err');return;}
+  const num=sGet('nc-numero')||genNum();
+  const fecha=sGet('nc-fecha')||new Date().toISOString().split('T')[0];
+  const validez=sGet('nc-validez')||'30';
+  const cliente=sGet('nc-cliente')||'Sin cliente';
+  const ruc=sGet('nc-ruc'),tel=sGet('nc-telefono'),eml=sGet('nc-email'),dir=sGet('nc-direccion');
+  const descPct=parseFloat(sGet('nc-descuento'))||0;
+  const notas=sGet('nc-notas'),forma=sGet('nc-forma-pago');
+  const sub=todos.reduce((s,i)=>s+i.cantidad*i.precio_unitario,0);
+  const dv=sub*(descPct/100);
+  const ivaBase=todos.reduce((s,i)=>s+(i.tiene_iva?i.cantidad*i.precio_unitario:0),0);
+  const ivaVal=(ivaBase-ivaBase*(descPct/100))*0.15;
+  const total=sub-dv+ivaVal;
+  const fechaFmt=new Date(fecha+'T00:00:00').toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
+  const tpl=document.getElementById('pdf-template');
+  tpl.innerHTML=`
     <div class="pdf-header">
       <div class="pdf-logo"><img src="logo.jpg" alt="SEST" crossorigin="anonymous"/></div>
-      <div class="pdf-title">
-        <h1>COTIZACIÓN</h1>
-        <div class="num">${c.numero}</div>
-        <div style="font-size:12px;color:#666;margin-top:4px">Fecha: ${fecha}</div>
+      <div class="pdf-title"><h1>COTIZACI\u00d3N</h1><div class="num">${num}</div>
+        <div style="font-size:12px;color:#666;text-align:right">Fecha: ${fechaFmt}</div>
+        <div style="font-size:11px;color:#888;text-align:right">V\u00e1lida por ${validez} d\u00edas</div>
       </div>
     </div>
     <hr class="pdf-divider"/>
     <div class="pdf-parties">
-      <div>
-        <div class="pdf-section-title">ELABORADO POR</div>
-        <div class="pdf-val"><strong>SEST - Servicios Eléctricos y Seguridad Tapia</strong></div>
+      <div><div class="pdf-section-title">ELABORADO POR</div>
+        <div class="pdf-val"><strong>SEST - Servicios El\u00e9ctricos y Seguridad Tapia</strong></div>
+        <div class="pdf-val">Elaborado por: ${usuario?.nombre||''}</div>
+      </div>
+      <div><div class="pdf-section-title">CLIENTE</div>
+        <div class="pdf-val"><strong>${cliente}</strong></div>
+        ${ruc?`<div class="pdf-val">RUC/C.I.: ${ruc}</div>`:''}
+        ${tel?`<div class="pdf-val">Tel: ${tel}</div>`:''}
+        ${eml?`<div class="pdf-val">${eml}</div>`:''}
+        ${dir?`<div class="pdf-val">${dir}</div>`:''}
+      </div>
+    </div>
+    <table class="pdf-table"><thead><tr>
+      <th>#</th><th>Descripci\u00f3n</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th>IVA</th><th style="text-align:right">Subtotal</th>
+    </tr></thead><tbody>
+      ${todos.map((it,i)=>`<tr><td>${i+1}</td><td>${it.descripcion||'\u2014'}</td>
+        <td style="text-align:center">${it.cantidad}</td><td>${it.unidad}</td>
+        <td>$${it.precio_unitario.toFixed(2)}</td><td style="text-align:center">${it.tiene_iva?'S\u00ed':'No'}</td>
+        <td style="text-align:right;font-weight:600">$${(it.cantidad*it.precio_unitario).toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="pdf-totals">
+      <div class="pdf-trow"><span>Subtotal sin IVA:</span><span>$${sub.toFixed(2)}</span></div>
+      ${dv>0?`<div class="pdf-trow"><span>Descuento (${descPct}%):</span><span>-$${dv.toFixed(2)}</span></div>`:''}
+      <div class="pdf-trow"><span>IVA 15%:</span><span>$${ivaVal.toFixed(2)}</span></div>
+      <div class="pdf-trow grand"><span>TOTAL:</span><span>$${total.toFixed(2)}</span></div>
+    </div>
+    ${forma?`<div style="margin-bottom:10px;font-size:12.5px;color:#444"><strong>Forma de pago:</strong> ${forma}</div>`:''}
+    ${notas?`<div style="margin-bottom:10px;padding:10px 12px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;color:#555"><strong>Notas:</strong> ${notas}</div>`:''}
+    <div class="pdf-footer">SEST &middot; Servicios El\u00e9ctricos y Seguridad Tapia &middot; Cotizaci\u00f3n generada el ${new Date().toLocaleDateString('es-EC')}</div>`;
+  tpl.style.cssText='display:block;position:fixed;top:0;left:0;z-index:-9999;opacity:0.01;pointer-events:none;width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;';
+  toast('Generando PDF\u2026','ok');
+  html2pdf().set({margin:[10,10,10,10],filename:`${num}.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false,allowTaint:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}})
+  .from(tpl).save().then(()=>{tpl.style.cssText='';tpl.innerHTML='';toast('PDF descargado \u2713','ok');})
+  .catch(err=>{tpl.style.cssText='';tpl.innerHTML='';console.error(err);toast('Error al generar PDF','err');});
+}
+
+/* Exportar PDF cotización guardada */
+function exportarPDF(){
+  if(!cotActual)return;
+  const c=cotActual,items=c.items||[];
+  const fecha=new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
+  const tpl=document.getElementById('pdf-template');
+  tpl.innerHTML=`
+    <div class="pdf-header">
+      <div class="pdf-logo"><img src="logo.jpg" alt="SEST" crossorigin="anonymous"/></div>
+      <div class="pdf-title"><h1>COTIZACI\u00d3N</h1><div class="num">${c.numero}</div><div style="font-size:12px;color:#666;text-align:right">Fecha: ${fecha}</div></div>
+    </div>
+    <hr class="pdf-divider"/>
+    <div class="pdf-parties">
+      <div><div class="pdf-section-title">ELABORADO POR</div>
+        <div class="pdf-val"><strong>SEST - Servicios El\u00e9ctricos y Seguridad Tapia</strong></div>
         <div class="pdf-val">Elaborado por: ${c.usuario_nombre}</div>
       </div>
-      <div>
-        <div class="pdf-section-title">CLIENTE</div>
+      <div><div class="pdf-section-title">CLIENTE</div>
         <div class="pdf-val"><strong>${c.cliente_nombre||'Sin cliente'}</strong></div>
-        ${c.cliente_empresa?`<div class="pdf-val">${c.cliente_empresa}</div>`:''}
         ${c.cliente_ruc?`<div class="pdf-val">RUC/C.I.: ${c.cliente_ruc}</div>`:''}
         ${c.cliente_telefono?`<div class="pdf-val">Tel: ${c.cliente_telefono}</div>`:''}
         ${c.cliente_email?`<div class="pdf-val">${c.cliente_email}</div>`:''}
       </div>
     </div>
     <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#111">${c.titulo}</div>
-    <table class="pdf-table">
-      <thead><tr>
-        <th>#</th><th>Descripción</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th>Subtotal</th>
-      </tr></thead>
-      <tbody>
-        ${items.map((it,i)=>`
-          <tr>
-            <td>${i+1}</td>
-            <td>${it.descripcion||it.material_nombre||'—'}</td>
-            <td style="text-align:center">${parseFloat(it.cantidad).toFixed(2)}</td>
-            <td>${it.unidad||it.material_unidad||'—'}</td>
-            <td>$${parseFloat(it.precio_unitario).toFixed(2)}</td>
-            <td style="font-weight:600">$${parseFloat(it.subtotal).toFixed(2)}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
+    <table class="pdf-table"><thead><tr><th>#</th><th>Descripci\u00f3n</th><th>Cant.</th><th>Unidad</th><th>P. Unit.</th><th style="text-align:right">Subtotal</th></tr></thead>
+    <tbody>${items.map((it,i)=>`<tr><td>${i+1}</td><td>${it.descripcion||it.material_nombre||'\u2014'}</td>
+      <td style="text-align:center">${parseFloat(it.cantidad).toFixed(2)}</td>
+      <td>${it.unidad||it.material_unidad||'\u2014'}</td>
+      <td>$${parseFloat(it.precio_unitario).toFixed(2)}</td>
+      <td style="text-align:right;font-weight:600">$${parseFloat(it.subtotal).toFixed(2)}</td></tr>`).join('')}
+    </tbody></table>
     <div class="pdf-totals">
       <div class="pdf-trow"><span>Subtotal:</span><span>$${parseFloat(c.subtotal||0).toFixed(2)}</span></div>
       ${parseFloat(c.descuento_valor||0)>0?`<div class="pdf-trow"><span>Descuento (${c.descuento_pct}%):</span><span>-$${parseFloat(c.descuento_valor).toFixed(2)}</span></div>`:''}
       <div class="pdf-trow"><span>IVA (${c.iva_pct}%):</span><span>$${parseFloat(c.iva_valor||0).toFixed(2)}</span></div>
       <div class="pdf-trow grand"><span>TOTAL:</span><span>$${parseFloat(c.total||0).toFixed(2)}</span></div>
     </div>
-    ${c.notas?`<div style="margin-top:20px;padding:12px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;color:#555"><strong>Notas / Condiciones:</strong> ${c.notas}</div>`:''}
-    <div class="pdf-footer">SEST · Servicios Eléctricos y Seguridad Tapia · Cotización generada el ${new Date().toLocaleDateString('es-EC')}</div>`;
-
-  // Temporarily make the element visible at (0,0) so html2canvas can capture it
-  // opacity:0.01 makes it nearly invisible to the user but still renderable
-  tpl.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:-9999;opacity:0.01;pointer-events:none;width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;';
-
-  toast('Generando PDF…','ok');
-
-  html2pdf().set({
-    margin:       [10,10,10,10],
-    filename:     `${c.numero}.pdf`,
-    image:        { type:'jpeg', quality:.98 },
-    html2canvas:  { scale:2, useCORS:true, logging:false, allowTaint:true },
-    jsPDF:        { unit:'mm', format:'a4', orientation:'portrait' },
-  }).from(tpl).save().then(()=>{
-    tpl.style.cssText = '';
-    tpl.innerHTML = '';
-    toast('PDF descargado ✓','ok');
-  }).catch(err=>{
-    tpl.style.cssText = '';
-    tpl.innerHTML = '';
-    console.error('PDF error:', err);
-    toast('Error al generar PDF','err');
-  });
+    ${c.notas?`<div style="padding:10px 12px;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;color:#555;margin-bottom:12px"><strong>Notas:</strong> ${c.notas}</div>`:''}
+    <div class="pdf-footer">SEST &middot; Servicios El\u00e9ctricos y Seguridad Tapia &middot; Generado el ${new Date().toLocaleDateString('es-EC')}</div>`;
+  tpl.style.cssText='display:block;position:fixed;top:0;left:0;z-index:-9999;opacity:0.01;pointer-events:none;width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;';
+  toast('Generando PDF\u2026','ok');
+  html2pdf().set({margin:[10,10,10,10],filename:`${c.numero}.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false,allowTaint:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}})
+  .from(tpl).save().then(()=>{tpl.style.cssText='';tpl.innerHTML='';toast('PDF descargado \u2713','ok');})
+  .catch(err=>{tpl.style.cssText='';tpl.innerHTML='';toast('Error al generar PDF','err');});
 }
 
-// ══ MATERIALES ══════════════════════════════════════
-function filtrarMats() {
-  const q   = document.getElementById('bm').value;
-  const cat = document.getElementById('bm-cat').value;
-  let lista = mats;
-  if (cat)  lista = lista.filter(m=>String(m.categoria_id)===cat);
-  if (q)    lista = lista.filter(m=>match(`${m.nombre} ${m.codigo} ${m.categoria_nombre||''}`,q));
-  renderMats(lista);
-}
-
-function renderMats(lista) {
-  const el = document.getElementById('tbl-mats');
-  if (!lista.length) {
-    el.innerHTML='<div class="empty"><div class="empty-ico">🔌</div><p>Sin materiales que coincidan</p></div>';
-    return;
-  }
-  el.innerHTML = `<table>
-    <thead><tr>
-      <th>Código</th><th>Nombre</th><th>Categoría</th><th>Unidad</th>
-      <th>P. Costo</th><th>P. Venta</th><th>Margen</th><th>Stock</th><th></th>
-    </tr></thead>
-    <tbody>${lista.map(m=>`
-      <tr>
-        <td><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--acc)">${m.codigo}</span></td>
-        <td style="font-weight:500">${m.nombre}</td>
-        <td><span style="font-size:12px;color:var(--t3)">${m.categoria_nombre||'—'}</span></td>
-        <td style="color:var(--t3);font-size:12px">${m.unidad}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t3)">$${parseFloat(m.precio_costo||0).toFixed(2)}</td>
-        <td style="font-family:'DM Mono',monospace;font-weight:700">$${parseFloat(m.precio_venta).toFixed(2)}</td>
-        <td><span style="font-size:12px;color:${(m.margen_ganancia||0)>20?'var(--ok)':'var(--t3)'}">${m.margen_ganancia||0}%</span></td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px">${m.stock}</td>
-        <td>
-          <div style="display:flex;gap:5px">
-            <button class="btn btn-ok btn-sm" onclick="agregarDesdeCatalogo(${m.id})" title="Agregar a cotización">+ Cot.</button>
-            <button class="btn btn-ghost btn-sm" onclick="editarMat(${m.id})">✏️</button>
-            ${isAdmin?`<button class="btn btn-danger btn-sm" onclick="eliminarMat(${m.id})">🗑️</button>`:''}
-          </div>
-        </td>
-      </tr>`).join('')}
-    </tbody></table>`;
-}
-
-function agregarDesdeCatalogo(matId) {
-  preselMatId = matId;
-  abrirNuevaCot();
-}
-
-// ══ MODAL MATERIAL ═══════════════════════════════
-function abrirModalMat(mat=null) {
-  poblarCats();
-  document.getElementById('mat-id').value       = mat?.id||'';
-  document.getElementById('mat-codigo').value   = mat?.codigo||'';
-  document.getElementById('mat-nombre').value   = mat?.nombre||'';
-  document.getElementById('mat-desc').value     = mat?.descripcion||'';
-  document.getElementById('mat-stock').value    = mat?.stock||0;
-  document.getElementById('mat-costo').value    = mat?.precio_costo||'';
-  document.getElementById('mat-venta').value    = mat?.precio_venta||'';
-  document.getElementById('mat-err').className  = 'alert err';
-  document.getElementById('m-mat-title').textContent = mat ? 'Editar material' : 'Nuevo material';
-  if (mat?.categoria_id) document.getElementById('mat-cat').value   = mat.categoria_id;
-  if (mat?.unidad)       document.getElementById('mat-unidad').value = mat.unidad;
-  openModal('m-mat');
-}
-
-function editarMat(id) { const m=mats.find(x=>x.id===id); if(m) abrirModalMat(m); }
-
-async function guardarMat() {
-  const id   = document.getElementById('mat-id').value;
-  const body = {
-    codigo:      document.getElementById('mat-codigo').value.trim(),
-    nombre:      document.getElementById('mat-nombre').value.trim(),
-    descripcion: document.getElementById('mat-desc').value.trim(),
-    categoria_id:document.getElementById('mat-cat').value||null,
-    unidad:      document.getElementById('mat-unidad').value,
-    precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
-    precio_venta:parseFloat(document.getElementById('mat-venta').value)||0,
-    stock:       parseInt(document.getElementById('mat-stock').value)||0,
-  };
-  const errEl = document.getElementById('mat-err');
-  if (!body.codigo||!body.nombre||!body.precio_venta) {
-    errEl.textContent='Código, nombre y precio de venta son requeridos';
-    errEl.classList.add('show'); return;
-  }
-  errEl.classList.remove('show');
-  setBtnLoad('btn-save-mat',true);
-  const r = await api(id?`materials/index?id=${id}`:'materials/index',{method:id?'PUT':'POST',body:JSON.stringify(body)});
-  setBtnLoad('btn-save-mat',false,'Guardar');
-  if (isErr(r)) { errEl.textContent=r.msg; errEl.classList.add('show'); return; }
-  if (id) { const i=mats.findIndex(m=>m.id===parseInt(id)); if(i>=0) mats[i]={...mats[i],...r,categoria_nombre:cats.find(c=>c.id==r.categoria_id)?.nombre}; }
-  else    { mats.push({...r,categoria_nombre:cats.find(c=>c.id==r.categoria_id)?.nombre}); }
-  document.getElementById('s-mats').textContent=mats.length;
-  closeModal('m-mat'); filtrarMats();
-  toast(id?'Material actualizado ✓':'Material creado ✓','ok');
-}
-
-async function eliminarMat(id) {
-  if (!isAdmin) { toast('Solo administradores pueden eliminar','err'); return; }
-  if (!confirm('¿Eliminar este material del catálogo?')) return;
-  const r = await api(`materials/index?id=${id}`,{method:'DELETE'});
-  if (isErr(r)) { toast(r.msg,'err'); return; }
-  mats=mats.filter(m=>m.id!==id);
-  document.getElementById('s-mats').textContent=mats.length;
-  filtrarMats(); toast('Material eliminado','ok');
-}
-
-// ══ CLIENTES ════════════════════════════════════
-function filtrarClis() {
-  const q = document.getElementById('bc').value;
-  renderClis(q ? clis.filter(c=>match(`${c.nombre} ${c.empresa||''} ${c.ruc_cedula||''} ${c.email||''}`,q)) : clis);
-}
-
-function renderClis(lista) {
-  const el = document.getElementById('tbl-clis');
-  if (!lista.length) {
-    el.innerHTML='<div class="empty"><div class="empty-ico">👥</div><p>Sin clientes. Haz clic en "+ Cliente"</p></div>';
-    return;
-  }
-  el.innerHTML=`<table>
-    <thead><tr>
-      <th>Nombre</th><th>Empresa</th><th>RUC/Cédula</th><th>Teléfono</th><th>Email</th><th></th>
-    </tr></thead>
-    <tbody>${lista.map(c=>`
-      <tr>
-        <td style="font-weight:500">${c.nombre}</td>
-        <td style="color:var(--t2)">${c.empresa||'—'}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--t3)">${c.ruc_cedula||'—'}</td>
-        <td style="color:var(--t3);font-size:13px">${c.telefono||'—'}</td>
-        <td style="color:var(--t3);font-size:13px">${c.email||'—'}</td>
-        <td><div style="display:flex;gap:5px">
-          <button class="btn btn-ghost btn-sm" onclick="editarCli(${c.id})">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="eliminarCli(${c.id})">🗑️</button>
-        </div></td>
-      </tr>`).join('')}
-    </tbody></table>`;
-}
-
-function abrirModalCli(cli=null) {
-  document.getElementById('cli-id').value     = cli?.id||'';
-  document.getElementById('cli-nombre').value = cli?.nombre||'';
-  document.getElementById('cli-empresa').value= cli?.empresa||'';
-  document.getElementById('cli-ruc').value    = cli?.ruc_cedula||'';
-  document.getElementById('cli-tel').value    = cli?.telefono||'';
-  document.getElementById('cli-email').value  = cli?.email||'';
-  document.getElementById('cli-dir').value    = cli?.direccion||'';
-  document.getElementById('cli-notas').value  = cli?.notas||'';
-  document.getElementById('cli-err').className= 'alert err';
-  document.getElementById('m-cli-title').textContent = cli?'Editar cliente':'Nuevo cliente';
-  openModal('m-cli');
-}
-
-function editarCli(id) { const c=clis.find(x=>x.id===id); if(c) abrirModalCli(c); }
-
-async function guardarCli() {
-  const id   = document.getElementById('cli-id').value;
-  const body = {
-    nombre:    document.getElementById('cli-nombre').value.trim(),
-    empresa:   document.getElementById('cli-empresa').value.trim(),
-    ruc_cedula:document.getElementById('cli-ruc').value.trim(),
-    telefono:  document.getElementById('cli-tel').value.trim(),
-    email:     document.getElementById('cli-email').value.trim(),
-    direccion: document.getElementById('cli-dir').value.trim(),
-    notas:     document.getElementById('cli-notas').value.trim(),
-  };
-  const errEl=document.getElementById('cli-err');
-  if (!body.nombre) { errEl.textContent='El nombre es requerido'; errEl.classList.add('show'); return; }
-  errEl.classList.remove('show');
-  setBtnLoad('btn-save-cli',true);
-  const r = await api(id?`clients/index?id=${id}`:'clients/index',{method:id?'PUT':'POST',body:JSON.stringify(body)});
-  setBtnLoad('btn-save-cli',false,'Guardar');
-  if (isErr(r)) { errEl.textContent=r.msg; errEl.classList.add('show'); return; }
-  if (id) { const i=clis.findIndex(c=>c.id===parseInt(id)); if(i>=0) clis[i]=r; }
-  else    clis.push(r);
-  document.getElementById('s-clis').textContent=clis.length;
-  closeModal('m-cli'); filtrarClis();
-  toast(id?'Cliente actualizado ✓':'Cliente creado ✓','ok');
-}
-
-async function eliminarCli(id) {
-  if (!confirm('¿Eliminar este cliente?')) return;
-  const r=await api(`clients/index?id=${id}`,{method:'DELETE'});
-  if (isErr(r)) { toast(r.msg,'err'); return; }
-  clis=clis.filter(c=>c.id!==id);
-  document.getElementById('s-clis').textContent=clis.length;
-  filtrarClis(); toast('Cliente eliminado','ok');
-}
-
-// ══ COTIZACIÓN NUEVA ════════════════════════════
-function abrirNuevaCot() {
-  cotItems=[];
-  document.getElementById('cot-titulo').value='';
-  document.getElementById('cot-notas').value='';
-  document.getElementById('cot-desc').value='0';
-  document.getElementById('cot-iva').value='15';
-  document.getElementById('bi').value='';
-  document.getElementById('results-drop').style.display='none';
-  document.getElementById('cot-err').className='alert err';
-
-  const sel=document.getElementById('cot-cli');
-  sel.innerHTML='<option value="">Sin cliente</option>'+
-    clis.map(c=>`<option value="${c.id}">${c.nombre}${c.empresa?' · '+c.empresa:''}</option>`).join('');
-
-  renderItems(); calcTotals();
-
-  // Pre-seleccionar material desde catálogo
-  if (preselMatId) {
-    const mat=mats.find(m=>m.id===preselMatId);
-    if (mat) addItem(preselMatId);
-    preselMatId=null;
-    ir('cotizaciones'); // navegar a cotizaciones
-  }
-  openModal('m-cot');
-}
-
-// Búsqueda de items — solo en memoria, sin API, sin parpadeo
-let biTimer;
-function buscarItems() {
-  clearTimeout(biTimer);
-  const q   =document.getElementById('bi').value.trim();
-  const drop=document.getElementById('results-drop');
-  if (!q) { drop.style.display='none'; return; }
-  biTimer=setTimeout(()=>{
-    const res=mats.filter(m=>match(`${m.nombre} ${m.codigo} ${m.categoria_nombre||''}`,q)).slice(0,10);
-    if (!res.length) {
-      drop.innerHTML=`<div style="padding:12px 14px;color:var(--t3);font-size:13px">Sin resultados para "${q}"</div>`;
-      drop.style.display='block'; return;
-    }
-    drop.innerHTML=res.map(m=>`
-      <div class="ri" onclick="addItem(${m.id})">
-        <div>
-          <div class="ri-name">${resaltar(m.nombre,q)}</div>
-          <div class="ri-meta">${m.codigo} · ${m.unidad} · ${m.categoria_nombre||'Sin cat.'}</div>
-        </div>
-        <div class="ri-price">$${parseFloat(m.precio_venta).toFixed(2)}</div>
-      </div>`).join('');
-    drop.style.display='block';
-  },100);
-}
-
-function addItem(matId) {
-  const mat=mats.find(m=>m.id===matId);
-  if (!mat) return;
-  cotItems.push({material_id:mat.id,descripcion:mat.nombre,cantidad:1,unidad:mat.unidad,precio_unitario:parseFloat(mat.precio_venta),descuento_pct:0});
-  document.getElementById('bi').value='';
-  document.getElementById('results-drop').style.display='none';
-  renderItems(); calcTotals();
-}
-
-function renderItems() {
-  const cont=document.getElementById('items-list');
-  if (!cotItems.length) {
-    cont.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:14px 0;background:var(--s2);border-radius:8px;border:1px dashed var(--bd2)">Busca materiales arriba para agregarlos a la cotización</div>`;
-    return;
-  }
-  cont.innerHTML=cotItems.map((item,i)=>`
-    <div class="item-row">
-      <input class="item-inp" value="${item.descripcion.replace(/"/g,'&quot;')}"
-             onchange="cotItems[${i}].descripcion=this.value" placeholder="Descripción"/>
-      <input class="item-inp" type="number" value="${item.cantidad}"
-             min="0.01" step="0.01" style="text-align:center"
-             onchange="cotItems[${i}].cantidad=parseFloat(this.value)||1;renderItems();calcTotals()"/>
-      <input class="item-inp" type="number" value="${item.precio_unitario}"
-             min="0" step="0.01" style="text-align:right"
-             onchange="cotItems[${i}].precio_unitario=parseFloat(this.value)||0;renderItems();calcTotals()"/>
-      <div class="item-total">$${(item.cantidad*item.precio_unitario*(1-item.descuento_pct/100)).toFixed(2)}</div>
-      <button class="del-item" onclick="cotItems.splice(${i},1);renderItems();calcTotals()">✕</button>
-    </div>`).join('');
-}
-
-function calcTotals() {
-  const dp = parseFloat(document.getElementById('cot-desc')?.value)||0;
-  const ip = parseFloat(document.getElementById('cot-iva')?.value)||15;
-  const sub= cotItems.reduce((s,i)=>s+i.cantidad*i.precio_unitario*(1-i.descuento_pct/100),0);
-  const dv = sub*(dp/100);
-  const base=sub-dv;
-  const iv = base*(ip/100);
-  document.getElementById('t-sub').textContent  =`$${sub.toFixed(2)}`;
-  document.getElementById('t-desc').textContent =`-$${dv.toFixed(2)}`;
-  document.getElementById('t-iva').textContent  =`$${iv.toFixed(2)}`;
-  document.getElementById('t-total').textContent=`$${(base+iv).toFixed(2)}`;
-  document.getElementById('t-desc-lbl').textContent=`Descuento (${dp}%)`;
-  document.getElementById('t-iva-lbl').textContent =`IVA (${ip}%)`;
-}
-
-async function guardarCot() {
-  const errEl=document.getElementById('cot-err');
-  const titulo=document.getElementById('cot-titulo').value.trim();
-  if (!titulo) { errEl.textContent='El título del proyecto es requerido'; errEl.classList.add('show'); return; }
-  errEl.classList.remove('show');
-  const body={
-    cliente_id: document.getElementById('cot-cli').value||null,
-    titulo,
-    notas:      document.getElementById('cot-notas').value.trim(),
-    descuento_pct:parseFloat(document.getElementById('cot-desc').value)||0,
-    iva_pct:    parseFloat(document.getElementById('cot-iva').value)||15,
-    items:      cotItems,
-  };
-  setBtnLoad('btn-save-cot',true);
-  const r=await api('quotes/index',{method:'POST',body:JSON.stringify(body)});
-  setBtnLoad('btn-save-cot',false,'Crear cotización');
-  if (isErr(r)) { errEl.textContent=r.msg; errEl.classList.add('show'); return; }
-  const cli=clis.find(c=>c.id==body.cliente_id);
-  cots.unshift({...r,cliente_nombre:cli?.nombre||null,cliente_empresa:cli?.empresa||null});
-  document.getElementById('s-cots').textContent=cots.length;
-  closeModal('m-cot');
-  renderCots(cots); renderRecientes();
-  toast(`Cotización ${r.numero} creada ✓`,'ok');
-}
-
-// ══ UTILIDADES ══════════════════════════════════
-function openModal(id)  { document.getElementById(id).classList.add('on'); }
-function closeModal(id) { document.getElementById(id).classList.remove('on'); }
-
-function setBtnLoad(id,load,texto) {
-  const b=document.getElementById(id); if(!b) return;
-  b.disabled=load; b.textContent=load?'Guardando…':texto;
-}
-
-let toastTimer;
-function toast(msg,tipo='ok') {
+/* Utilidades */
+function openModal(id){document.getElementById(id).classList.add('on');}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function setBL(id,load,txt){const b=document.getElementById(id);if(!b)return;b.disabled=load;if(!load&&txt)b.textContent=txt;}
+let toastT;
+function toast(msg,tipo='ok'){
   const el=document.getElementById('toast');
-  el.textContent=(tipo==='ok'?'✅ ':'❌ ')+msg;
-  el.className='show '+tipo;
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.className='',4000);
+  el.textContent=(tipo==='ok'?'\u2705 ':'\u274C ')+msg;el.className='show '+tipo;
+  clearTimeout(toastT);toastT=setTimeout(()=>el.className='',4000);
 }
-
-function logout() { localStorage.clear(); location.href='index.html'; }
-
-// Cerrar modales al clic fuera
-document.querySelectorAll('.modal-bg').forEach(bg=>{
-  bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('on'); });
-});
-// Cerrar dropdown de items al clic fuera
+function logout(){localStorage.clear();location.href='index.html';}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('on');}));
 document.addEventListener('click',e=>{
-  const d=document.getElementById('results-drop');
-  if(d && !d.contains(e.target) && e.target.id!=='bi') d.style.display='none';
+  const d=document.getElementById('nc-results-drop');
+  if(d&&!d.contains(e.target)&&e.target.id!=='nc-bi')d.style.display='none';
 });
 </script>
 </body>
