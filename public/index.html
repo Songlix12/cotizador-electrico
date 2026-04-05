@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEST · Cotizador Eléctrico</title>
+  <link rel="icon" type="image/jpeg" href="logo.jpg"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --negro: #0a0a0c;
+      --gris-oscuro: #111116;
+      --gris: #1c1c24;
+      --gris-med: #2a2a36;
+      --gris-borde: #33334a;
+      --amarillo: #f5c800;
+      --amarillo-hover: #ffd520;
+      --texto: #e8e8f0;
+      --texto-dim: #8888a8;
+      --error: #ff4d6d;
+      --exito: #39d353;
+    }
+
+    body {
+      background: var(--negro);
+      color: var(--texto);
+      font-family: 'Barlow', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Fondo animado */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(245,200,0,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,200,0,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    .bg-glow {
+      position: fixed; z-index: 0;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,200,0,.08) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      pointer-events: none;
+    }
+
+    /* Panel izquierdo - Branding */
+    .panel-marca {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      background: linear-gradient(135deg, #0f0f14 0%, #0a0a0c 100%);
+      border-right: 1px solid var(--gris-borde);
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) { .panel-marca { display: none; } }
+
+    .logo-grande {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 5rem;
+      font-weight: 900;
+      color: var(--amarillo);
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    .logo-sub {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 6px;
+      color: var(--texto-dim);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .descripcion {
+      margin-top: 48px;
+      font-size: 1.1rem;
+      color: var(--texto-dim);
+      line-height: 1.7;
+      max-width: 380px;
+    }
+
+    .features {
+      margin-top: 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--texto-dim);
+      font-size: .95rem;
+    }
+
+    .feature-icon {
+      width: 32px; height: 32px;
+      background: rgba(245,200,0,.12);
+      border: 1px solid rgba(245,200,0,.2);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .bolt-deco {
+      position: absolute;
+      bottom: 60px; right: 40px;
+      font-size: 12rem;
+      opacity: .03;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      color: var(--amarillo);
+      user-select: none;
+      line-height: 1;
+    }
+
+    /* Panel derecho - Formulario */
+    .panel-form {
+      width: 480px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 48px;
+      background: var(--gris-oscuro);
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+      .panel-form { width: 100%; padding: 32px 24px; }
+    }
+
+    .form-container { width: 100%; }
+
+    .form-header { margin-bottom: 40px; }
+
+    .logo-mobile {
+      display: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--amarillo);
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) { .logo-mobile { display: block; } }
+
+    .form-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .form-subtitle {
+      color: var(--texto-dim);
+      font-size: .9rem;
+      margin-top: 6px;
+    }
+
+    /* Tabs login/registro */
+    .tabs {
+      display: flex;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--gris-borde);
+    }
+
+    .tab {
+      padding: 12px 0;
+      margin-right: 32px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--texto-dim);
+      cursor: pointer;
+      border: none; background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all .2s;
+    }
+
+    .tab.activo {
+      color: var(--amarillo);
+      border-bottom-color: var(--amarillo);
+    }
+
+    /* Campos */
+    .campo {
+      margin-bottom: 20px;
+    }
+
+    .campo label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--texto-dim);
+      margin-bottom: 8px;
+    }
+
+    .campo input, .campo select {
+      width: 100%;
+      background: var(--gris);
+      border: 1px solid var(--gris-borde);
+      border-radius: 8px;
+      padding: 13px 16px;
+      color: var(--texto);
+      font-family: 'Barlow', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .campo input:focus, .campo select:focus {
+      border-color: var(--amarillo);
+      box-shadow: 0 0 0 3px rgba(245,200,0,.1);
+    }
+
+    .campo input::placeholder { color: var(--texto-dim); opacity: .5; }
+
+    /* Botón principal */
+    .btn-primary {
+      width: 100%;
+      background: var(--amarillo);
+      color: var(--negro);
+      border: none;
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover { background: var(--amarillo-hover); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* Alertas */
+    .alerta {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: .9rem;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .alerta.error { background: rgba(255,77,109,.12); border: 1px solid rgba(255,77,109,.3); color: #ff8fa0; }
+    .alerta.exito { background: rgba(57,211,83,.12); border: 1px solid rgba(57,211,83,.3); color: #39d353; }
+    .alerta.visible { display: block; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Panel oculto */
+    .panel-oculto { display: none; }
+    .panel-visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Panel de marca -->
+  <div class="panel-marca">
+    <div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px"><img src="logo.jpg" alt="SEST" style="width:70px;height:70px;border-radius:12px;object-fit:cover;box-shadow:0 0 24px rgba(245,200,0,.25)"/><div><div class="logo-grande" style="font-size:3.5rem">SEST</div></div></div>
+      <div class="logo-sub">Cotizador Eléctrico</div>
+      <p class="descripcion">
+        Sistema profesional para gestionar cotizaciones eléctricas, control de materiales y seguimiento de clientes.
+      </p>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">📋</div>
+          <span>Cotizaciones profesionales con cálculo automático de IVA</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔌</div>
+          <span>Catálogo de materiales eléctricos con precios actualizados</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">👥</div>
+          <span>Gestión de clientes y seguimiento de proyectos</span>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <span>Múltiples usuarios con control de acceso por roles</span>
+        </div>
+      </div>
+    </div>
+    <div class="bolt-deco">⚡</div>
+  </div>
+
+  <!-- Panel de formulario -->
+  <div class="panel-form">
+    <div class="form-container">
+      <div class="logo-mobile">⚡ SEST</div>
+
+      <div class="form-header">
+        <div class="form-title" id="form-title">Bienvenido</div>
+        <div class="form-subtitle" id="form-subtitle">Ingresa a tu cuenta para continuar</div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab activo" onclick="mostrarTab('login')">Iniciar sesión</button>
+        <button class="tab" onclick="mostrarTab('registro')">Registrarse</button>
+      </div>
+
+      <div id="alerta" class="alerta"></div>
+
+      <!-- FORMULARIO LOGIN -->
+      <div id="panel-login" class="panel-visible">
+        <div class="campo">
+          <label>Correo electrónico</label>
+          <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email"/>
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Ingresar</button>
+      </div>
+
+      <!-- FORMULARIO REGISTRO -->
+      <div id="panel-registro" class="panel-oculto">
+        <div class="campo">
+          <label>Nombre completo</label>
+          <input type="text" id="reg-nombre" placeholder="Juan Pérez"/>
+        </div>
+        <div class="campo">
+          <label>Correo electrónico</label>
+          <input type="email" id="reg-email" placeholder="tu@email.com"/>
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres"/>
+        </div>
+        <button class="btn-primary" id="btn-reg" onclick="doRegistro()">Crear cuenta</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Detectar URL del API (cambia esto al desplegar en Vercel)
+    const API = window.location.hostname === 'localhost'
+      ? 'http://localhost:3000'
+      : window.location.origin;
+
+    // Redirigir si ya está logueado
+    if (localStorage.getItem('token')) {
+      window.location.href = 'dashboard.html';
+    }
+
+    function mostrarTab(tab) {
+      document.querySelectorAll('.tab').forEach((t,i) => {
+        t.classList.toggle('activo', (i === 0 && tab === 'login') || (i === 1 && tab === 'registro'));
+      });
+      document.getElementById('panel-login').className = tab === 'login' ? 'panel-visible' : 'panel-oculto';
+      document.getElementById('panel-registro').className = tab === 'registro' ? 'panel-visible' : 'panel-oculto';
+      ocultarAlerta();
+    }
+
+    function mostrarAlerta(msg, tipo = 'error') {
+      const el = document.getElementById('alerta');
+      el.textContent = msg;
+      el.className = `alerta ${tipo} visible`;
+    }
+
+    function ocultarAlerta() {
+      document.getElementById('alerta').className = 'alerta';
+    }
+
+    function setLoading(btnId, loading, texto) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? `<span class="spinner"></span> Procesando...`
+        : texto;
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-pass').value;
+
+      if (!email || !pass) { mostrarAlerta('Completa todos los campos'); return; }
+
+      setLoading('btn-login', true, 'Ingresar');
+      try {
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+
+        if (!res.ok) { mostrarAlerta(data.error || 'Error al iniciar sesión'); return; }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        window.location.href = 'dashboard.html';
+      } catch {
+        mostrarAlerta('No se pudo conectar al servidor. Verifica tu conexión.');
+      } finally {
+        setLoading('btn-login', false, 'Ingresar');
+      }
+    }
+
+    async function doRegistro() {
+      const nombre = document.getElementById('reg-nombre').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-pass').value;
+
+      if (!nombre || !email || !pass) { mostrarAlerta('Completa todos los campos'); return; }
+      if (pass.length < 6) { mostrarAlerta('La contraseña debe tener al menos 6 caracteres'); return; }
+
+      setLoading('btn-reg', true, 'Crear cuenta');
+      try {
+        const res = await fetch(`${API}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre, email, password: pass })
+        });
+        const data = await res.json();
+
+        if (!res.ok) { mostrarAlerta(data.error || 'Error al registrarse'); return; }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        window.location.href = 'dashboard.html';
+      } catch {
+        mostrarAlerta('No se pudo conectar al servidor.');
+      } finally {
+        setLoading('btn-reg', false, 'Crear cuenta');
+      }
+    }
+  </script>
+</body>
+</html>
