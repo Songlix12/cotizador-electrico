@@ -405,6 +405,10 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
             <div class="nc-card">
               <div class="nc-card-head"><div class="nc-card-title" style="gap:8px"><i data-lucide="sliders-horizontal" style="width:15px;height:15px"></i> Opciones de Pago y Notas</div></div>
               <div class="nc-card-body">
+                <div class="fld" style="margin-bottom:14px">
+                  <label>Documento elaborado por <span style="font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(PDF)</span></label>
+                  <input id="nc-elaborado" placeholder="Nombre en el documento PDF" autocomplete="name"/>
+                </div>
                 <div style="display:grid;grid-template-columns:1fr 130px;gap:12px;margin-bottom:12px">
                   <div class="fld"><label>Forma de Pago</label>
                     <select id="nc-forma-pago">
@@ -532,7 +536,13 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 <div class="modal-bg" id="m-ver">
   <div class="modal modal-xl">
     <div class="modal-hd"><div class="modal-title" id="ver-title">Cotizaci&#243;n</div><button type="button" class="modal-x" onclick="closeModal('m-ver')" aria-label="Cerrar"><i data-lucide="x"></i></button></div>
-    <div class="modal-body" id="ver-body"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+    <div class="modal-body" style="padding-top:16px">
+      <div class="fld" style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--bd)">
+        <label>Documento elaborado por <span style="font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(PDF)</span></label>
+        <input id="ver-elaborado" placeholder="Nombre que aparecer\u00e1 en el PDF" autocomplete="name"/>
+      </div>
+      <div id="ver-body"><div class="loading"><div class="spin"></div><p>Cargando&#8230;</p></div></div>
+    </div>
     <div class="modal-ft"><button type="button" class="btn btn-ghost" onclick="closeModal('m-ver')">Cerrar</button><button type="button" class="btn btn-info" onclick="exportarPDF()"><i data-lucide="download" style="width:16px;height:16px"></i> Exportar PDF</button></div>
   </div>
 </div>
@@ -555,6 +565,8 @@ const UNIDADES=['metro','rollo','unidad','tramo 3m','caja','hora','kg','ml','par
   const rb=document.getElementById('role-badge');rb.textContent=usuario.rol;rb.className='role-badge '+(isAdmin?'r-admin':'r-vendedor');
   cargarTodo();
   refreshIcons();
+  const neo=document.getElementById('nc-elaborado');
+  if(neo&&!String(neo.value||'').trim())neo.value=usuario.nombre||'';
 })();
 
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';}
@@ -575,7 +587,11 @@ function ir(sec){
   if(sec==='materiales')renderMats(mats);
   if(sec==='clientes')renderClis(clis);
   if(sec==='cotizaciones')renderCots(cots);
-  if(sec==='nueva-cot')renderNcMats();
+  if(sec==='nueva-cot'){
+    renderNcMats();
+    const neo=document.getElementById('nc-elaborado');
+    if(neo&&!String(neo.value||'').trim())neo.value=usuario?.nombre||'';
+  }
   refreshIcons();
 }
 
@@ -659,11 +675,15 @@ async function cambiarEstado(id,estado){
   if(!isErr(r)){const i=cots.findIndex(c=>c.id===id);if(i>=0)cots[i].estado=estado;sTxt('s-apro',cots.filter(c=>c.estado==='aprobada').length);toast('Estado actualizado','ok');}else toast(r.msg,'err');
 }
 async function verCot(id){
-  openModal('m-ver');document.getElementById('ver-body').innerHTML='<div class="loading"><div class="spin"></div><p>Cargando\u2026</p></div>';
+  openModal('m-ver');
+  document.getElementById('ver-body').innerHTML='<div class="loading"><div class="spin"></div><p>Cargando\u2026</p></div>';
+  const ve=document.getElementById('ver-elaborado');if(ve)ve.value='';
   const r=await api(`quotes/index?id=${id}`);
   if(isErr(r)){document.getElementById('ver-body').innerHTML=`<div class="empty"><p>${r.msg}</p></div>`;return;}
   cotActual=r;document.getElementById('ver-title').textContent=r.numero;
   document.getElementById('ver-body').innerHTML=cotDetailHTML(r);
+  if(ve)ve.value=(r.usuario_nombre||usuario?.nombre||'').trim();
+  refreshIcons();
 }
 function cotDetailHTML(c){
   const items=c.items||[],fecha=new Date(c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
@@ -804,6 +824,7 @@ function limpiarCot(mostrarAviso){
   sSet('nc-validez','30');sSet('nc-cliente','');sSet('nc-ruc','');sSet('nc-telefono','');
   sSet('nc-email','');sSet('nc-direccion','');sSet('nc-descripcion','');
   sSet('nc-descuento','0');sSet('nc-notas','');sSet('nc-bi','');
+  sSet('nc-elaborado',usuario?.nombre||'');
   const d=document.getElementById('nc-results-drop');if(d)d.style.display='none';
   renderItems();renderAdic();calcTotals();
   if(mostrarAviso)toast('Cotizaci\u00f3n limpiada: se quitaron \u00edtems, datos del cliente y totales.','info');
@@ -952,7 +973,7 @@ function generarVP(){
           <img src="logo.jpg" alt="SEST" style="width:60px;height:60px;border-radius:10px;object-fit:cover;box-shadow:var(--acc-g)"/>
           <div>
             <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:2px">Servicios El\u00e9ctricos y Seguridad Tapia</div>
-            <div style="font-size:11px;color:var(--t3);margin-top:2px">${usuario?.nombre||''}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${escPdf(sGet('nc-elaborado').trim()||usuario?.nombre||'')}</div>
           </div>
         </div>
         <div style="text-align:right">
@@ -1063,7 +1084,7 @@ function construirModeloPdfNuevaCot(){
   }));
   return{
     numero:num,fechaFmt,validez,
-    elaborador:usuario?.nombre||'',
+    elaborador:sGet('nc-elaborado').trim()||usuario?.nombre||'',
     cliente:{
       nombre:sGet('nc-cliente').trim()||'Sin cliente',
       empresa:'',
@@ -1148,48 +1169,49 @@ function htmlDocumentoCotizacionPdfProfesional(m){
   const cliDir=m.cliente.dir?`<div class="pdf-prof-cli-line">${escPdf(m.cliente.dir)}</div>`:'';
   return`<div class="pdf-doc-prof">
 <style type="text/css">
-.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.45;color:#1f2937;background:#fff;width:100%;max-width:720px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision;}
+.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.5;color:#0a0a0a;background:#fff;width:100%;max-width:720px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision;}
 .pdf-doc-prof *{box-sizing:border-box;}
 .pdf-prof-top{display:grid;grid-template-columns:88px 1fr minmax(200px,240px);gap:20px 24px;align-items:start;padding-bottom:22px;border-bottom:3px solid #d4a017;margin-bottom:22px;}
-.pdf-prof-logo{width:88px;height:88px;border-radius:10px;object-fit:cover;object-position:center;display:block;border:1px solid #e5e7eb;image-rendering:auto;-ms-interpolation-mode:bicubic;}
-.pdf-prof-co-name{font-size:11px;font-weight:700;letter-spacing:.12em;color:#6b7280;text-transform:uppercase;margin-bottom:6px;}
-.pdf-prof-co-brand{font-size:20px;font-weight:800;color:#111827;letter-spacing:-.02em;line-height:1.15;}
-.pdf-prof-co-sub{font-size:12px;color:#4b5563;margin-top:6px;line-height:1.4;}
-.pdf-prof-co-elab{font-size:11px;color:#6b7280;margin-top:10px;}
+.pdf-prof-logo{width:88px;height:88px;border-radius:10px;object-fit:cover;object-position:center;display:block;border:1px solid #d1d5db;image-rendering:auto;-ms-interpolation-mode:bicubic;}
+.pdf-prof-co-name{font-size:11px;font-weight:700;letter-spacing:.12em;color:#1e293b;text-transform:uppercase;margin-bottom:6px;}
+.pdf-prof-co-brand{font-size:20px;font-weight:800;color:#000000;letter-spacing:-.02em;line-height:1.15;}
+.pdf-prof-co-sub{font-size:12px;color:#1e293b;margin-top:6px;line-height:1.45;font-weight:500;}
+.pdf-prof-co-elab{font-size:12px;color:#1e293b;margin-top:10px;font-weight:500;}
+.pdf-prof-co-elab strong{font-weight:700;color:#000000;font-size:12.5px;}
 .pdf-prof-meta{text-align:right;}
-.pdf-prof-meta-tit{font-size:11px;font-weight:700;letter-spacing:.2em;color:#9ca3af;text-transform:uppercase;margin-bottom:6px;}
+.pdf-prof-meta-tit{font-size:11px;font-weight:700;letter-spacing:.2em;color:#475569;text-transform:uppercase;margin-bottom:6px;}
 .pdf-prof-meta-num{font-size:22px;font-weight:800;color:#b8860b;letter-spacing:-.02em;font-family:'DM Mono',ui-monospace,monospace;}
-.pdf-prof-meta-fch{font-size:12px;color:#6b7280;margin-top:6px;}
+.pdf-prof-meta-fch{font-size:12px;color:#1e293b;margin-top:6px;font-weight:500;}
 .pdf-prof-two{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:20px;}
-.pdf-prof-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;color:#9ca3af;text-transform:uppercase;margin-bottom:8px;}
-.pdf-prof-cli-name{font-size:15px;font-weight:700;color:#111827;}
-.pdf-prof-cli-line{font-size:12px;color:#4b5563;margin-top:4px;}
-.pdf-prof-desc-box{margin:0 0 20px;padding:14px 16px;background:#f9fafb;border-left:4px solid #d4a017;border-radius:0 8px 8px 0;}
-.pdf-prof-desc-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:6px;}
-.pdf-prof-desc-txt{font-size:12.5px;color:#374151;}
+.pdf-prof-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;color:#475569;text-transform:uppercase;margin-bottom:8px;}
+.pdf-prof-cli-name{font-size:15px;font-weight:700;color:#000000;}
+.pdf-prof-cli-line{font-size:12px;color:#0f172a;margin-top:4px;font-weight:500;}
+.pdf-prof-desc-box{margin:0 0 20px;padding:14px 16px;background:#f1f5f9;border-left:4px solid #d4a017;border-radius:0 8px 8px 0;}
+.pdf-prof-desc-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:#334155;text-transform:uppercase;margin-bottom:6px;}
+.pdf-prof-desc-txt{font-size:13px;color:#0a0a0a;font-weight:500;line-height:1.5;}
 .pdf-prof-table-wrap{width:100%;overflow:visible;margin-bottom:22px;}
-.pdf-prof-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;border:1px solid #d1d5db;}
-.pdf-prof-th{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:#374151;background:#f3f4f6;padding:10px 8px;border:1px solid #d1d5db;vertical-align:bottom;}
+.pdf-prof-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px;border:1px solid #94a3b8;}
+.pdf-prof-th{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:#0a0a0a;background:#e2e8f0;padding:10px 8px;border:1px solid #94a3b8;vertical-align:bottom;}
 .pdf-prof-th-c{text-align:center;}
 .pdf-prof-th-r{text-align:right;}
-.pdf-prof-td{padding:9px 8px;border:1px solid #e5e7eb;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;color:#374151;}
+.pdf-prof-td{padding:9px 8px;border:1px solid #cbd5e1;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;color:#0f172a;font-weight:500;}
 .pdf-prof-td-c{text-align:center;}
 .pdf-prof-td-r{text-align:right;}
-.pdf-prof-td-desc{font-weight:500;color:#111827;}
-.pdf-prof-td-iva{font-size:11px;}
-.pdf-prof-td-strong{font-weight:700;color:#111827;}
+.pdf-prof-td-desc{font-weight:600;color:#000000;}
+.pdf-prof-td-iva{font-size:11.5px;color:#0f172a;font-weight:600;}
+.pdf-prof-td-strong{font-weight:700;color:#000000;}
 .pdf-prof-mono{font-family:'DM Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;}
-.pdf-prof-tr:nth-child(even) .pdf-prof-td{background:#fafafa;}
+.pdf-prof-tr:nth-child(even) .pdf-prof-td{background:#f8fafc;}
 .pdf-prof-sums{max-width:320px;margin-left:auto;margin-bottom:20px;}
-.pdf-prof-sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:#4b5563;gap:24px;}
-.pdf-prof-sum-ok{color:#15803d;}
+.pdf-prof-sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:#0f172a;gap:24px;font-weight:600;}
+.pdf-prof-sum-ok{color:#0f6f2e;}
 .pdf-prof-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:14px;border-top:3px solid #d4a017;font-size:20px;font-weight:800;color:#b8860b;letter-spacing:-.02em;}
 .pdf-prof-total-row span:last-child{font-family:'DM Mono',ui-monospace,monospace;font-size:22px;}
-.pdf-prof-foot-block{font-size:12px;color:#4b5563;margin-bottom:14px;line-height:1.5;}
-.pdf-prof-foot-block strong{color:#111827;}
-.pdf-prof-notas{padding:12px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;}
-.pdf-prof-notas-body{margin-top:8px;color:#4b5563;font-size:11.5px;}
-.pdf-prof-footer{margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:10px;color:#9ca3af;}
+.pdf-prof-foot-block{font-size:12.5px;color:#1e293b;margin-bottom:14px;line-height:1.55;font-weight:500;}
+.pdf-prof-foot-block strong{color:#000000;font-weight:700;}
+.pdf-prof-notas{padding:12px 14px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;}
+.pdf-prof-notas-body{margin-top:8px;color:#0f172a;font-size:12px;font-weight:500;line-height:1.5;}
+.pdf-prof-footer{margin-top:28px;padding-top:16px;border-top:1px solid #cbd5e1;text-align:center;font-size:10px;color:#475569;font-weight:500;}
 </style>
   <div class="pdf-prof-top">
     <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
@@ -1197,7 +1219,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
       <div class="pdf-prof-co-name">Servicios El\u00e9ctricos y Seguridad Tapia</div>
       <div class="pdf-prof-co-brand">SEST</div>
       <div class="pdf-prof-co-sub">Cotizaci\u00f3n formal para su proyecto. Valide plazos y especificaciones t\u00e9cnicas con nuestro equipo.</div>
-      <div class="pdf-prof-co-elab">Documento elaborado por: <strong style="color:#374151">${escPdf(m.elaborador)||'\u2014'}</strong></div>
+      <div class="pdf-prof-co-elab">Documento elaborado por: <strong>${escPdf(m.elaborador)||'\u2014'}</strong></div>
     </div>
     <div class="pdf-prof-meta">
       <div class="pdf-prof-meta-tit">Cotizaci\u00f3n</div>
@@ -1330,13 +1352,16 @@ async function exportarPDFNc(){
   tpl.innerHTML='';
 }
 
-/* Exportar PDF cotización guardada (mismo diseño corporativo) */
+/* Exportar PDF cotización guardada (mismo diseño; nombre elaborador editable en modal) */
 async function exportarPDF(){
   if(!cotActual)return;
   const fname=(cotActual.numero||'cotizacion').replace(/[^\w.-]+/g,'_');
   const tpl=document.getElementById('pdf-template');
   if(!tpl){toast('Contenedor PDF no encontrado.','err');return;}
-  tpl.innerHTML=htmlDocumentoCotizacionPdfProfesional(construirModeloPdfGuardada(cotActual));
+  const modelo=construirModeloPdfGuardada(cotActual);
+  const elabPdf=sGet('ver-elaborado').trim();
+  modelo.elaborador=elabPdf||cotActual.usuario_nombre||usuario?.nombre||'';
+  tpl.innerHTML=htmlDocumentoCotizacionPdfProfesional(modelo);
   toast('Generando PDF\u2026','ok');
   await htmlAPdfDesdeNodoFuente(tpl,`${fname}.pdf`);
   tpl.innerHTML='';
