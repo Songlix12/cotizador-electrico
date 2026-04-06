@@ -1505,7 +1505,7 @@ function renderItems(){
           onchange="cotItems[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderItems();calcTotals()"/>
         <select class="item-inp iva-sel" title="IVA"
           onchange="var v=parseInt(this.value,10);cotItems[${i}].iva_pct=v;cotItems[${i}].tiene_iva=v>0;calcTotals()">
-          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'No':o+'%'}</option>`).join('')}
         </select>
         <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
       </div>
@@ -1536,7 +1536,7 @@ function renderAdic(){
           onchange="cotAdic[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderAdic();calcTotals()"/>
         <select class="item-inp iva-sel" title="IVA"
           onchange="var v=parseInt(this.value,10);cotAdic[${i}].iva_pct=v;cotAdic[${i}].tiene_iva=v>0;calcTotals()">
-          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'No':o+'%'}</option>`).join('')}
         </select>
         <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
       </div>
@@ -1733,7 +1733,7 @@ function generarVP(){
           <td style="text-align:center;font-family:'DM Mono',monospace">${it.cantidad}</td>
           <td style="color:var(--t3)">${it.unidad}</td>
           <td style="font-family:'DM Mono',monospace">$${it.precio_unitario.toFixed(2)}</td>
-          <td style="text-align:center;font-size:11px;font-weight:600;color:var(--t2)">${ivp<=0?'Exento':ivp+'%'}</td>
+          <td style="text-align:center;font-size:11px;font-weight:600;color:var(--t2)">${ivp<=0?'No':ivp+'%'}</td>
           <td style="font-family:'DM Mono',monospace;font-weight:700;text-align:right">$${(it.cantidad*it.precio_unitario).toFixed(2)}</td>
         </tr>`;}).join('')}</tbody></table>
       </div>
@@ -1910,10 +1910,10 @@ function htmlDocumentoCotizacionPdfProfesional(m){
     if(it.ivaPct!=null&&it.ivaPct!==''){
       const p=Number(it.ivaPct);
       if(!isFinite(p))return '\u2014';
-      return p<=0?'Exento':p+'%';
+      return p<=0?'No':p+'%';
     }
     if(it.ivaSi===true)return '15%';
-    if(it.ivaSi===false)return 'Exento';
+    if(it.ivaSi===false)return 'No';
     return '\u2014';
   };
   const filas=m.items.map((it,i)=>`
