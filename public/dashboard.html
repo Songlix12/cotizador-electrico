@@ -18,31 +18,46 @@
   --ok:#22c55e;--ok-d:rgba(34,197,94,.12);
   --info:#3b82f6;--info-d:rgba(59,130,246,.12);
   --err:#ef4444;--err-d:rgba(239,68,68,.12);
-  --sw:230px;--r:10px;--rl:14px;
+  --sw:230px;--sw-col:60px;--r:10px;--rl:14px;
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--s4);border-radius:9px}
 /* SIDEBAR */
-.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:200;transition:transform .25s ease;}
-.sb-brand{padding:16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;}
-.sb-logo{width:42px;height:42px;border-radius:10px;overflow:hidden;flex-shrink:0;box-shadow:var(--acc-g);}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:200;transition:width .25s ease,transform .25s ease;overflow:hidden;}
+.sidebar.collapsed{width:var(--sw-col)}
+.sb-brand{padding:12px 9px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;min-height:66px;position:relative;}
+.sb-logo{width:42px;height:42px;border-radius:10px;overflow:hidden;flex-shrink:0;box-shadow:var(--acc-g);cursor:pointer;}
 .sb-logo img{width:100%;height:100%;object-fit:cover}
-.sb-name{font-size:15px;font-weight:700;line-height:1.1}
-.sb-tag{font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase}
-.nav{flex:1;padding:8px 0;overflow-y:auto}
-.nav-lbl{padding:14px 16px 5px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;border-left:2px solid transparent;transition:all .13s;}
+.sb-name{font-size:15px;font-weight:700;line-height:1.1;white-space:nowrap;opacity:1;transition:opacity .2s;}
+.sb-tag{font-size:10px;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;}
+.sidebar.collapsed .sb-name,.sidebar.collapsed .sb-tag{opacity:0;pointer-events:none}
+.sb-toggle{position:absolute;right:-1px;top:50%;transform:translateY(-50%);width:20px;height:36px;background:var(--s2);border:1px solid var(--bd2);border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .2s;z-index:10}
+.sb-toggle:hover{color:var(--acc);background:var(--s3)}
+.sb-toggle svg{width:13px;height:13px;transition:transform .25s}
+.sidebar.collapsed .sb-toggle svg{transform:rotate(180deg)}
+.nav{flex:1;padding:8px 0;overflow-y:auto;overflow-x:hidden}
+.nav-lbl{padding:14px 16px 5px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);white-space:nowrap;overflow:hidden;transition:opacity .2s,padding .25s;}
+.sidebar.collapsed .nav-lbl{opacity:0;padding-top:8px;padding-bottom:4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;border-left:2px solid transparent;transition:all .13s;white-space:nowrap;position:relative;}
 .nav-item:hover{color:var(--t1);background:rgba(255,255,255,.04)}
 .nav-item.on{color:var(--acc);border-left-color:var(--acc);background:var(--acc-d)}
 .nav-ico{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--t2)}
 .nav-item.on .nav-ico{color:var(--acc)}
 .nav-ico svg{width:18px;height:18px;stroke-width:2}
-.sb-foot{padding:14px 16px;border-top:1px solid var(--bd)}
-.user-card{background:var(--s2);border-radius:var(--r);padding:10px;display:flex;align-items:center;gap:9px;}
+.nav-txt{transition:opacity .2s;opacity:1;}
+.sidebar.collapsed .nav-txt{opacity:0;}
+/* tooltip on collapsed */
+.sidebar.collapsed .nav-item{padding:9px;justify-content:center;border-left-color:transparent;}
+.sidebar.collapsed .nav-item.on{background:var(--acc-d);}
+.sidebar.collapsed .nav-item:hover::after{content:attr(data-tip);position:absolute;left:calc(var(--sw-col) + 6px);top:50%;transform:translateY(-50%);background:var(--s3);border:1px solid var(--bd2);color:var(--t1);font-size:12px;font-weight:500;padding:5px 10px;border-radius:8px;white-space:nowrap;z-index:400;box-shadow:0 4px 16px rgba(0,0,0,.5);pointer-events:none;}
+.sb-foot{padding:10px 9px;border-top:1px solid var(--bd);overflow:hidden;}
+.user-card{background:var(--s2);border-radius:var(--r);padding:10px;display:flex;align-items:center;gap:9px;transition:padding .25s;}
+.sidebar.collapsed .user-card{padding:8px;justify-content:center;}
 .user-av{width:34px;height:34px;border-radius:50%;background:var(--acc);color:#000;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.user-nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .2s;}
+.sidebar.collapsed .user-nm,.sidebar.collapsed .role-badge,.sidebar.collapsed .btn-out{opacity:0;pointer-events:none;height:0;margin:0;padding:0;overflow:hidden;}
 .role-badge{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
 .r-admin{background:rgba(245,200,0,.15);color:var(--acc)}
 .r-vendedor{background:var(--info-d);color:var(--info)}
@@ -56,7 +71,8 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .hamburger svg{width:20px;height:20px}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;}
 /* MAIN */
-.main{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column}
+.main{margin-left:var(--sw);min-height:100vh;display:flex;flex-direction:column;transition:margin-left .25s}
+.main.sb-collapsed{margin-left:var(--sw-col)}
 .topbar{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .page-title{font-size:16px;font-weight:700}
 .content{padding:22px 26px;flex:1}
@@ -237,24 +253,71 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 /* RESPONSIVE */
 @media(max-width:1080px){.nc-layout{grid-template-columns:1fr}.nc-right{position:static}.g5{grid-template-columns:1fr 1fr 1fr}}
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .sidebar{transform:translateX(-100%);width:var(--sw)!important}.sidebar.open{transform:translateX(0)}
+  .sidebar.collapsed{width:var(--sw)!important}
+  .sb-toggle{display:none}
   .overlay{display:block}.hamburger{display:flex}
-  .main{margin-left:0}.content{padding:12px 10px}
+  .main{margin-left:0!important}.content{padding:12px 10px}
   .topbar{padding:0 10px 0 54px}
-  .sb-brand{padding-left:54px}
   .fg{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}
   .card-head,.nc-card-head{flex-direction:column;align-items:flex-start}
   .card-tools{width:100%}
   .inp-search{width:100%!important}
-  .cot-tabs{width:100%}.cot-tab{flex:1;justify-content:center;padding:9px 8px;font-size:12px}
+  .cot-tabs{width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .cot-tab{flex:1;justify-content:center;padding:8px 6px;font-size:11px;min-width:0}
+  .cot-tab span,.cot-tab i{flex-shrink:0}
   .g5{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}
   .icols{display:none}
-  .item-row,.adic-row{grid-template-columns:1fr 55px 26px}
+  /* item rows en mobile: descripción + botón borrar en top, luego cant/unidad/precio */
+  .item-row,.adic-row{
+    grid-template-columns:1fr auto;
+    grid-template-rows:auto auto;
+    gap:4px;
+    padding:8px;
+  }
+  .item-row > *:nth-child(1),.adic-row > *:nth-child(1){grid-column:1;grid-row:1}
+  .item-row > *:nth-child(7),.adic-row > *:nth-child(7){grid-column:2;grid-row:1;align-self:center}
+  .item-row > *:nth-child(2),.item-row > *:nth-child(3),.item-row > *:nth-child(4),.item-row > *:nth-child(5),.item-row > *:nth-child(6){grid-column:1/-1;grid-row:2}
+  .item-mobile-row{display:flex;gap:5px;flex-wrap:wrap;width:100%}
+  .item-mobile-row .item-inp{flex:1;min-width:60px}
+  .item-total{text-align:left;font-size:13px;padding:2px 0}
   table{display:block;overflow-x:auto}
   .modal-bg{padding:8px}.modal,.modal-xl{max-width:100%}
-  .nc-header{flex-direction:column;align-items:flex-start}
+  .nc-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .nc-header > div:last-child{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .nc-header > div:last-child .btn{justify-content:center;width:100%}
+  .nc-title{font-size:17px}
 }
-@media(max-width:480px){.stats{grid-template-columns:1fr}.btn{padding:7px 12px;font-size:12px}.content{padding:10px 8px}}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr}
+  .btn{padding:7px 12px;font-size:12px}
+  .content{padding:8px 6px}
+  .g5{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .nc-card-body{padding:10px}
+  .nc-card-head{padding:10px 12px}
+  .cot-tabs{padding:3px}
+  .cot-tab{padding:7px 4px;font-size:10px;gap:4px}
+  .item-row,.adic-row{padding:6px}
+  /* En móviles muy pequeños, hacer layout de items más simple */
+  .item-row,.adic-row{
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .item-row-top{display:flex;align-items:center;gap:6px;width:100%}
+  .item-row-fields{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%}
+  .item-row-bottom{display:flex;justify-content:space-between;align-items:center;width:100%}
+  .nc-header > div:last-child{grid-template-columns:1fr}
+}
+@media(max-width:360px){
+  .content{padding:6px 4px}
+  .nc-card-body{padding:8px}
+  .topbar{padding:0 6px 0 50px}
+  .page-title{font-size:14px}
+  .cot-tab{font-size:9px;padding:6px 3px}
+  /* item inner grid a 2 cols en pantallas muy pequeñas */
+  .item-row .item-fields-grid,
+  .adic-row .item-fields-grid{grid-template-columns:60px 1fr 80px!important}
+}
 </style>
 </head>
 <body>
@@ -262,30 +325,33 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 <nav class="sidebar" id="sidebar">
   <div class="sb-brand">
-    <div class="sb-logo"><img src="logo.jpg" alt="SEST"/></div>
-    <div><div class="sb-name">SEST</div><div class="sb-tag">Serv. El&#233;ctricos &amp; Seg.</div></div>
+    <div class="sb-logo" onclick="toggleCollapse()" title="Colapsar menú"><img src="logo.jpg" alt="SEST"/></div>
+    <div><div class="sb-name">SEST</div><div class="sb-tag">Serv. Eléctricos &amp; Seg.</div></div>
+    <div class="sb-toggle" onclick="toggleCollapse()" title="Colapsar menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
   </div>
   <div class="nav">
     <div class="nav-lbl">Principal</div>
-    <div class="nav-item on" data-nav="inicio" onclick="ir('inicio')"><span class="nav-ico"><i data-lucide="layout-dashboard"></i></span> Inicio</div>
-    <div class="nav-item" data-nav="cotizaciones" onclick="ir('cotizaciones')"><span class="nav-ico"><i data-lucide="file-text"></i></span> Cotizaciones</div>
-    <div class="nav-item" data-nav="nueva-cot" onclick="abrirNuevaCot()"><span class="nav-ico"><i data-lucide="zap"></i></span> Nueva Cotizaci&#243;n</div>
-    <div class="nav-lbl">Gesti&#243;n</div>
-    <div class="nav-item" data-nav="materiales" onclick="ir('materiales')"><span class="nav-ico"><i data-lucide="package"></i></span> Materiales</div>
-    <div class="nav-item" data-nav="clientes" onclick="ir('clientes')"><span class="nav-ico"><i data-lucide="users"></i></span> Clientes</div>
-    <div class="nav-item admin-only" data-nav="categorias" onclick="ir('categorias')" style="display:none"><span class="nav-ico"><i data-lucide="tag"></i></span> Categor&#237;as</div>
-    <div class="nav-item admin-only" data-nav="usuarios" onclick="ir('usuarios')" style="display:none"><span class="nav-ico"><i data-lucide="shield"></i></span> Usuarios</div>
-    <div class="nav-item" data-nav="equipo" onclick="ir('equipo')"><span class="nav-ico"><i data-lucide="users-2"></i></span> Equipo</div>
+    <div class="nav-item on" data-nav="inicio" data-tip="Inicio" onclick="ir('inicio')"><span class="nav-ico"><i data-lucide="layout-dashboard"></i></span><span class="nav-txt"> Inicio</span></div>
+    <div class="nav-item" data-nav="cotizaciones" data-tip="Cotizaciones" onclick="ir('cotizaciones')"><span class="nav-ico"><i data-lucide="file-text"></i></span><span class="nav-txt"> Cotizaciones</span></div>
+    <div class="nav-item" data-nav="nueva-cot" data-tip="Nueva Cotización" onclick="abrirNuevaCot()"><span class="nav-ico"><i data-lucide="zap"></i></span><span class="nav-txt"> Nueva Cotización</span></div>
+    <div class="nav-lbl">Gestión</div>
+    <div class="nav-item" data-nav="materiales" data-tip="Materiales" onclick="ir('materiales')"><span class="nav-ico"><i data-lucide="package"></i></span><span class="nav-txt"> Materiales</span></div>
+    <div class="nav-item" data-nav="clientes" data-tip="Clientes" onclick="ir('clientes')"><span class="nav-ico"><i data-lucide="users"></i></span><span class="nav-txt"> Clientes</span></div>
+    <div class="nav-item admin-only" data-nav="categorias" data-tip="Categorías" onclick="ir('categorias')" style="display:none"><span class="nav-ico"><i data-lucide="tag"></i></span><span class="nav-txt"> Categorías</span></div>
+    <div class="nav-item admin-only" data-nav="usuarios" data-tip="Usuarios" onclick="ir('usuarios')" style="display:none"><span class="nav-ico"><i data-lucide="shield"></i></span><span class="nav-txt"> Usuarios</span></div>
+    <div class="nav-item" data-nav="equipo" data-tip="Equipo" onclick="ir('equipo')"><span class="nav-ico"><i data-lucide="users-2"></i></span><span class="nav-txt"> Equipo</span></div>
   </div>
   <div class="sb-foot">
     <div class="user-card">
       <div class="user-av" id="user-av">?</div>
-      <div style="flex:1;min-width:0"><div class="user-nm" id="user-nm">Cargando&#8230;</div><span class="role-badge r-vendedor" id="role-badge">vendedor</span></div>
+      <div style="flex:1;min-width:0"><div class="user-nm" id="user-nm">Cargando…</div><span class="role-badge r-vendedor" id="role-badge">vendedor</span></div>
     </div>
-    <button class="btn-out" onclick="logout()">Cerrar sesi&#243;n</button>
+    <button class="btn-out" onclick="logout()">Cerrar sesión</button>
   </div>
 </nav>
-<div class="main">
+<div class="main" id="main-content">
   <div class="topbar"><div class="page-title" id="page-title">Inicio</div><div id="topbar-actions"></div></div>
   <div class="content">
 
@@ -719,6 +785,15 @@ function textoResumenIva(todos,descPct,ivaVal,net){
 
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').style.display=document.getElementById('sidebar').classList.contains('open')?'block':'none';}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none';}
+function toggleCollapse(){
+  const sb=document.getElementById('sidebar');
+  const main=document.getElementById('main-content');
+  const collapsed=sb.classList.toggle('collapsed');
+  if(main)main.classList.toggle('sb-collapsed',collapsed);
+  try{localStorage.setItem('sb_collapsed',collapsed?'1':'0');}catch(e){}
+}
+// restore collapse state
+(function(){try{if(localStorage.getItem('sb_collapsed')==='1'){document.getElementById('sidebar').classList.add('collapsed');const m=document.getElementById('main-content');if(m)m.classList.add('sb-collapsed');}}catch(e){}})();
 
 function refreshIcons(){
   if(typeof lucide!=='undefined'&&lucide.createIcons)lucide.createIcons();
@@ -1080,21 +1155,25 @@ function renderItems(){
     </div>`;refreshIcons();return;
   }
   cont.innerHTML=cotItems.map((it,i)=>`
-    <div class="item-row">
-      <input class="item-inp" value="${esc(it.descripcion)}" placeholder="Descripci\u00f3n" onchange="cotItems[${i}].descripcion=this.value"/>
-      <input class="item-inp num-plain" type="number" value="${it.cantidad}" min="1" step="1" style="text-align:center"
-        onchange="cotItems[${i}].cantidad=Math.max(1,parseInt(this.value,10)||1);renderItems();calcTotals()"/>
-      <select class="item-inp" onchange="cotItems[${i}].unidad=this.value">
-        ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
-      </select>
-      <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right"
-        onchange="cotItems[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderItems();calcTotals()"/>
-      <select class="item-inp iva-sel" title="IVA"
-        onchange="var v=parseInt(this.value,10);cotItems[${i}].iva_pct=v;cotItems[${i}].tiene_iva=v>0;calcTotals()">
-        ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
-      </select>
-      <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
-      <button type="button" class="del-item" title="Quitar" onclick="cotItems.splice(${i},1);renderItems();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    <div class="item-row" style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <input class="item-inp" style="flex:1;min-width:0" value="${esc(it.descripcion)}" placeholder="Descripci\u00f3n" onchange="cotItems[${i}].descripcion=this.value"/>
+        <button type="button" class="del-item" title="Quitar" onclick="cotItems.splice(${i},1);renderItems();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:70px 1fr 90px 80px 70px;gap:5px;align-items:center">
+        <input class="item-inp num-plain" type="number" value="${it.cantidad}" min="1" step="1" style="text-align:center" placeholder="Cant."
+          onchange="cotItems[${i}].cantidad=Math.max(1,parseInt(this.value,10)||1);renderItems();calcTotals()"/>
+        <select class="item-inp" onchange="cotItems[${i}].unidad=this.value">
+          ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
+        </select>
+        <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right" placeholder="Precio"
+          onchange="cotItems[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderItems();calcTotals()"/>
+        <select class="item-inp iva-sel" title="IVA"
+          onchange="var v=parseInt(this.value,10);cotItems[${i}].iva_pct=v;cotItems[${i}].tiene_iva=v>0;calcTotals()">
+          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+        </select>
+        <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
+      </div>
     </div>`).join('');
   refreshIcons();
 }
@@ -1107,21 +1186,25 @@ function agregarAdicional(){
 function renderAdic(){
   const cont=document.getElementById('nc-adic-list');if(!cont)return;
   cont.innerHTML=cotAdic.map((it,i)=>`
-    <div class="adic-row">
-      <input class="item-inp" value="${esc(it.descripcion)}" placeholder="Material o servicio adicional" onchange="cotAdic[${i}].descripcion=this.value"/>
-      <input class="item-inp num-plain" type="number" value="${it.cantidad}" min="1" step="1" style="text-align:center"
-        onchange="cotAdic[${i}].cantidad=Math.max(1,parseInt(this.value,10)||1);renderAdic();calcTotals()"/>
-      <select class="item-inp" onchange="cotAdic[${i}].unidad=this.value">
-        ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
-      </select>
-      <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right" placeholder="0"
-        onchange="cotAdic[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderAdic();calcTotals()"/>
-      <select class="item-inp iva-sel" title="IVA"
-        onchange="var v=parseInt(this.value,10);cotAdic[${i}].iva_pct=v;cotAdic[${i}].tiene_iva=v>0;calcTotals()">
-        ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
-      </select>
-      <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
-      <button type="button" class="del-item" title="Quitar" onclick="cotAdic.splice(${i},1);renderAdic();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+    <div class="adic-row" style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <input class="item-inp" style="flex:1;min-width:0" value="${esc(it.descripcion)}" placeholder="Material o servicio adicional" onchange="cotAdic[${i}].descripcion=this.value"/>
+        <button type="button" class="del-item" title="Quitar" onclick="cotAdic.splice(${i},1);renderAdic();calcTotals()"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:70px 1fr 90px 80px 70px;gap:5px;align-items:center">
+        <input class="item-inp num-plain" type="number" value="${it.cantidad}" min="1" step="1" style="text-align:center"
+          onchange="cotAdic[${i}].cantidad=Math.max(1,parseInt(this.value,10)||1);renderAdic();calcTotals()"/>
+        <select class="item-inp" onchange="cotAdic[${i}].unidad=this.value">
+          ${UNIDADES.map(u=>`<option${u===it.unidad?' selected':''}>${u}</option>`).join('')}
+        </select>
+        <input class="item-inp num-plain" type="number" value="${it.precio_unitario}" min="0" step="1" style="text-align:right" placeholder="0"
+          onchange="cotAdic[${i}].precio_unitario=Math.max(0,parseFloat(this.value)||0);renderAdic();calcTotals()"/>
+        <select class="item-inp iva-sel" title="IVA"
+          onchange="var v=parseInt(this.value,10);cotAdic[${i}].iva_pct=v;cotAdic[${i}].tiene_iva=v>0;calcTotals()">
+          ${IVA_OPCIONES.map(o=>`<option value="${o}"${normalizarIvaPct(it)===o?' selected':''}>${o===0?'Exento':o+'%'}</option>`).join('')}
+        </select>
+        <div class="item-total">$${(it.cantidad*it.precio_unitario).toFixed(2)}</div>
+      </div>
     </div>`).join('');
   refreshIcons();
 }
