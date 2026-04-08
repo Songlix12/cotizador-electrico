@@ -3052,7 +3052,7 @@ function presetIndustrial() {
 }
 function limpiarCargas() { cargas = []; renderCargas(); recalcBalance(); }
 
-// ─── CÁLCULO DE PROTECCIONES ─────────────────────────────
+// ─── CÁLCULO DE PROTECCIONES ────────────────────────────
 function calcProtecciones() {
   const el = document.getElementById('pr-resultado');
   if (!el) return;
@@ -3195,13 +3195,14 @@ function calcTuberia() {
   `;
 }
 
+function _actualizarToggleCompartir(){
   const tog=document.getElementById('eq-share-toggle');
   const knob=document.getElementById('eq-share-knob');
   const lbl=document.getElementById('eq-share-lbl');
   if(tog)tog.style.background=miCompartir?'var(--ok)':'var(--s4)';
   if(knob){knob.style.left=miCompartir?'18px':'3px';knob.style.background=miCompartir?'#fff':'var(--t3)';}
   if(lbl){lbl.textContent=miCompartir?'Activado':'Desactivado';lbl.style.color=miCompartir?'var(--ok)':'var(--t3)';}
-
+}
 async function toggleCompartirDatos(){
   const nuevo=!miCompartir;
   const r=await api(`users/index?id=${usuario?.id}`,{method:'PUT',body:JSON.stringify({compartir_datos:nuevo})});
