@@ -41,7 +41,7 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
 .sb-brand{
   padding:13px 9px;border-bottom:1px solid var(--bd);
   display:flex;align-items:center;gap:10px;
-  min-height:66px;position:relative;overflow:hidden;
+  min-height:66px;position:relative;overflow:visible;
 }
 .sb-logo{
   width:40px;height:40px;border-radius:10px;
@@ -61,17 +61,31 @@ body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;font-
   transition:max-width .28s ease,opacity .2s ease;}
 .sidebar.collapsed .sb-info{max-width:0;opacity:0;pointer-events:none}
 
-/* Botón ‹ › */
+/* Botón colapsar — pill flotante moderno */
 .sb-toggle{
-  position:absolute;right:0;top:0;bottom:0;
-  width:22px;
+  position:absolute;
+  right:-14px;
+  top:50%;
+  transform:translateY(-50%);
+  width:28px;height:28px;
+  background:var(--s2);
+  border:1px solid var(--bd2);
+  border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--t3);
-  transition:color .2s,background .2s;
+  cursor:pointer;
+  color:var(--t3);
+  z-index:300;
+  transition:color .2s,background .2s,box-shadow .2s,border-color .2s;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);
   flex-shrink:0;
 }
-.sb-toggle:hover{color:var(--acc)}
-.sb-toggle svg{width:14px;height:14px;transition:transform .28s}
+.sb-toggle:hover{
+  color:var(--acc);
+  background:var(--s3);
+  border-color:rgba(245,200,0,.4);
+  box-shadow:0 0 0 3px rgba(245,200,0,.12),0 4px 14px rgba(0,0,0,.5);
+}
+.sb-toggle svg{width:13px;height:13px;transition:transform .28s cubic-bezier(.4,0,.2,1)}
 .sidebar.collapsed .sb-toggle svg{transform:rotate(180deg)}
 
 /* Separador de sección */
@@ -401,7 +415,7 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);width:var(--sw)!important}.sidebar.open{transform:translateX(0)}
   .sidebar.collapsed{width:var(--sw)!important}
-  .sb-toggle{display:none}
+  .sb-toggle{display:none!important}
   .overlay{display:block}.hamburger{display:flex}
   .main{margin-left:0!important}.content{padding:12px 10px}
   .topbar{padding:0 12px}
@@ -515,7 +529,7 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
       <div class="sb-tag">Serv. Eléctricos &amp; Seg.</div>
     </div>
     <div class="sb-toggle" onclick="toggleCollapse()" title="Colapsar menú">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 17l-5-5 5-5"/><path d="M18 17l-5-5 5-5"/></svg>
     </div>
   </div>
   <div class="nav">
@@ -1696,7 +1710,7 @@ function generarVP(){
     <div style="background:var(--s1);border:1px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:14px">
         <div style="display:flex;align-items:center;gap:14px">
-          <img src="logo_Pantalla.jpg" alt="SEST" style="width:60px;height:60px;border-radius:10px;object-fit:cover;box-shadow:var(--acc-g)"/>
+          <img src="logo.jpg" alt="SEST" style="width:60px;height:60px;border-radius:10px;object-fit:cover;box-shadow:var(--acc-g)"/>
           <div>
             <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:2px">Servicios El\u00e9ctricos y Seguridad Tapia</div>
             <div style="font-size:11px;color:var(--t3);margin-top:2px">${escPdf(sGet('nc-elaborado').trim()||usuario?.nombre||'')}</div>
@@ -1989,7 +2003,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 .pdf-prof-footer{margin-top:28px;padding-top:16px;border-top:1px solid #cbd5e1;text-align:center;font-size:10px;color:#475569;font-weight:500;}
 </style>
   <div class="pdf-prof-top">
-    <img class="pdf-prof-logo" src="logo_Pantalla.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
+    <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
     <div>
       <div class="pdf-prof-co-name">Servicios El\u00e9ctricos y Seguridad Tapia</div>
       <div class="pdf-prof-co-brand">SEST</div>
