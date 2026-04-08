@@ -3201,7 +3201,7 @@ function calcTuberia() {
   if(tog)tog.style.background=miCompartir?'var(--ok)':'var(--s4)';
   if(knob){knob.style.left=miCompartir?'18px':'3px';knob.style.background=miCompartir?'#fff':'var(--t3)';}
   if(lbl){lbl.textContent=miCompartir?'Activado':'Desactivado';lbl.style.color=miCompartir?'var(--ok)':'var(--t3)';}
-}
+
 async function toggleCompartirDatos(){
   const nuevo=!miCompartir;
   const r=await api(`users/index?id=${usuario?.id}`,{method:'PUT',body:JSON.stringify({compartir_datos:nuevo})});
