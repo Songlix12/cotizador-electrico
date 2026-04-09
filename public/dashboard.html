@@ -292,6 +292,7 @@ tbody td{padding:10px 14px;font-size:13px;vertical-align:middle}
 .modal-bg.on .modal{transform:translateY(0)}
 .modal-xl{max-width:860px}
 .modal-hd{padding:20px 22px 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
 .modal-title{font-size:15px;font-weight:700}
 .modal-x{background:none;border:none;color:var(--t2);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:color .15s;line-height:1;border-radius:6px}
 .modal-x:hover{color:var(--t1);background:rgba(255,255,255,.06)}
@@ -1113,6 +1114,26 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <i data-lucide="cable" style="width:18px;height:18px;stroke-width:2;color:var(--acc)"></i>
               Calibrador de Conductores AWG — NEC / NTE INEN 2345
             </div>
+            <div class="card-tools" style="flex-wrap:wrap;gap:6px">
+              <input id="cc-calc-nombre" class="calc-inp" placeholder="Nombre del cálculo…"
+                style="width:190px;font-size:12px;padding:6px 10px;border-radius:8px;height:32px"/>
+              <span id="cc-db-badge" class="db-status-badge db-loading" style="font-size:10px">
+                <span class="db-pulse"></span> Conectando…
+              </span>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="abrirModalCableCalcs()" title="Ver cálculos guardados">
+                <i data-lucide="folder-open" style="width:14px;height:14px"></i> Mis cálculos
+              </button>
+              <button type="button" class="btn btn-info btn-sm" onclick="exportarPDFCableCalc()" id="btn-pdf-cable">
+                <i data-lucide="file-down" style="width:14px;height:14px"></i> PDF
+              </button>
+              <button type="button" class="btn btn-ok btn-sm" onclick="guardarCalcCable()" id="btn-save-cable">
+                <i data-lucide="save" style="width:14px;height:14px"></i> Guardar
+              </button>
+            </div>
+          </div>
+          <div style="padding:5px 16px;background:var(--s2);border-bottom:1px solid var(--bd);font-size:11px;color:var(--t3);display:flex;align-items:center;gap:7px">
+            <i data-lucide="info" style="width:11px;height:11px;flex-shrink:0"></i>
+            <span id="cc-save-status">Ingresa los datos del circuito, ponle un nombre y presiona Guardar.</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;padding:16px 16px 0">
 
@@ -3179,6 +3200,7 @@ function initCalculadora() {
       const b = document.getElementById('tempcol-' + k);
       if (b) b.style.display = 'none';
     });
+    _initCcDbBadge();
     _bcSistema = '120';
     renderAWGTable();
     renderConduitTable();
@@ -4620,6 +4642,400 @@ function _updateDbBadge(status){
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// CALIBRADOR DE CABLES — GUARDAR / HISTORIAL / PDF
+// Reutiliza el endpoint electrical-projects/index (Neon PostgreSQL)
+// tipo='cable_calc' diferencia estas filas del balance de cargas
+// ═══════════════════════════════════════════════════════════════
+
+// ── Badge de conexión propio del calibrador ────────────────────
+function _updateCcDbBadge(status){
+  const b=document.getElementById('cc-db-badge');
+  if(!b)return;
+  if(status==='ok'){b.className='db-status-badge db-ok';b.innerHTML='<span class="db-pulse"></span> BD conectada';}
+  else if(status==='err'){b.className='db-status-badge db-err';b.innerHTML='<span class="db-pulse"></span> Sin BD';}
+  else{b.className='db-status-badge db-loading';b.innerHTML='<span class="db-pulse"></span> Conectando…';}
+}
+
+// ── Recolecta todos los inputs del cálculo actual ──────────────
+function _ccSnapshot(){
+  return {
+    sistema:    window._ccSistema||'120/240',
+    circuito:   document.getElementById('cc-circuito')?.value||'mono-ll',
+    instalacion:document.getElementById('cc-instalacion')?.value||'ducto',
+    modo:       document.getElementById('modo-btn-pot')?.classList.contains('on')?'potencia':'corriente',
+    potencia:   document.getElementById('cc-potencia')?.value||'',
+    unidad:     document.getElementById('cc-pot-unit')?.value||'W',
+    amperes:    document.getElementById('cc-amperes')?.value||'',
+    fp:         document.getElementById('cc-fp')?.value||'',
+    motor:      document.getElementById('cc-motor')?.value||'0',
+    eff:        document.getElementById('cc-eff')?.value||'',
+    temp:       document.getElementById('cc-temp')?.value||'1.0',
+    agrup:      document.getElementById('cc-agrup')?.value||'1.0',
+    longitud:   document.getElementById('cc-long')?.value||'',
+    material:   window._ccMaterial||'Cu',
+    tempCol:    window._ccTempCol||'cu90',
+    caidaMax:   document.getElementById('cc-caida-max')?.value||'3',
+  };
+}
+
+// ── Restaura todos los inputs desde un snapshot ────────────────
+function _ccRestore(snap){
+  if(!snap)return;
+  setSistema(snap.sistema||'120/240');
+  const circ=document.getElementById('cc-circuito');
+  if(circ){circ.value=snap.circuito||'mono-ll';}
+  const inst=document.getElementById('cc-instalacion');
+  if(inst)inst.value=snap.instalacion||'ducto';
+  setModoCable(snap.modo||'potencia');
+  if(snap.modo==='potencia'){
+    document.getElementById('cc-potencia').value=snap.potencia||'';
+    const pu=document.getElementById('cc-pot-unit');if(pu)pu.value=snap.unidad||'W';
+  }else{
+    document.getElementById('cc-amperes').value=snap.amperes||'';
+  }
+  document.getElementById('cc-fp').value=snap.fp||'';
+  const mot=document.getElementById('cc-motor');if(mot){mot.value=snap.motor||'0';toggleEff();}
+  document.getElementById('cc-eff').value=snap.eff||'';
+  const tmp=document.getElementById('cc-temp');if(tmp)tmp.value=snap.temp||'1.0';
+  const agr=document.getElementById('cc-agrup');if(agr)agr.value=snap.agrup||'1.0';
+  document.getElementById('cc-long').value=snap.longitud||'';
+  setMaterial(snap.material||'Cu');
+  setTempCol(snap.tempCol||'cu90');
+  document.getElementById('cc-caida-max').value=snap.caidaMax||'3';
+  onCaidaInput();
+  calcCable();
+}
+
+// ── Genera texto resumen corto del snapshot ────────────────────
+function _ccResumenSnap(snap){
+  if(!snap)return '—';
+  const modo=snap.modo==='corriente'?`${snap.amperes||'—'} A`:`${snap.potencia||'—'} ${snap.unidad||'W'}`;
+  return `${SISTEMAS_EC[snap.sistema]?.label||snap.sistema} · ${modo} · ${snap.longitud||'—'} m · ${(TEMPCOL_MAP[snap.tempCol]||TEMPCOL_MAP['cu90']).label}`;
+}
+
+// ── Abre modal de guardar ──────────────────────────────────────
+function abrirGuardarCalcCable(){
+  const snap=_ccSnapshot();
+  const res=document.getElementById('cc-resultado');
+  const tieneRes=res&&res.textContent.trim().length>10;
+  if(!tieneRes){toast('Completa el cálculo antes de guardar','err');return;}
+  document.getElementById('cc-guardar-nombre').value='';
+  document.getElementById('cc-guardar-cliente').value='';
+  document.getElementById('cc-guardar-notas').value='';
+  document.getElementById('cc-guardar-err').className='alert err';
+  document.getElementById('cc-guardar-preview-body').textContent=_ccResumenSnap(snap);
+  openModal('m-cc-guardar');
+}
+
+// ── Confirma y guarda en Neon/Vercel ──────────────────────────
+async function confirmarGuardarCalcCable(){
+  const nombre=(document.getElementById('cc-guardar-nombre')?.value||'').trim();
+  const cliente=(document.getElementById('cc-guardar-cliente')?.value||'').trim();
+  const notas=(document.getElementById('cc-guardar-notas')?.value||'').trim();
+  const errEl=document.getElementById('cc-guardar-err');
+  if(!nombre){errEl.textContent='El nombre es obligatorio';errEl.classList.add('show');document.getElementById('cc-guardar-nombre').focus();return;}
+  errEl.classList.remove('show');
+  setBL('btn-cc-guardar-ok',true);
+  _updateCcDbBadge('loading');
+  const snap=_ccSnapshot();
+  const payload={
+    nombre,
+    cliente,
+    ubicacion: notas,
+    tipo: 'cable_calc',
+    temp_f: snap.temp||'1.0',
+    sistema: snap.sistema||'120/240',
+    cargas: [snap],   // reutilizamos el campo JSONB para el snapshot
+  };
+  try{
+    const r=await api('electrical-projects/index',{method:'POST',body:JSON.stringify(payload)});
+    if(isErr(r)){
+      errEl.textContent=r?.msg||'Error al guardar en la base de datos';
+      errEl.classList.add('show');
+      _updateCcDbBadge('err');
+    }else{
+      closeModal('m-cc-guardar');
+      _updateCcDbBadge('ok');
+      toast('✅ Cálculo guardado en PostgreSQL','ok');
+    }
+  }catch(e){
+    errEl.textContent='Error de conexión con el servidor';
+    errEl.classList.add('show');
+    _updateCcDbBadge('err');
+  }
+  setBL('btn-cc-guardar-ok',false,'Guardar en BD');
+}
+
+// ── Abre modal con historial desde BD ─────────────────────────
+async function abrirHistorialCalcCable(){
+  openModal('m-cc-historial');
+  const listEl=document.getElementById('cc-historial-list');
+  listEl.innerHTML='<div class="loading"><div class="spin"></div><p>Cargando desde PostgreSQL…</p></div>';
+  _updateCcDbBadge('loading');
+  try{
+    const r=await api('electrical-projects/index');
+    if(isErr(r)){
+      listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">${r?.msg||'Error al cargar historial'}</div>`;
+      _updateCcDbBadge('err');
+      return;
+    }
+    _updateCcDbBadge('ok');
+    const calcs=(Array.isArray(r)?r:[]).filter(p=>p.tipo==='cable_calc');
+    if(!calcs.length){
+      listEl.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3)">
+        <i data-lucide="inbox" style="width:36px;height:36px;display:block;margin:0 auto 10px"></i>
+        <p style="font-size:13px">No hay cálculos guardados aún.</p>
+        <p style="font-size:12px;margin-top:4px">Usa el botón <strong style="color:var(--acc)">Guardar</strong> después de calcular.</p>
+      </div>`;
+      refreshIcons();return;
+    }
+    calcs.sort((a,b)=>new Date(b.created_at||b.creado_en||0)-new Date(a.created_at||a.creado_en||0));
+    listEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">
+      ${calcs.map(c=>{
+        const snap=(Array.isArray(c.cargas)&&c.cargas[0])||{};
+        const fecha=c.created_at||c.creado_en?new Date(c.created_at||c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+        return`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(245,200,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--acc)">
+            <i data-lucide="cable" style="width:18px;height:18px"></i>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13px;color:var(--t1);margin-bottom:2px">${c.nombre}</div>
+            ${c.cliente?`<div style="font-size:12px;color:var(--t3);margin-bottom:2px">📁 ${c.cliente}</div>`:''}
+            ${c.ubicacion?`<div style="font-size:11px;color:var(--t3);margin-bottom:4px">📝 ${c.ubicacion}</div>`:''}
+            <div style="font-size:11px;color:var(--t3);font-family:'DM Mono',monospace">${_ccResumenSnap(snap)}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:4px">🕒 ${fecha}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            <button type="button" class="btn btn-acc btn-sm" onclick="cargarCalcCable(${c.id})" title="Cargar este cálculo">
+              <i data-lucide="upload" style="width:13px;height:13px"></i> Cargar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarCalcCable(${c.id},this)" title="Eliminar">
+              <i data-lucide="trash-2" style="width:13px;height:13px"></i>
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    refreshIcons();
+  }catch(e){
+    listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">Error de conexión</div>`;
+    _updateCcDbBadge('err');
+  }
+}
+
+// ── Carga un cálculo guardado en el formulario ─────────────────
+async function cargarCalcCable(id){
+  closeModal('m-cc-historial');
+  const r=await api(`electrical-projects/index?id=${id}`);
+  if(isErr(r)){toast(r?.msg||'Error al cargar cálculo','err');return;}
+  const snap=(Array.isArray(r.cargas)&&r.cargas[0])||null;
+  if(!snap){toast('No se encontraron datos del cálculo','err');return;}
+  _ccRestore(snap);
+  irCalcTab('cables');
+  toast(`✅ Cálculo "${r.nombre}" cargado`,'ok');
+}
+
+// ── Elimina un cálculo de la BD ────────────────────────────────
+async function eliminarCalcCable(id, btnEl){
+  if(!confirm('¿Eliminar este cálculo? La acción no se puede deshacer.'))return;
+  if(btnEl){btnEl.disabled=true;btnEl.textContent='…';}
+  const r=await api(`electrical-projects/index?id=${id}`,{method:'DELETE'});
+  if(isErr(r)){toast(r?.msg||'Error al eliminar','err');if(btnEl){btnEl.disabled=false;btnEl.innerHTML='<i data-lucide="trash-2" style="width:13px;height:13px"></i>';refreshIcons();}return;}
+  toast('Cálculo eliminado','ok');
+  abrirHistorialCalcCable();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORTAR PDF — CALIBRADOR DE CABLES
+// ═══════════════════════════════════════════════════════════════
+async function exportarPDFCable(){
+  const resEl=document.getElementById('cc-resultado');
+  if(!resEl||!resEl.textContent.trim().length||resEl.textContent.includes('Ingresa los valores')){
+    toast('Completa el cálculo antes de exportar','err');return;
+  }
+  const snap=_ccSnapshot();
+  const fecha=new Date().toLocaleDateString('es-EC',{day:'2-digit',month:'long',year:'numeric'});
+  const tempColInfo=TEMPCOL_MAP[snap.tempCol||'cu90']||TEMPCOL_MAP['cu90'];
+  const sisInfo=SISTEMAS_EC[snap.sistema]||SISTEMAS_EC['120/240'];
+
+  // Construir HTML del PDF
+  const htmlPDF=`
+  <div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111827;background:#fff;padding:40px;max-width:750px;margin:0 auto">
+    <!-- ENCABEZADO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #f5c800;padding-bottom:16px;margin-bottom:20px">
+      <div>
+        <div style="font-size:22px;font-weight:900;color:#111827;letter-spacing:-0.5px">SEST</div>
+        <div style="font-size:11px;color:#6b7280;font-weight:500;text-transform:uppercase;letter-spacing:1px">Servicios Eléctricos y Seguridad Tapia</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700;color:#111827">Cálculo de Conductor AWG</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px">NEC 310.15(B)(16) · NTE INEN 2345</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px">${fecha}</div>
+        ${usuario?.nombre?`<div style="font-size:11px;color:#6b7280;margin-top:2px">Elaborado por: <strong>${usuario.nombre}</strong></div>`:''}
+      </div>
+    </div>
+
+    <!-- PARÁMETROS DE ENTRADA -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#374151;border-left:3px solid #f5c800;padding-left:8px;margin-bottom:10px">1. PARÁMETROS DE ENTRADA</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Sistema</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${sisInfo.label||snap.sistema}</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${snap.modo==='corriente'?'Corriente de entrada':'Potencia de la carga'}</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.modo==='corriente'?(snap.amperes||'—')+' A':(snap.potencia||'—')+' '+snap.unidad}</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Aislamiento</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${tempColInfo.label}</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Longitud del circuito</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.longitud||'—'} m</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Factor de potencia</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.fp||'—'} cos φ</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Caída de tensión máx.</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.caidaMax||'—'} %</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Factor temperatura</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.temp||'1.0'}</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Factor agrupamiento</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.agrup||'1.0'}</div>
+        </div>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">Tipo de instalación</div>
+          <div style="font-size:12px;font-weight:700;color:#111827">${snap.instalacion||'—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADO DEL CÁLCULO -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#374151;border-left:3px solid #f5c800;padding-left:8px;margin-bottom:10px">2. RESULTADO DEL CÁLCULO</div>
+      <div style="background:#fffbeb;border:2px solid #f5c800;border-radius:10px;padding:16px">
+        ${(()=>{
+          // Re-run calc logic to get clean values for PDF
+          const sys=snap.sistema||'120/240';
+          const cfg=SISTEMAS_EC[sys]||SISTEMAS_EC['120/240'];
+          const circuito=snap.circuito||'mono-ll';
+          const material=snap.material||'Cu';
+          const fp=parseFloat(snap.fp)||0.9;
+          const eff=parseFloat(snap.eff)||0.85;
+          const tempF=parseFloat(snap.temp)||1.0;
+          const agrupF=parseFloat(snap.agrup)||1.0;
+          const tipoMotor=parseInt(snap.motor)||0;
+          const longitud=parseFloat(snap.longitud)||1;
+          const caidaMax=parseFloat(snap.caidaMax)||3;
+          let tension=cfg.tension,nFases=cfg.fases;
+          if(sys==='120/240'){tension=circuito==='mono-ln'?120:240;nFases=1;}
+          else if(sys==='380'){tension=circuito==='tri-fn'?220:380;nFases=circuito==='tri-fn'?1:3;}
+          let Ic=0;
+          if(snap.modo==='corriente'){Ic=parseFloat(snap.amperes)||0;}
+          else{let W=parseFloat(snap.potencia)||0;const pu=snap.unidad||'W';if(pu==='kW')W*=1000;if(pu==='HP')W*=746;if(pu==='kVA')W*=1000;const sq=nFases===3?Math.sqrt(3):1;Ic=W/(tension*sq*fp*(pu==='HP'?eff:1));}
+          if(Ic<=0)return '<p style="color:#6b7280">Sin datos de carga.</p>';
+          const factorMotor=(tipoMotor===1||tipoMotor===2)?1.25:1.0;
+          const IdCorr=Ic*factorMotor/(tempF*agrupF);
+          const tempColKey=snap.tempCol||'cu90';
+          const colIdx=(TEMPCOL_MAP[tempColKey]||TEMPCOL_MAP['cu90']).idx;
+          const awgPorAmp=AWG_TABLE.find(r=>r[colIdx]!=null&&r[colIdx]>=IdCorr)||AWG_TABLE[AWG_TABLE.length-1];
+          const rho=material==='Cu'?0.0172:0.0282;
+          let awgFinal=awgPorAmp;let caidaReal=0;
+          if(awgPorAmp){const R0=rho*longitud/awgPorAmp[1];const Vd0=Ic*R0*2;caidaReal=(Vd0/tension)*100;
+            if(caidaReal>caidaMax){const aMin=(rho*longitud*Ic*2)/(tension*caidaMax/100);const cand=AWG_TABLE.find(r=>r[1]>=aMin&&r[colIdx]!=null);if(cand){awgFinal=cand;const R2=rho*longitud/cand[1];caidaReal=(Ic*R2*2/tension)*100;}}
+          }
+          const IbMin=Ic*((tipoMotor===1||tipoMotor===2)?2.5:1.25);
+          const brkRec=BREAKERS_STD.find(b=>b>=IbMin)||BREAKERS_STD[BREAKERS_STD.length-1];
+          const polos=nFases===3?'3 polos':tension<=120?'2 polos':'2 polos';
+          const caidaOk=caidaReal<=caidaMax;
+          return `
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Calibre Final AWG</div>
+              <div style="font-size:26px;font-weight:900;color:#f5c800;font-family:monospace">${awgFinal?'AWG '+awgFinal[0]:'—'}</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">${awgFinal?awgFinal[1].toFixed(2)+' mm²':''}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Corriente de diseño</div>
+              <div style="font-size:26px;font-weight:900;color:#3b82f6;font-family:monospace">${IdCorr.toFixed(2)}</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">A (con factores)</div>
+            </div>
+            <div style="background:#fff;border:1px solid ${caidaOk?'#bbf7d0':'#fecaca'};border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Caída de tensión</div>
+              <div style="font-size:26px;font-weight:900;color:${caidaOk?'#16a34a':'#dc2626'};font-family:monospace">${caidaReal.toFixed(2)}%</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">${caidaOk?'✅ OK':'⚠️ Excede '+caidaMax+'%'}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Corriente de carga</div>
+              <div style="font-size:20px;font-weight:800;color:#111827;font-family:monospace">${Ic.toFixed(2)} A</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">${tension} V · ${nFases===3?'Trifásico':'Monofásico'}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Breaker recomendado</div>
+              <div style="font-size:20px;font-weight:800;color:#111827;font-family:monospace">${brkRec} A</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">${polos} · IEC/NTE INEN</div>
+            </div>
+            <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Ampacidad del cable</div>
+              <div style="font-size:20px;font-weight:800;color:#111827;font-family:monospace">${awgFinal?awgFinal[colIdx]+' A':'—'}</div>
+              <div style="font-size:10px;color:#374151;margin-top:2px">${tempColInfo.label}</div>
+            </div>
+          </div>`;
+        })()}
+      </div>
+    </div>
+
+    <!-- NOTAS TÉCNICAS -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#374151;border-left:3px solid #f5c800;padding-left:8px;margin-bottom:10px">3. NORMATIVA APLICADA</div>
+      <div style="font-size:11px;line-height:1.75;color:#374151">
+        <p>• <strong>Norma de ampacidad:</strong> NEC 310.15(B)(16) / NTE INEN 2345 · Columna: ${tempColInfo.label} · ${tempColInfo.desc}</p>
+        <p>• <strong>Caída de tensión:</strong> Calculada con ρ = ${snap.material==='Al'?'0.0282':'0.0172'} Ω·mm²/m (${snap.material==='Al'?'Aluminio':'Cobre'})</p>
+        <p>• <strong>Método de selección:</strong> MAX(Criterio Ampacidad, Criterio Caída de Tensión)</p>
+        <p>• <strong>Motores:</strong> Factor de servicio 1.25 — NEC 430.22</p>
+        <p>• <strong>Protecciones:</strong> Serie IEC/NTE INEN (Ecuador): 1, 2, 3, 4, 6, 10, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125 A…</p>
+        <p>• <strong>Sistema eléctrico:</strong> ${sisInfo.label||snap.sistema}</p>
+      </div>
+    </div>
+
+    <!-- PIE -->
+    <div style="text-align:center;font-size:10px;color:#9ca3af;padding-top:12px;border-top:1px solid #e5e7eb;margin-top:20px">
+      <p>Documento generado por SEST · Calibrador de Conductores AWG · ${fecha}</p>
+      <p>Cálculo conforme a NEC (National Electrical Code) y NTE INEN aplicables en Ecuador 🇪🇨</p>
+    </div>
+  </div>`;
+
+  const tpl=document.getElementById('pdf-template');
+  if(!tpl){toast('Error: contenedor PDF no encontrado','err');return;}
+  tpl.innerHTML=htmlPDF;
+  toast('⏳ Generando PDF del cálculo…','info');
+  await htmlAPdfDesdeNodoFuente(tpl,`Calculo_Cable_AWG_${new Date().toISOString().slice(0,10)}.pdf`);
+  tpl.innerHTML='';
+}
+
+// ═══ ALIASES — conectan los botones del calibrador con sus funciones ═══
+function guardarCalcCable()      { abrirGuardarCalcCable(); }
+function abrirModalCableCalcs()  { abrirHistorialCalcCable(); }
+function exportarPDFCableCalc()  { exportarPDFCable(); }
+
+// ───────────────────────────────────────────────────────────────
+// Verificar conexión Neon al abrir la tab Cables
+// ───────────────────────────────────────────────────────────────
+function _initCcDbBadge(){
+  api('electrical-projects/index').then(r=>{
+    _updateCcDbBadge(isErr(r)?'err':'ok');
+  }).catch(()=>_updateCcDbBadge('err'));
+}
+
 function guardarBalance() {
   const nombre   = (document.getElementById('bc-proyecto-nombre')?.value || '').trim();
   const cliente  = (document.getElementById('bc-proyecto-cliente')?.value || '').trim();
@@ -5026,8 +5442,70 @@ function generarInformePDF() {
 
 </script>
 
+<!-- MODAL: Guardar cálculo de cable -->
+<div class="modal-bg" id="m-cc-guardar" onclick="if(event.target===this)closeModal('m-cc-guardar')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i data-lucide="save" style="width:18px;height:18px;color:var(--acc)"></i>
+        Guardar Cálculo de Cable
+      </span>
+      <button type="button" onclick="closeModal('m-cc-guardar')" class="btn btn-ghost btn-sm">
+        <i data-lucide="x" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div id="cc-guardar-err" class="alert err"></div>
+      <div class="fld">
+        <label>Nombre del cálculo <span style="color:var(--err)">*</span></label>
+        <input id="cc-guardar-nombre" placeholder="Ej: Circuito cocina — Casa García"/>
+      </div>
+      <div class="fld">
+        <label>Proyecto / Cliente <span style="color:var(--t3);font-weight:400">(opcional)</span></label>
+        <input id="cc-guardar-cliente" placeholder="Ej: Vivienda Sr. Torres"/>
+      </div>
+      <div class="fld">
+        <label>Notas <span style="color:var(--t3);font-weight:400">(opcional)</span></label>
+        <textarea id="cc-guardar-notas" rows="2" placeholder="Observaciones del diseño…" style="resize:vertical;min-height:52px"></textarea>
+      </div>
+      <!-- Resumen del cálculo actual -->
+      <div id="cc-guardar-preview" style="background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:12px;font-size:12px;color:var(--t2)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);margin-bottom:8px">Resumen a guardar</div>
+        <div id="cc-guardar-preview-body">—</div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('m-cc-guardar')">Cancelar</button>
+      <button type="button" class="btn btn-acc" id="btn-cc-guardar-ok" onclick="confirmarGuardarCalcCable()">
+        <i data-lucide="save" style="width:15px;height:15px"></i>
+        <span class="btn-lbl">Guardar en BD</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Historial de cálculos de cable -->
+<div class="modal-bg" id="m-cc-historial" onclick="if(event.target===this)closeModal('m-cc-historial')">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i data-lucide="folder-open" style="width:18px;height:18px;color:var(--acc)"></i>
+        Historial de Cálculos de Cable
+      </span>
+      <button type="button" onclick="closeModal('m-cc-historial')" class="btn btn-ghost btn-sm">
+        <i data-lucide="x" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div style="padding:16px">
+      <div id="cc-historial-list" style="min-height:80px">
+        <div class="loading"><div class="spin"></div><p>Cargando…</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Proyectos guardados de Balance de Cargas -->
-<div class="modal-bg" id="m-balances" style="display:none" onclick="if(event.target===this)closeModal('m-balances')">
+<div class="modal-bg" id="m-balances" onclick="if(event.target===this)closeModal('m-balances')">
   <div class="modal" style="max-width:520px">
     <div class="modal-head">
       <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
@@ -5048,6 +5526,32 @@ function generarInformePDF() {
     </div>
   </div>
 </div>
+
+<!-- MODAL: Cálculos de Cables guardados -->
+<div class="modal-bg" id="m-cable-calcs" onclick="if(event.target===this)closeModal('m-cable-calcs')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i data-lucide="cable" style="width:18px;height:18px;color:var(--acc)"></i>
+        Cálculos de Cables Guardados
+      </span>
+      <button type="button" onclick="closeModal('m-cable-calcs')" class="btn btn-ghost btn-sm">
+        <i data-lucide="x" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div style="padding:16px">
+      <div id="cc-saved-list-container">
+        <div style="text-align:center;padding:24px;color:var(--t3)">
+          <i data-lucide="inbox" style="width:32px;height:32px;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto"></i>
+          <p>Sin cálculos guardados</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF CABLE (contenedor oculto) -->
+<div id="pdf-cable-calc" style="display:none;position:absolute;left:-9999px;top:0;width:794px"></div>
 
 <!-- PDF INFORME (oculto para renderizado) -->
 <div id="pdf-informe" style="display:none;position:absolute;left:-9999px;top:0;width:794px"></div>
