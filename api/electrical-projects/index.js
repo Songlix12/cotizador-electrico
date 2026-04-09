@@ -1,25 +1,17 @@
-// api/electrical-projects/index.js
-// ─── Vercel Serverless Function ─── CommonJS ───────────────────
+import { getDb } from '../_lib/db.js';
+import jwt from 'jsonwebtoken';
 
-const { Pool } = require('pg');
-const jwt = require('jsonwebtoken');
-
-// Pool con conexión Neon (reutilizable entre invocaciones)
-let _pool = null;
-function getPool() {
-  if (!_pool) {
-    _pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-      max: 5,
-    });
-  }
-  return _pool;
+function getUser(req) {
+  try {
+    return jwt.verify(
+      (req.headers['authorization'] || '').replace('Bearer ', ''),
+      process.env.JWT_SECRET || 'secreto-dev'
+    );
+  } catch { return null; }
 }
 
-// Crear tabla si no existe (auto-migración)
-async function ensureTable(client) {
-  await client.query(`
+async function ensureTable(sql) {
+  await sql`
     CREATE TABLE IF NOT EXISTS electrical_projects (
       id         SERIAL PRIMARY KEY,
       user_id    INTEGER,
@@ -33,145 +25,109 @@ async function ensureTable(client) {
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
-  `);
+  `;
 }
 
-// Verificar token JWT
-function getUsuario(req) {
-  try {
-    const auth  = req.headers['authorization'] || '';
-    const token = auth.replace('Bearer ', '').trim();
-    if (!token) return null;
-    return jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    return null;
-  }
-}
-
-// Helpers de respuesta
-const ok  = (res, data)          => res.status(200).json(data);
-const err = (res, msg, code=400) => res.status(code).json({ error: msg });
-
-// ──────────────────────────────────────────────────────────────
-module.exports = async function handler(req, res) {
-  // CORS
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Auth
-  const usuario = getUsuario(req);
-  if (!usuario) return err(res, 'No autorizado', 401);
-  const userId = usuario.id;
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ error: 'No autorizado' });
 
-  const pool   = getPool();
-  const client = await pool.connect();
+  const sql = getDb();
+  const { id } = req.query;
 
   try {
-    // Garantizar que la tabla existe
-    await ensureTable(client);
+    await ensureTable(sql);
 
-    const { id } = req.query;
-
-    // ── GET: listar proyectos ────────────────────────────────
+    // GET: listar proyectos del usuario
     if (req.method === 'GET') {
-      const { rows } = await client.query(
-        `SELECT
-           id, user_id, nombre, cliente, ubicacion,
-           tipo, temp_f, sistema, cargas,
-           created_at AS "createdAt",
-           updated_at AS "updatedAt"
-         FROM electrical_projects
-         WHERE user_id = $1
-         ORDER BY updated_at DESC`,
-        [userId]
-      );
-      return ok(res, rows);
+      const rows = await sql`
+        SELECT id, user_id, nombre, cliente, ubicacion,
+               tipo, temp_f, sistema, cargas,
+               created_at AS "createdAt",
+               updated_at AS "updatedAt"
+        FROM electrical_projects
+        WHERE user_id = ${user.id}
+        ORDER BY updated_at DESC
+      `;
+      return res.status(200).json(rows);
     }
 
-    // ── POST: crear proyecto ─────────────────────────────────
+    // POST: crear proyecto
     if (req.method === 'POST') {
       const { nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas } = req.body;
-      if (!nombre?.trim()) return err(res, 'El nombre es requerido');
+      if (!nombre?.trim()) return res.status(400).json({ error: 'El nombre es requerido' });
 
-      const { rows } = await client.query(
-        `INSERT INTO electrical_projects
-           (user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-         RETURNING
-           id, user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas,
-           created_at AS "createdAt", updated_at AS "updatedAt"`,
-        [
-          userId,
-          nombre.trim(),
-          cliente?.trim()   || null,
-          ubicacion?.trim() || null,
-          tipo    || 'residencial',
-          temp_f  || '1.0',
-          sistema || '120',
-          JSON.stringify(cargas || []),
-        ]
-      );
-      return ok(res, rows[0]);
+      const rows = await sql`
+        INSERT INTO electrical_projects
+          (user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas)
+        VALUES (
+          ${user.id},
+          ${nombre.trim()},
+          ${cliente?.trim() || null},
+          ${ubicacion?.trim() || null},
+          ${tipo || 'residencial'},
+          ${temp_f || '1.0'},
+          ${sistema || '120'},
+          ${JSON.stringify(cargas || [])}
+        )
+        RETURNING
+          id, user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas,
+          created_at AS "createdAt", updated_at AS "updatedAt"
+      `;
+      return res.status(200).json(rows[0]);
     }
 
-    // ── PUT: actualizar proyecto ─────────────────────────────
+    // PUT: actualizar proyecto
     if (req.method === 'PUT') {
-      if (!id) return err(res, 'ID requerido');
+      if (!id) return res.status(400).json({ error: 'ID requerido' });
       const { nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas } = req.body;
-      if (!nombre?.trim()) return err(res, 'El nombre es requerido');
+      if (!nombre?.trim()) return res.status(400).json({ error: 'El nombre es requerido' });
 
-      const check = await client.query(
-        'SELECT id FROM electrical_projects WHERE id=$1 AND user_id=$2',
-        [id, userId]
-      );
-      if (!check.rows.length) return err(res, 'Proyecto no encontrado', 404);
+      const check = await sql`
+        SELECT id FROM electrical_projects WHERE id=${parseInt(id)} AND user_id=${user.id}
+      `;
+      if (!check.length) return res.status(404).json({ error: 'Proyecto no encontrado' });
 
-      const { rows } = await client.query(
-        `UPDATE electrical_projects SET
-           nombre=$1, cliente=$2, ubicacion=$3,
-           tipo=$4, temp_f=$5, sistema=$6,
-           cargas=$7, updated_at=NOW()
-         WHERE id=$8 AND user_id=$9
-         RETURNING
-           id, user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas,
-           created_at AS "createdAt", updated_at AS "updatedAt"`,
-        [
-          nombre.trim(),
-          cliente?.trim()   || null,
-          ubicacion?.trim() || null,
-          tipo    || 'residencial',
-          temp_f  || '1.0',
-          sistema || '120',
-          JSON.stringify(cargas || []),
-          id,
-          userId,
-        ]
-      );
-      return ok(res, rows[0]);
+      const rows = await sql`
+        UPDATE electrical_projects SET
+          nombre    = ${nombre.trim()},
+          cliente   = ${cliente?.trim() || null},
+          ubicacion = ${ubicacion?.trim() || null},
+          tipo      = ${tipo || 'residencial'},
+          temp_f    = ${temp_f || '1.0'},
+          sistema   = ${sistema || '120'},
+          cargas    = ${JSON.stringify(cargas || [])},
+          updated_at = NOW()
+        WHERE id = ${parseInt(id)} AND user_id = ${user.id}
+        RETURNING
+          id, user_id, nombre, cliente, ubicacion, tipo, temp_f, sistema, cargas,
+          created_at AS "createdAt", updated_at AS "updatedAt"
+      `;
+      return res.status(200).json(rows[0]);
     }
 
-    // ── DELETE: eliminar proyecto ────────────────────────────
+    // DELETE: eliminar proyecto
     if (req.method === 'DELETE') {
-      if (!id) return err(res, 'ID requerido');
+      if (!id) return res.status(400).json({ error: 'ID requerido' });
 
-      const { rowCount } = await client.query(
-        'DELETE FROM electrical_projects WHERE id=$1 AND user_id=$2',
-        [id, userId]
-      );
-      if (!rowCount) return err(res, 'Proyecto no encontrado', 404);
-      return ok(res, { deleted: true, id });
+      const check = await sql`
+        SELECT id FROM electrical_projects WHERE id=${parseInt(id)} AND user_id=${user.id}
+      `;
+      if (!check.length) return res.status(404).json({ error: 'Proyecto no encontrado' });
+
+      await sql`DELETE FROM electrical_projects WHERE id=${parseInt(id)} AND user_id=${user.id}`;
+      return res.status(200).json({ deleted: true, id });
     }
 
-    return err(res, 'Método no permitido', 405);
+    return res.status(405).json({ error: 'Método no permitido' });
 
   } catch (e) {
-    // Log detallado para Vercel Functions logs
     console.error('[electrical-projects] ERROR:', e.message);
-    console.error('[electrical-projects] STACK:', e.stack);
-    return err(res, `Error interno: ${e.message}`, 500);
-  } finally {
-    client.release();
+    return res.status(500).json({ error: `Error interno: ${e.message}` });
   }
-};
+}
