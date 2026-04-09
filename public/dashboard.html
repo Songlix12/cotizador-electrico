@@ -4767,6 +4767,27 @@ async function confirmarGuardarCalcCable(){
   setBL('btn-cc-guardar-ok',false,'Guardar en BD');
 }
 
+// ── Cache de cálculos cargados (evita re-fetch al cargar) ──────
+let _ccCalcsCache = [];
+
+// ── Helper: extrae y parsea el campo cargas de forma robusta ───
+// Maneja: null, string simple, string doble-serializado, array, objeto directo
+function _parseCargasField(raw){
+  if(raw === null || raw === undefined) return [];
+  if(Array.isArray(raw)) return raw;
+  if(typeof raw === 'object') return [raw];
+  if(typeof raw === 'string'){
+    let parsed;
+    try{ parsed = JSON.parse(raw); }catch(e){ return []; }
+    if(typeof parsed === 'string'){
+      try{ parsed = JSON.parse(parsed); }catch(e){ return []; }
+    }
+    if(Array.isArray(parsed)) return parsed;
+    if(parsed && typeof parsed === 'object') return [parsed];
+  }
+  return [];
+}
+
 // ── Abre modal con historial desde BD ─────────────────────────
 async function abrirHistorialCalcCable(){
   openModal('m-cc-historial');
@@ -4781,7 +4802,22 @@ async function abrirHistorialCalcCable(){
       return;
     }
     _updateCcDbBadge('ok');
-    const calcs=(Array.isArray(r)?r:[]).filter(p=>p.tipo==='cable_calc');
+    const todos = Array.isArray(r) ? r : (r?.data ? r.data : (r ? [r] : []));
+    const calcs = todos.filter(p=>p.tipo==='cable_calc');
+    // Guardar en caché para usarlo al cargar sin re-fetch
+    _ccCalcsCache = calcs;
+    // DEBUG: ver estructura real del primer registro
+    if(calcs.length){
+      const sample = calcs[0];
+      console.log('[CC-DEBUG] Primer registro:', JSON.stringify({
+        id: sample.id,
+        nombre: sample.nombre,
+        tipo: sample.tipo,
+        cargasType: typeof sample.cargas,
+        cargasIsArray: Array.isArray(sample.cargas),
+        cargasPreview: JSON.stringify(sample.cargas)?.slice(0,120)
+      }));
+    }
     if(!calcs.length){
       listEl.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3)">
         <i data-lucide="inbox" style="width:36px;height:36px;display:block;margin:0 auto 10px"></i>
@@ -4793,7 +4829,8 @@ async function abrirHistorialCalcCable(){
     calcs.sort((a,b)=>new Date(b.created_at||b.creado_en||0)-new Date(a.created_at||a.creado_en||0));
     listEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">
       ${calcs.map(c=>{
-        const snap=(Array.isArray(c.cargas)&&c.cargas[0])||{};
+        const cargasArr = _parseCargasField(c.cargas);
+        const snap = cargasArr[0] || {};
         const fecha=c.created_at||c.creado_en?new Date(c.created_at||c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
         return`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
           <div style="width:36px;height:36px;border-radius:9px;background:rgba(245,200,0,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--acc)">
@@ -4824,16 +4861,52 @@ async function abrirHistorialCalcCable(){
   }
 }
 
-// ── Carga un cálculo guardado en el formulario ─────────────────
+// ── Carga un cálculo desde caché (sin re-fetch) ────────────────
 async function cargarCalcCable(id){
   closeModal('m-cc-historial');
-  const r=await api(`electrical-projects/index?id=${id}`);
-  if(isErr(r)){toast(r?.msg||'Error al cargar cálculo','err');return;}
-  const snap=(Array.isArray(r.cargas)&&r.cargas[0])||null;
-  if(!snap){toast('No se encontraron datos del cálculo','err');return;}
+
+  // 1. Buscar en caché local primero (ya fue cargado al abrir el historial)
+  let record = _ccCalcsCache.find(c => String(c.id) === String(id));
+
+  // 2. Si no está en caché, re-fetch de toda la lista y buscar por id
+  if(!record){
+    toast('Cargando cálculo…','info');
+    const r = await api('electrical-projects/index');
+    if(isErr(r)){ toast(r?.msg||'Error al cargar cálculo','err'); return; }
+    const todos = Array.isArray(r) ? r : (r?.data ? r.data : []);
+    _ccCalcsCache = todos.filter(p => p.tipo === 'cable_calc');
+    record = _ccCalcsCache.find(c => String(c.id) === String(id));
+  }
+
+  if(!record){ toast('No se encontró el registro en la base de datos','err'); return; }
+
+  // 3. Parsear el campo cargas de forma ultra-robusta
+  const cargasArr = _parseCargasField(record.cargas);
+
+  // 4. Intentar obtener el snapshot — el primero del array o el campo directamente
+  let snap = cargasArr[0] || null;
+
+  // 5. Si sigue siendo null, intentar parsear record.cargas como snapshot directo
+  if(!snap && record.cargas){
+    snap = _parseCargasField(record.cargas)[0] || null;
+  }
+
+  if(!snap || typeof snap !== 'object'){
+    // Último recurso: intentar re-parsear todo el registro como snapshot
+    // por si el backend devuelve los datos con estructura diferente
+    const keys = ['sistema','circuito','longitud','material','tempCol','potencia','amperes'];
+    const esSnap = keys.some(k => k in record);
+    if(esSnap){ snap = record; }
+  }
+
+  if(!snap){
+    toast('No se encontraron datos de cálculo en este registro','err');
+    return;
+  }
+
   _ccRestore(snap);
   irCalcTab('cables');
-  toast(`✅ Cálculo "${r.nombre}" cargado`,'ok');
+  toast(`✅ Cálculo "${record.nombre}" cargado`,'ok');
 }
 
 // ── Elimina un cálculo de la BD ────────────────────────────────
