@@ -3378,29 +3378,66 @@ function calcCable() {
   const factorTotal = tempF * agrupF;
   const IdCorr      = IdDiseño / factorTotal;
 
-  // Buscar AWG por capacidad (Cu90° col 4, Al90° col 6)
+  // ══════════════════════════════════════════════════════════════
+  // CÁLCULO A — Límite por Ampacidad (NEC 310.15 / NTE INEN 2345)
+  // Mínimo absoluto de seguridad: el cable DEBE soportar IdCorr A
+  // ══════════════════════════════════════════════════════════════
   const colIdx = material === 'Cu' ? 4 : 6;
-  let awgSel = AWG_TABLE.find(r => r[colIdx] != null && r[colIdx] >= IdCorr) || null;
+  const awgPorAmpacidad = AWG_TABLE.find(r => r[colIdx] != null && r[colIdx] >= IdCorr) || AWG_TABLE[AWG_TABLE.length - 1];
 
-  // Verificar caída de tensión y escalar si necesario
+  // ══════════════════════════════════════════════════════════════
+  // CÁLCULO B — Límite por Caída de Tensión
+  // Se calcula de forma independiente. Puede pedir un cable más
+  // grueso que A (distancia larga), pero NUNCA más delgado.
+  // ══════════════════════════════════════════════════════════════
   const rho = material === 'Cu' ? 0.0172 : 0.0282;
-  let awgFinal = awgSel;
-  let caidaReal = 0;
+  let awgPorCaida = awgPorAmpacidad; // parte del mínimo de ampacidad
+  let caidaReal   = 0;
 
-  if (awgSel) {
-    const R   = rho * longitud / awgSel[1];
-    const Vd  = Ic * R * 2; // ida y vuelta
-    caidaReal = (Vd / tension) * 100;
+  if (awgPorAmpacidad) {
+    // Caída con el cable mínimo de ampacidad
+    const R0  = rho * longitud / awgPorAmpacidad[1];
+    const Vd0 = Ic * R0 * 2;
+    caidaReal  = (Vd0 / tension) * 100;
+
     if (caidaReal > caidaMax) {
-      const areaMin = (rho * longitud * Ic * 2) / (tension * caidaMax / 100);
-      const byArea  = AWG_TABLE.find(r => r[1] >= areaMin && r[colIdx] != null);
-      if (byArea) {
-        awgFinal  = byArea;
-        const R2  = rho * longitud / byArea[1];
-        caidaReal = (Ic * R2 * 2 / tension) * 100;
+      // Necesita cable más grueso por distancia
+      const areaMinVD = (rho * longitud * Ic * 2) / (tension * caidaMax / 100);
+      const candidato = AWG_TABLE.find(r => r[1] >= areaMinVD && r[colIdx] != null);
+      if (candidato) {
+        awgPorCaida = candidato;
+        const R2  = rho * longitud / candidato[1];
+        caidaReal  = (Ic * R2 * 2 / tension) * 100;
       }
+    } else {
+      // La caída ya cumple con el cable de ampacidad — no cambiar
+      awgPorCaida = awgPorAmpacidad;
     }
   }
+
+  // ══════════════════════════════════════════════════════════════
+  // SELECCIÓN FINAL — MAX(Ampacidad, CaídaTensión)
+  // Se elige el cable de mayor sección transversal (más grueso).
+  // Regla crítica: la ampacidad del cable final NUNCA puede ser
+  // menor a IdCorr, sin importar el % de caída permitido.
+  // ══════════════════════════════════════════════════════════════
+  let awgFinal;
+  if (!awgPorAmpacidad) {
+    awgFinal = null;
+  } else if (!awgPorCaida || awgPorAmpacidad[1] >= awgPorCaida[1]) {
+    // El cable de ampacidad es igual o más grueso → usar ese
+    awgFinal = awgPorAmpacidad;
+  } else {
+    // El cable por caída de tensión es más grueso → usar ese
+    // (y verificar que siga cumpliendo ampacidad — siempre cumple
+    //  porque AWG_TABLE está ordenada de menor a mayor sección)
+    awgFinal = awgPorCaida;
+  }
+
+  // Indicadores de qué criterio fue limitante
+  const limitadoPorAmp = awgFinal && awgPorAmpacidad && awgFinal[0] === awgPorAmpacidad[0] && caidaReal <= caidaMax;
+  const limitadoPorVD  = awgFinal && awgPorCaida    && awgFinal[0] === awgPorCaida[0]     && awgFinal[0] !== awgPorAmpacidad[0];
+  const ambosIguales   = awgPorAmpacidad && awgPorCaida && awgPorAmpacidad[0] === awgPorCaida[0];
 
   // Recomendación de breaker
   const pctBreaker  = (tipoMotor === 1 || tipoMotor === 2) ? 2.50 : 1.25;
@@ -3431,9 +3468,15 @@ function calcCable() {
         <div class="calc-card-sub">×${factorMotor} motor · ÷${factorTotal.toFixed(2)} correc.</div>
       </div>
       <div class="calc-card highlight">
-        <div class="calc-card-lbl"><i data-lucide="cable" style="width:12px;height:12px"></i> Calibre recomendado (${material} 90°C)</div>
+        <div class="calc-card-lbl"><i data-lucide="cable" style="width:12px;height:12px"></i> Calibre final — MAX(Amp., C.T.)</div>
         <div class="calc-card-val" style="color:var(--acc)">${awgFinal ? 'AWG ' + awgFinal[0] : '> 750 kcmil'}</div>
-        <div class="calc-card-sub">${awgFinal ? awgFinal[1].toFixed(2) + ' mm² — Cap. ' + awgFinal[colIdx] + ' A' : 'Usar conductores en paralelo'}</div>
+        <div class="calc-card-sub">${awgFinal ? awgFinal[1].toFixed(2) + ' mm² · Cap. ' + awgFinal[colIdx] + ' A' : 'Usar conductores en paralelo'}
+          <span style="margin-left:4px;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;
+            background:${limitadoPorVD?'rgba(239,68,68,.15)':'rgba(34,197,94,.12)'};
+            color:${limitadoPorVD?'#f87171':'var(--ok)'}">
+            ${limitadoPorVD ? '📏 Distancia limitó' : '⚡ Ampacidad limitó'}
+          </span>
+        </div>
       </div>
       <div class="calc-card" style="border-color:${caidaReal>caidaMax?'rgba(239,68,68,.4)':'var(--bd)'}">
         <div class="calc-card-lbl"><i data-lucide="trending-down" style="width:12px;height:12px"></i> Caída de tensión</div>
@@ -3451,9 +3494,23 @@ function calcCable() {
         <div class="calc-card-sub">${longitud} m · Material: ${material}</div>
       </div>
     </div>
-    <div style="background:rgba(245,200,0,.06);border:1px solid rgba(245,200,0,.18);border-radius:10px;padding:12px;font-size:12px;color:var(--t2)">
+    <!-- Detalle de los dos criterios independientes -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ok);margin-bottom:4px">⚡ Criterio A — Ampacidad NEC 310.15</div>
+        <div style="font-family:'DM Mono',monospace;font-weight:700;color:var(--t1)">AWG ${awgPorAmpacidad ? awgPorAmpacidad[0] : '—'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Cap. ${awgPorAmpacidad ? awgPorAmpacidad[colIdx] : '—'} A ≥ ${IdCorr.toFixed(1)} A requeridos — <strong style="color:var(--ok)">Seguridad térmica garantizada</strong></div>
+      </div>
+      <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--info);margin-bottom:4px">📏 Criterio B — Caída de Tensión ${caidaMax}%</div>
+        <div style="font-family:'DM Mono',monospace;font-weight:700;color:var(--t1)">AWG ${awgPorCaida ? awgPorCaida[0] : '—'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${longitud} m · ρ ${rho} Ω·mm²/m · VD real: ${caidaReal.toFixed(2)}% — ${caidaReal>caidaMax?'<strong style="color:var(--err)">Excede límite</strong>':'<strong style="color:var(--ok)">OK</strong>'}</div>
+      </div>
+    </div>
+    <div style="background:rgba(245,200,0,.06);border:1px solid rgba(245,200,0,.18);border-radius:10px;padding:12px;font-size:12px;color:var(--t2);margin-top:10px">
       <strong style="color:var(--acc)">Norma aplicada:</strong> NEC 310.15(B)(16) · NTE INEN 2345 · Factor temp: ${(tempF*100).toFixed(0)}% · Agrupamiento: ${(agrupF*100).toFixed(0)}%
       · ${(tipoMotor===1||tipoMotor===2)?'NEC 430.22 motor (×1.25)':'Carga general'} · Sistema: <strong style="color:var(--t1)">${SISTEMAS_EC[sys]?.label || sys}</strong>
+      · <strong style="color:var(--acc)">Calibre = MAX(Criterio A, Criterio B)</strong>
     </div>
     ${notaNeutro}
   `;
