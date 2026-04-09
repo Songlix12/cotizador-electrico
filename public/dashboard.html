@@ -4344,7 +4344,6 @@ function guardarBalance() {
   if (!nombre) { toast('Ingresa un nombre para el proyecto','err'); document.getElementById('bc-proyecto-nombre')?.focus(); return; }
   if (!cargas.length) { toast('Agrega al menos una carga antes de guardar','err'); return; }
 
-  const balances = _getBalances();
   const ahora = new Date().toISOString();
 
   const stEl = document.getElementById('bc-save-status');
