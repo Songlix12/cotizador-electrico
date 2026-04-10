@@ -8,6 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+/*CODE GENERADO POR Deepseek los tres scrip*/
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -3126,32 +3130,177 @@ async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
 
 /* Exportar PDF nueva cotización (diseño profesional claro, no usa tema oscuro) */
 async function exportarPDFNc(){
-  const todos=[...cotItems,...cotAdic];
-  if(!todos.length){toast('Sin materiales para generar PDF','err');return;}
-  const fname=(sGet('nc-numero')||genNum()).replace(/[^\w.-]+/g,'_');
-  const tpl=document.getElementById('pdf-template');
-  if(!tpl){toast('Contenedor PDF no encontrado.','err');return;}
-  tpl.innerHTML=htmlDocumentoCotizacionPdfProfesional(construirModeloPdfNuevaCot());
+  // Función auxiliar para formatear moneda
+function formatMoney(valor) {
+  return '$' + valor.toFixed(2);
+}
 
-  await htmlAPdfDesdeNodoFuente(tpl,`${fname}.pdf`);
-  tpl.innerHTML='';
+// Exportar PDF de nueva cotización (usando jsPDF + autoTable)
 }
 
 /* Exportar PDF cotización guardada (mismo diseño; nombre elaborador editable en modal) */
-async function exportarPDF(){
-  if(!cotActual)return;
-  const fname=(cotActual.numero||'cotizacion').replace(/[^\w.-]+/g,'_');
-  const tpl=document.getElementById('pdf-template');
-  if(!tpl){toast('Contenedor PDF no encontrado.','err');return;}
-  const modelo=construirModeloPdfGuardada(cotActual);
-  const elabPdf=sGet('ver-elaborado').trim();
-  modelo.elaborador=elabPdf||cotActual.usuario_nombre||usuario?.nombre||'';
-  tpl.innerHTML=htmlDocumentoCotizacionPdfProfesional(modelo);
+// Exportar PDF de cotización guardada (usando jsPDF + autoTable)
+async function exportarPDF() {
+  if (!cotActual) {
+    toast('No hay cotización seleccionada', 'err');
+    return;
+  }
+  const modelo = construirModeloPdfGuardada(cotActual);
+  const elabPdf = document.getElementById('ver-elaborado')?.value.trim();
+  if (elabPdf) modelo.elaborador = elabPdf;
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    unit: 'mm',
+    format: 'a4',
+    orientation: 'portrait'
+  });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 10;
+  const contentWidth = pageWidth - margin * 2;
 
-  await htmlAPdfDesdeNodoFuente(tpl,`${fname}.pdf`);
-  tpl.innerHTML='';
+  const addHeader = (doc, modelo, isFirstPage = true) => {
+    if (isFirstPage) {
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SEST', margin, 15);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Servicios Eléctricos y Seguridad Tapia', margin, 22);
+      doc.text('Cotización formal para su proyecto.', margin, 28);
+      doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin, 34);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('COTIZACIÓN', pageWidth - margin - 30, 15, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(modelo.numero, pageWidth - margin, 22, { align: 'right' });
+      doc.setFontSize(8);
+      doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, 28, { align: 'right' });
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CLIENTE', margin, 48);
+      doc.setFont('helvetica', 'normal');
+      doc.text(modelo.cliente.nombre || 'Sin cliente', margin, 54);
+      let yLine = 60;
+      if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
+      yLine += 5;
+      if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
+      yLine += 5;
+      if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
+      yLine += 5;
+      if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
+      
+      if (modelo.descripcionTrabajo) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Descripción del trabajo', margin, yLine + 6);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
+        doc.text(lines, margin, yLine + 12);
+        yLine += 12 + (lines.length * 5);
+      }
+      return yLine + 6;
+    } else {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
+      doc.setFontSize(8);
+      doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pageWidth - margin, 15, { align: 'right' });
+      return 22;
+    }
+  };
+
+  const tableData = modelo.items.map((it, idx) => [
+    (idx + 1).toString(),
+    it.desc || '—',
+    it.cant.toString(),
+    it.unidad,
+    formatMoney(it.pUnit),
+    it.ivaSi ? '15%' : 'No',
+    formatMoney(it.sub)
+  ]);
+  const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
+  const subtotal = modelo.subtotal;
+  const descuento = modelo.descuentoValor;
+  const iva = modelo.ivaValor;
+  const total = modelo.total;
+
+  const addTotals = (doc, startY) => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Subtotal sin IVA: ${formatMoney(subtotal)}`, pageWidth - margin - 30, startY, { align: 'right' });
+    if (descuento > 0) {
+      doc.text(`Descuento (${modelo.descuentoPct}%): -${formatMoney(descuento)}`, pageWidth - margin - 30, startY + 5, { align: 'right' });
+    }
+    doc.text(`${modelo.ivaSumarioText || 'IVA'}: ${formatMoney(iva)}`, pageWidth - margin - 30, startY + 10, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(`TOTAL: ${formatMoney(total)}`, pageWidth - margin - 30, startY + 18, { align: 'right' });
+  };
+
+  doc.autoTable({
+    head: tableHeaders,
+    body: tableData,
+    startY: margin,
+    margin: { top: margin, right: margin, left: margin, bottom: margin },
+    styles: { fontSize: 8, cellPadding: 2, valign: 'middle', overflow: 'linebreak' },
+    headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 8, halign: 'center' },
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 'auto', halign: 'left' },
+      2: { cellWidth: 12, halign: 'center' },
+      3: { cellWidth: 18, halign: 'center' },
+      4: { cellWidth: 20, halign: 'right' },
+      5: { cellWidth: 12, halign: 'center' },
+      6: { cellWidth: 22, halign: 'right' }
+    },
+    didDrawPage: function(data) {
+      const isFirst = data.pageNumber === 1;
+      const headerY = addHeader(doc, modelo, isFirst);
+      if (data.startY !== headerY + 2) {
+        data.startY = headerY + 2;
+      }
+    }
+  });
+
+  let yFinal = doc.lastAutoTable.finalY + 5;
+  if (modelo.formaPago) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Forma de pago:', margin, yFinal);
+    doc.setFont('helvetica', 'normal');
+    doc.text(modelo.formaPago, margin + 30, yFinal);
+    yFinal += 6;
+  }
+  if (modelo.notas) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Notas y condiciones:', margin, yFinal);
+    doc.setFont('helvetica', 'normal');
+    const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
+    doc.text(notasLines, margin, yFinal + 5);
+    yFinal += 8 + (notasLines.length * 4);
+  }
+  addTotals(doc, yFinal + 5);
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setTextColor(150);
+    doc.text(
+      `SEST · Servicios Eléctricos y Seguridad Tapia · Documento generado el ${new Date().toLocaleDateString('es-EC')}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 8,
+      { align: 'center' }
+    );
+  }
+
+  doc.save(`${modelo.numero}.pdf`);
+  toast('PDF descargado ✓', 'ok');
 }
-
 /* Utilidades jhonatan */
 function openModal(id){document.getElementById(id).classList.add('on');refreshIcons();}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
