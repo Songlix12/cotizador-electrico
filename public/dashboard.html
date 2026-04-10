@@ -2131,13 +2131,13 @@ function htmlDocumentoCotizacionPdfProfesional(m) {
 
   const theadHtml = `<thead>
     <tr>
-      <th class="pdf-prof-th" style="width:5%">#</th>
-      <th class="pdf-prof-th" style="width:35%">Descripción</th>
-      <th class="pdf-prof-th" style="width:7%">Cant.</th>
+      <th class="pdf-prof-th" style="width:6%">#</th>
+      <th class="pdf-prof-th" style="width:32%">Descripción</th>
+      <th class="pdf-prof-th" style="width:8%">Cant.</th>
       <th class="pdf-prof-th" style="width:12%">Unidad</th>
       <th class="pdf-prof-th" style="width:12%">P. unit.</th>
-      <th class="pdf-prof-th" style="width:8%">IVA %</th>
-      <th class="pdf-prof-th" style="width:21%">Subtotal</th>
+      <th class="pdf-prof-th" style="width:10%">IVA %</th>
+      <th class="pdf-prof-th" style="width:20%">Subtotal</th>
     </tr>
   </thead>`;
 
@@ -2145,7 +2145,7 @@ function htmlDocumentoCotizacionPdfProfesional(m) {
     slice.map((it, j) => `
       <tr class="pdf-prof-tr">
         <td class="pdf-prof-td pdf-prof-td-c">${offsetIdx + j + 1}</td>
-        <td class="pdf-prof-td pdf-prof-td-desc" style="word-break:break-word">${escPdf(it.desc || '—')}</td>
+        <td class="pdf-prof-td pdf-prof-td-desc" style="word-break:break-word; white-space:normal;">${escPdf(it.desc || '—')}</td>
         <td class="pdf-prof-td pdf-prof-td-c pdf-prof-mono">${escPdf(String(it.cant))}</td>
         <td class="pdf-prof-td">${escPdf(it.unidad)}</td>
         <td class="pdf-prof-td pdf-prof-td-r pdf-prof-mono">$${Number(it.pUnit).toFixed(2)}</td>
@@ -2190,7 +2190,7 @@ function htmlDocumentoCotizacionPdfProfesional(m) {
     if (esPrimera) {
       contenidoPagina += `
       <div class="pdf-prof-top">
-        <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
+        <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="70" height="70" decoding="sync"/>
         <div>
           <div class="pdf-prof-co-name">Servicios Eléctricos y Seguridad Tapia</div>
           <div class="pdf-prof-co-brand">SEST</div>
@@ -2237,51 +2237,51 @@ function htmlDocumentoCotizacionPdfProfesional(m) {
 
     if (esUltima) contenidoPagina += bloqueTotales;
 
-    paginasHtml += `<div class="pdf-doc-prof" style="${esBreak}padding:20px 24px;">${contenidoPagina}</div>`;
+    paginasHtml += `<div class="pdf-doc-prof" style="${esBreak}padding:16px 20px;">${contenidoPagina}</div>`;
     if (!esUltima) paginasHtml += `<div class="pdf-page-break"></div>`;
   });
 
   return `<div id="pdf-root-wrapper" style="background:#fff;width:100%;">
     <style type="text/css">
-      .pdf-doc-prof { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; font-size: 11px; line-height: 1.4; color: #0a0a0a; background: #fff; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .pdf-doc-prof { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; font-size: 10px; line-height: 1.4; color: #0a0a0a; background: #fff; width: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .pdf-doc-prof * { box-sizing: border-box; }
       .pdf-page-break { page-break-after: always; height: 0; overflow: hidden; }
-      .pdf-prof-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 3px solid #d4a017; margin-bottom: 18px; gap: 12px; }
-      .pdf-prof-logo { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; border: 1px solid #ccc; }
-      .pdf-prof-co-name { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #1e293b; text-transform: uppercase; margin-bottom: 4px; }
-      .pdf-prof-co-brand { font-size: 20px; font-weight: 800; color: #000; line-height: 1.1; }
-      .pdf-prof-co-sub { font-size: 10px; color: #1e293b; margin-top: 4px; }
-      .pdf-prof-co-elab { font-size: 10px; margin-top: 6px; }
+      .pdf-prof-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 3px solid #d4a017; margin-bottom: 14px; gap: 10px; }
+      .pdf-prof-logo { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 1px solid #ccc; }
+      .pdf-prof-co-name { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #1e293b; text-transform: uppercase; margin-bottom: 4px; }
+      .pdf-prof-co-brand { font-size: 18px; font-weight: 800; color: #000; line-height: 1.1; }
+      .pdf-prof-co-sub { font-size: 9px; color: #1e293b; margin-top: 4px; }
+      .pdf-prof-co-elab { font-size: 9px; margin-top: 6px; }
       .pdf-prof-meta { text-align: right; }
-      .pdf-prof-meta-tit { font-size: 9px; font-weight: 700; letter-spacing: 0.2em; color: #475569; text-transform: uppercase; }
-      .pdf-prof-meta-num { font-size: 18px; font-weight: 800; color: #b8860b; font-family: monospace; }
-      .pdf-prof-meta-fch { font-size: 10px; color: #1e293b; margin-top: 4px; }
-      .pdf-prof-two { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 16px; }
-      .pdf-prof-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #475569; text-transform: uppercase; margin-bottom: 4px; }
-      .pdf-prof-cli-name { font-size: 13px; font-weight: 700; color: #000; }
-      .pdf-prof-cli-line { font-size: 10px; color: #0f172a; margin-top: 2px; }
-      .pdf-prof-desc-box { margin-bottom: 16px; padding: 10px 12px; background: #f1f5f9; border-left: 4px solid #d4a017; border-radius: 0 6px 6px 0; }
-      .pdf-prof-desc-lbl { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #334155; text-transform: uppercase; margin-bottom: 4px; }
-      .pdf-prof-desc-txt { font-size: 11px; color: #0a0a0a; line-height: 1.4; }
-      .pdf-prof-cont-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 2px solid #d4a017; margin-bottom: 12px; font-size: 11px; }
-      .pdf-prof-table-wrap { width: 100%; overflow-x: visible; margin-bottom: 16px; }
-      .pdf-prof-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10px; border: 1px solid #94a3b8; }
-      .pdf-prof-th { font-size: 8px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; text-align: left; color: #0a0a0a; background: #e2e8f0; padding: 6px 5px; border: 1px solid #94a3b8; vertical-align: bottom; }
+      .pdf-prof-meta-tit { font-size: 8px; font-weight: 700; letter-spacing: 0.2em; color: #475569; text-transform: uppercase; }
+      .pdf-prof-meta-num { font-size: 16px; font-weight: 800; color: #b8860b; font-family: monospace; }
+      .pdf-prof-meta-fch { font-size: 9px; color: #1e293b; margin-top: 4px; }
+      .pdf-prof-two { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
+      .pdf-prof-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; color: #475569; text-transform: uppercase; margin-bottom: 4px; }
+      .pdf-prof-cli-name { font-size: 12px; font-weight: 700; color: #000; }
+      .pdf-prof-cli-line { font-size: 9px; color: #0f172a; margin-top: 2px; }
+      .pdf-prof-desc-box { margin-bottom: 12px; padding: 8px 10px; background: #f1f5f9; border-left: 4px solid #d4a017; border-radius: 0 6px 6px 0; }
+      .pdf-prof-desc-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; color: #334155; text-transform: uppercase; margin-bottom: 4px; }
+      .pdf-prof-desc-txt { font-size: 10px; color: #0a0a0a; line-height: 1.4; }
+      .pdf-prof-cont-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 2px solid #d4a017; margin-bottom: 10px; font-size: 10px; }
+      .pdf-prof-table-wrap { width: 100%; overflow-x: visible; margin-bottom: 12px; }
+      .pdf-prof-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9px; border: 1px solid #94a3b8; }
+      .pdf-prof-th { font-size: 7px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; text-align: left; color: #0a0a0a; background: #e2e8f0; padding: 4px 4px; border: 1px solid #94a3b8; vertical-align: bottom; }
       .pdf-prof-th-c, .pdf-prof-td-c { text-align: center; }
       .pdf-prof-th-r, .pdf-prof-td-r { text-align: right; }
-      .pdf-prof-td { padding: 6px 5px; border: 1px solid #cbd5e1; vertical-align: top; word-break: break-word; color: #0f172a; }
+      .pdf-prof-td { padding: 4px 4px; border: 1px solid #cbd5e1; vertical-align: top; word-break: break-word; color: #0f172a; }
       .pdf-prof-td-desc { font-weight: 600; color: #000; }
       .pdf-prof-mono { font-family: monospace; font-variant-numeric: tabular-nums; }
-      .pdf-prof-td-iva { font-size: 9px; font-weight: 600; }
+      .pdf-prof-td-iva { font-size: 8px; font-weight: 600; }
       .pdf-prof-td-strong { font-weight: 700; color: #000; }
-      .pdf-prof-sums { max-width: 280px; margin-left: auto; margin-bottom: 16px; }
-      .pdf-prof-sum-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 10px; gap: 16px; }
+      .pdf-prof-sums { max-width: 260px; margin-left: auto; margin-bottom: 12px; }
+      .pdf-prof-sum-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 9px; gap: 12px; }
       .pdf-prof-sum-ok { color: #0f6f2e; }
-      .pdf-prof-total-row { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 3px solid #d4a017; font-size: 16px; font-weight: 800; color: #b8860b; }
-      .pdf-prof-foot-block { font-size: 10px; margin-bottom: 10px; }
-      .pdf-prof-notas { padding: 8px 10px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; }
-      .pdf-prof-notas-body { margin-top: 4px; font-size: 10px; }
-      .pdf-prof-footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #cbd5e1; text-align: center; font-size: 9px; color: #475569; }
+      .pdf-prof-total-row { display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 3px solid #d4a017; font-size: 14px; font-weight: 800; color: #b8860b; }
+      .pdf-prof-foot-block { font-size: 9px; margin-bottom: 8px; }
+      .pdf-prof-notas { padding: 6px 8px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; }
+      .pdf-prof-notas-body { margin-top: 4px; font-size: 9px; }
+      .pdf-prof-footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #cbd5e1; text-align: center; font-size: 8px; color: #475569; }
       @media print {
         .pdf-doc-prof { margin: 0; padding: 0; }
         .pdf-prof-table { break-inside: avoid; }
@@ -2291,7 +2291,6 @@ function htmlDocumentoCotizacionPdfProfesional(m) {
     ${paginasHtml}
   </div>`;
 }
-
 async function htmlAPdfDesdeNodoFuente(sourceEl, filename) {
   if (!sourceEl) { toast('No hay contenido para el PDF.', 'err'); return; }
   if (!sourceEl.textContent || !sourceEl.textContent.trim()) { toast('Contenido vacío para exportar.', 'err'); return; }
@@ -2301,9 +2300,11 @@ async function htmlAPdfDesdeNodoFuente(sourceEl, filename) {
   const host = document.createElement('div');
   host.id = 'pdf-capture-host';
   host.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; overflow:visible; z-index:-1; background:#ffffff;';
+  
   const clone = sourceEl.cloneNode(true);
   clone.removeAttribute('id');
-  clone.style.cssText = 'display:block; width:100%; box-sizing:border-box; background:#ffffff; color:#111827; overflow:visible;';
+  clone.style.cssText = 'display:block; width:100%; max-width:100%; box-sizing:border-box; background:#ffffff; color:#111827; overflow:visible;';
+  
   host.appendChild(clone);
   document.body.appendChild(host);
 
@@ -2322,17 +2323,17 @@ async function htmlAPdfDesdeNodoFuente(sourceEl, filename) {
     await delayPdf(100);
 
     const opts = {
-      margin: [10, 10, 10, 10],
+      margin: [8, 8, 8, 8],
       image: { type: 'png', quality: 1 },
       html2canvas: {
-        scale: 2.5,
+        scale: 2.8,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
         windowWidth: 794,
         letterRendering: true,
-        imageTimeout: 10000
+        imageTimeout: 15000
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: false },
       pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page-break', avoid: '.pdf-prof-tr' }
@@ -2347,12 +2348,11 @@ async function htmlAPdfDesdeNodoFuente(sourceEl, filename) {
   } catch (err) {
     console.error(err);
     _ocultarLoadingPdf();
-    toast('Error al generar PDF', 'err');
+    toast('Error al generar PDF: ' + (err.message || 'desconocido'), 'err');
   } finally {
     host.remove();
   }
 }
-
 async function exportarPDFNc(){
   const todos=[...cotItems,...cotAdic];
   if(!todos.length){toast('Sin materiales para generar PDF','err');return;}
