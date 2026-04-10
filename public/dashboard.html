@@ -7,6 +7,7 @@
 <link rel="icon" type="image/jpeg" href="logo.jpg"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -3101,7 +3102,34 @@ function formatMoney(valor) {
   return '$' + valor.toFixed(2);
 }
 
-// Exportar PDF de nueva cotización (usando jsPDF + autoTable)
+//------------------------------------
+// Función auxiliar para formatear moneda
+function formatMoney(valor) {
+  return '$' + valor.toFixed(2);
+}
+
+// Cargar logo como base64 (para incrustarlo en el PDF)
+let logoBase64 = null;
+async function cargarLogoBase64() {
+  if (logoBase64) return logoBase64;
+  try {
+    const response = await fetch('logo.jpg');
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        logoBase64 = reader.result;
+        resolve(logoBase64);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.warn('No se pudo cargar el logo:', e);
+    return null;
+  }
+}
+
+// Exportar PDF de nueva cotización (diseño elegante)
 async function exportarPDFNc() {
   const todos = [...cotItems, ...cotAdic];
   if (!todos.length) {
@@ -3109,7 +3137,6 @@ async function exportarPDFNc() {
     return;
   }
 
-  // Construir modelo de datos
   const modelo = construirModeloPdfNuevaCot();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
@@ -3118,71 +3145,95 @@ async function exportarPDFNc() {
     orientation: 'portrait'
   });
 
-  // Configuración de página
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 10;
+  const margin = 12;
   const contentWidth = pageWidth - margin * 2;
 
-  // Función para agregar encabezado (se repite en cada página)
-  const addHeader = (doc, modelo, isFirstPage = true) => {
-    if (isFirstPage) {
-      // Logo y datos de empresa (simulado, puedes personalizar)
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SEST', margin, 15);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Servicios Eléctricos y Seguridad Tapia', margin, 22);
-      doc.text('Cotización formal para su proyecto.', margin, 28);
-      doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin, 34);
-      
-      // Número y fecha
-      doc.setFont('helvetica', 'bold');
-      doc.text('COTIZACIÓN', pageWidth - margin - 30, 15, { align: 'right' });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text(modelo.numero, pageWidth - margin, 22, { align: 'right' });
-      doc.setFontSize(8);
-      doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, 28, { align: 'right' });
-      
-      // Datos del cliente
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CLIENTE', margin, 48);
-      doc.setFont('helvetica', 'normal');
-      doc.text(modelo.cliente.nombre || 'Sin cliente', margin, 54);
-      let yLine = 60;
-      if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine, { align: 'left' });
-      yLine += 5;
-      if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
-      yLine += 5;
-      if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
-      yLine += 5;
-      if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
-      
-      // Descripción del trabajo
-      if (modelo.descripcionTrabajo) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('Descripción del trabajo', margin, yLine + 6);
-        doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
-        doc.text(lines, margin, yLine + 12);
-        yLine += 12 + (lines.length * 5);
-      }
-      return yLine + 6; // posición Y donde termina el encabezado
-    } else {
-      // Encabezado compacto para páginas siguientes
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
-      doc.setFontSize(8);
-      doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pageWidth - margin, 15, { align: 'right' });
-      return 22;
+  // Cargar logo
+  const logoImg = await cargarLogoBase64();
+
+  // Función de encabezado para primera página
+  const addFirstHeader = (doc, modelo, logoImg) => {
+    let y = 15;
+    if (logoImg) {
+      doc.addImage(logoImg, 'JPEG', margin, y, 25, 25);
+      y += 5;
     }
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('SEST', margin + (logoImg ? 30 : 0), y + 8);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Servicios Eléctricos y Seguridad Tapia', margin + (logoImg ? 30 : 0), y + 14);
+    doc.text('Cotización formal para su proyecto. Valide plazos y especificaciones técnicas.', margin + (logoImg ? 30 : 0), y + 20);
+    doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin + (logoImg ? 30 : 0), y + 26);
+    
+    // Número y fecha a la derecha
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('COTIZACIÓN', pageWidth - margin, y + 8, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(modelo.numero, pageWidth - margin, y + 16, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, y + 24, { align: 'right' });
+    
+    // Línea decorativa
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 34, pageWidth - margin, y + 34);
+    
+    // Datos del cliente
+    y += 44;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('CLIENTE', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(modelo.cliente.nombre || 'Sin cliente', margin, y + 6);
+    let yLine = y + 12;
+    if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
+    
+    yLine += 8;
+    // Descripción del trabajo
+    if (modelo.descripcionTrabajo) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Descripción del trabajo', margin, yLine);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
+      doc.text(lines, margin, yLine + 6);
+      yLine += 12 + (lines.length * 5);
+    }
+    return yLine + 6;
   };
 
-  // Preparar datos de la tabla
+  // Encabezado compacto para páginas siguientes
+  const addCompactHeader = (doc, modelo, pageNum) => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Página ${pageNum}`, pageWidth - margin, 15, { align: 'right' });
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 20, pageWidth - margin, 20);
+    return 25;
+  };
+
+  // Preparar datos de tabla
   const tableData = modelo.items.map((it, idx) => [
     (idx + 1).toString(),
     it.desc || '—',
@@ -3192,38 +3243,41 @@ async function exportarPDFNc() {
     (it.ivaPct && it.ivaPct > 0) ? it.ivaPct + '%' : 'No',
     formatMoney(it.sub)
   ]);
-
   const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
-  
-  // Calcular totales
   const subtotal = modelo.subtotal;
   const descuento = modelo.descuentoValor;
   const iva = modelo.ivaValor;
   const total = modelo.total;
 
-  // Función para agregar fila de totales
   const addTotals = (doc, startY) => {
+    let y = startY;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Subtotal sin IVA: ${formatMoney(subtotal)}`, pageWidth - margin - 30, startY, { align: 'right' });
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Subtotal sin IVA: ${formatMoney(subtotal)}`, pageWidth - margin - 35, y, { align: 'right' });
+    y += 5;
     if (descuento > 0) {
-      doc.text(`Descuento (${modelo.descuentoPct}%): -${formatMoney(descuento)}`, pageWidth - margin - 30, startY + 5, { align: 'right' });
+      doc.text(`Descuento (${modelo.descuentoPct}%): -${formatMoney(descuento)}`, pageWidth - margin - 35, y, { align: 'right' });
+      y += 5;
     }
-    doc.text(`${modelo.ivaSumarioText || 'IVA'}: ${formatMoney(iva)}`, pageWidth - margin - 30, startY + 10, { align: 'right' });
+    doc.text(`${modelo.ivaSumarioText || 'IVA'}: ${formatMoney(iva)}`, pageWidth - margin - 35, y, { align: 'right' });
+    y += 7;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text(`TOTAL: ${formatMoney(total)}`, pageWidth - margin - 30, startY + 18, { align: 'right' });
+    doc.setFontSize(12);
+    doc.setTextColor(200, 160, 0);
+    doc.text(`TOTAL: ${formatMoney(total)}`, pageWidth - margin - 35, y, { align: 'right' });
   };
 
-  // Generar tabla con autoTable (maneja paginación automática)
-  let finalY = margin;
+  // Generar tabla
+  let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
   doc.autoTable({
     head: tableHeaders,
     body: tableData,
-    startY: finalY,
+    startY: firstHeaderY,
     margin: { top: margin, right: margin, left: margin, bottom: margin },
-    styles: { fontSize: 8, cellPadding: 2, valign: 'middle', overflow: 'linebreak' },
-    headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 8, halign: 'center' },
+    styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak', textColor: [40, 40, 40] },
+    headStyles: { fillColor: [30, 30, 60], textColor: 255, fontSize: 8, halign: 'center', valign: 'middle' },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
       1: { cellWidth: 'auto', halign: 'left' },
@@ -3234,50 +3288,54 @@ async function exportarPDFNc() {
       6: { cellWidth: 22, halign: 'right' }
     },
     didDrawPage: function(data) {
-      // Encabezado de página (primera página especial, siguientes compactas)
-      const isFirst = data.pageNumber === 1;
-      const headerY = addHeader(doc, modelo, isFirst);
-      // Ajustar startY de la tabla si es necesario
-      if (data.startY !== headerY + 2) {
-        data.startY = headerY + 2;
-      }
-    },
-    willDrawCell: function(data) {
-      // Asegurar que la posición Y de inicio no se solape con encabezado
-      if (data.row.index === 0 && data.settings.startY < 50 && data.pageNumber === 1) {
-        data.settings.startY = 50;
+      if (data.pageNumber === 1) {
+        // Ya se dibujó el encabezado grande, ajustar startY si es necesario
+        if (data.startY !== firstHeaderY + 2) {
+          data.startY = firstHeaderY + 2;
+        }
+      } else {
+        // Para páginas siguientes, dibujar encabezado compacto
+        const compactY = addCompactHeader(doc, modelo, data.pageNumber);
+        if (data.startY !== compactY + 2) {
+          data.startY = compactY + 2;
+        }
       }
     }
   });
 
-  // Agregar notas y forma de pago al final
-  let yFinal = doc.lastAutoTable.finalY + 5;
+  // Después de la tabla, agregar forma de pago y notas
+  let yFinal = doc.lastAutoTable.finalY + 8;
   if (modelo.formaPago) {
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     doc.text('Forma de pago:', margin, yFinal);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
     doc.text(modelo.formaPago, margin + 30, yFinal);
     yFinal += 6;
   }
   if (modelo.notas) {
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     doc.text('Notas y condiciones:', margin, yFinal);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
     const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
     doc.text(notasLines, margin, yFinal + 5);
     yFinal += 8 + (notasLines.length * 4);
   }
-  // Totales (si no se agregaron automáticamente, los ponemos al final)
+  // Totales al final
   addTotals(doc, yFinal + 5);
 
-  // Pie de página
+  // Pie de página en todas las páginas
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7);
-    doc.setTextColor(150);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
     doc.text(
       `SEST · Servicios Eléctricos y Seguridad Tapia · Documento generado el ${new Date().toLocaleDateString('es-EC')}`,
       pageWidth / 2,
@@ -3286,12 +3344,11 @@ async function exportarPDFNc() {
     );
   }
 
-  // Guardar PDF
   doc.save(`${modelo.numero}.pdf`);
   toast('PDF descargado ✓', 'ok');
 }
 
-// Exportar PDF de cotización guardada (similar, pero usando datos de cotActual)
+// Exportar PDF de cotización guardada (mismo diseño elegante)
 async function exportarPDF() {
   if (!cotActual) {
     toast('No hay cotización seleccionada', 'err');
@@ -3307,61 +3364,86 @@ async function exportarPDF() {
     format: 'a4',
     orientation: 'portrait'
   });
+
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 10;
+  const margin = 12;
   const contentWidth = pageWidth - margin * 2;
 
-  const addHeader = (doc, modelo, isFirstPage = true) => {
-    if (isFirstPage) {
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SEST', margin, 15);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Servicios Eléctricos y Seguridad Tapia', margin, 22);
-      doc.text('Cotización formal para su proyecto.', margin, 28);
-      doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin, 34);
-      
-      doc.setFont('helvetica', 'bold');
-      doc.text('COTIZACIÓN', pageWidth - margin - 30, 15, { align: 'right' });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text(modelo.numero, pageWidth - margin, 22, { align: 'right' });
-      doc.setFontSize(8);
-      doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, 28, { align: 'right' });
-      
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CLIENTE', margin, 48);
-      doc.setFont('helvetica', 'normal');
-      doc.text(modelo.cliente.nombre || 'Sin cliente', margin, 54);
-      let yLine = 60;
-      if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
-      yLine += 5;
-      if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
-      yLine += 5;
-      if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
-      yLine += 5;
-      if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
-      
-      if (modelo.descripcionTrabajo) {
-        doc.setFont('helvetica', 'bold');
-        doc.text('Descripción del trabajo', margin, yLine + 6);
-        doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
-        doc.text(lines, margin, yLine + 12);
-        yLine += 12 + (lines.length * 5);
-      }
-      return yLine + 6;
-    } else {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
-      doc.setFontSize(8);
-      doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pageWidth - margin, 15, { align: 'right' });
-      return 22;
+  const logoImg = await cargarLogoBase64();
+
+  const addFirstHeader = (doc, modelo, logoImg) => {
+    let y = 15;
+    if (logoImg) {
+      doc.addImage(logoImg, 'JPEG', margin, y, 25, 25);
+      y += 5;
     }
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('SEST', margin + (logoImg ? 30 : 0), y + 8);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Servicios Eléctricos y Seguridad Tapia', margin + (logoImg ? 30 : 0), y + 14);
+    doc.text('Cotización formal para su proyecto. Valide plazos y especificaciones técnicas.', margin + (logoImg ? 30 : 0), y + 20);
+    doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin + (logoImg ? 30 : 0), y + 26);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('COTIZACIÓN', pageWidth - margin, y + 8, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(modelo.numero, pageWidth - margin, y + 16, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, y + 24, { align: 'right' });
+    
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 34, pageWidth - margin, y + 34);
+    
+    y += 44;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('CLIENTE', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(modelo.cliente.nombre || 'Sin cliente', margin, y + 6);
+    let yLine = y + 12;
+    if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
+    
+    yLine += 8;
+    if (modelo.descripcionTrabajo) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Descripción del trabajo', margin, yLine);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
+      doc.text(lines, margin, yLine + 6);
+      yLine += 12 + (lines.length * 5);
+    }
+    return yLine + 6;
+  };
+
+  const addCompactHeader = (doc, modelo, pageNum) => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Página ${pageNum}`, pageWidth - margin, 15, { align: 'right' });
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 20, pageWidth - margin, 20);
+    return 25;
   };
 
   const tableData = modelo.items.map((it, idx) => [
@@ -3380,25 +3462,33 @@ async function exportarPDF() {
   const total = modelo.total;
 
   const addTotals = (doc, startY) => {
+    let y = startY;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Subtotal sin IVA: ${formatMoney(subtotal)}`, pageWidth - margin - 30, startY, { align: 'right' });
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Subtotal sin IVA: ${formatMoney(subtotal)}`, pageWidth - margin - 35, y, { align: 'right' });
+    y += 5;
     if (descuento > 0) {
-      doc.text(`Descuento (${modelo.descuentoPct}%): -${formatMoney(descuento)}`, pageWidth - margin - 30, startY + 5, { align: 'right' });
+      doc.text(`Descuento (${modelo.descuentoPct}%): -${formatMoney(descuento)}`, pageWidth - margin - 35, y, { align: 'right' });
+      y += 5;
     }
-    doc.text(`${modelo.ivaSumarioText || 'IVA'}: ${formatMoney(iva)}`, pageWidth - margin - 30, startY + 10, { align: 'right' });
+    doc.text(`${modelo.ivaSumarioText || 'IVA'}: ${formatMoney(iva)}`, pageWidth - margin - 35, y, { align: 'right' });
+    y += 7;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text(`TOTAL: ${formatMoney(total)}`, pageWidth - margin - 30, startY + 18, { align: 'right' });
+    doc.setFontSize(12);
+    doc.setTextColor(200, 160, 0);
+    doc.text(`TOTAL: ${formatMoney(total)}`, pageWidth - margin - 35, y, { align: 'right' });
   };
 
+  let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
   doc.autoTable({
     head: tableHeaders,
     body: tableData,
-    startY: margin,
+    startY: firstHeaderY,
     margin: { top: margin, right: margin, left: margin, bottom: margin },
-    styles: { fontSize: 8, cellPadding: 2, valign: 'middle', overflow: 'linebreak' },
-    headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 8, halign: 'center' },
+    styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak', textColor: [40, 40, 40] },
+    headStyles: { fillColor: [30, 30, 60], textColor: 255, fontSize: 8, halign: 'center', valign: 'middle' },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
       1: { cellWidth: 'auto', halign: 'left' },
@@ -3409,28 +3499,37 @@ async function exportarPDF() {
       6: { cellWidth: 22, halign: 'right' }
     },
     didDrawPage: function(data) {
-      const isFirst = data.pageNumber === 1;
-      const headerY = addHeader(doc, modelo, isFirst);
-      if (data.startY !== headerY + 2) {
-        data.startY = headerY + 2;
+      if (data.pageNumber === 1) {
+        if (data.startY !== firstHeaderY + 2) {
+          data.startY = firstHeaderY + 2;
+        }
+      } else {
+        const compactY = addCompactHeader(doc, modelo, data.pageNumber);
+        if (data.startY !== compactY + 2) {
+          data.startY = compactY + 2;
+        }
       }
     }
   });
 
-  let yFinal = doc.lastAutoTable.finalY + 5;
+  let yFinal = doc.lastAutoTable.finalY + 8;
   if (modelo.formaPago) {
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     doc.text('Forma de pago:', margin, yFinal);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
     doc.text(modelo.formaPago, margin + 30, yFinal);
     yFinal += 6;
   }
   if (modelo.notas) {
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     doc.text('Notas y condiciones:', margin, yFinal);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
     const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
     doc.text(notasLines, margin, yFinal + 5);
     yFinal += 8 + (notasLines.length * 4);
@@ -3441,7 +3540,8 @@ async function exportarPDF() {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7);
-    doc.setTextColor(150);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
     doc.text(
       `SEST · Servicios Eléctricos y Seguridad Tapia · Documento generado el ${new Date().toLocaleDateString('es-EC')}`,
       pageWidth / 2,
