@@ -3332,272 +3332,148 @@ async function exportarPDFNc() {
   });
 
   // Después de la tabla, agregar forma de pago y notas (si existen)
-  let yAfterTable = doc.lastAutoTable.finalY + 2;
+
+  // ============================================================
+  // SECCIÓN: FORMA DE PAGO + TARJETA DE TOTALES (una al lado de la otra)
+  // ============================================================
+  let yAfterTable = doc.lastAutoTable.finalY + 4;
+  const leftColWidth = 80;  // Ancho de la columna izquierda (forma de pago)
+  const rightColWidth = 70; // Ancho de la columna derecha (tarjeta)
+  
+  // Calcular altura de la forma de pago
+  let formaPagoLines = [];
+  let leftHeight = 0;
   if (modelo.formaPago) {
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Forma de pago:', margin, yAfterTable);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    doc.text(modelo.formaPago, margin + 30, yAfterTable);
-    yAfterTable += 6;
+    formaPagoLines = doc.splitTextToSize(modelo.formaPago, leftColWidth - 10);
+    leftHeight = 20 + (formaPagoLines.length * 5);
   }
-  if (modelo.notas) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Notas y condiciones:', margin, yAfterTable);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
-    doc.text(notasLines, margin, yAfterTable + 5);
-    yAfterTable += 8 + (notasLines.length * 4);
-  }
-
-  // Dibujar tarjeta de totales justo después de notas (o después de tabla si no hay notas)
-  let totalsY = yAfterTable + 1;
-  drawTotalsCard(doc, totalsY);
-
-  // Pie de página en todas las páginas
-  const pageCount = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(120, 120, 120);
-    doc.text(
-      `SEST · Servicios Eléctricos y Seguridad Tapia · Documento generado el ${new Date().toLocaleDateString('es-EC')}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 8,
-      { align: 'center' }
-    );
-  }
-
-  doc.save(`${modelo.numero}.pdf`);
-  toast('PDF descargado ✓', 'ok');
-}
-
-// Exportar PDF de cotización guardada (mismo diseño)
-async function exportarPDF() {
-  if (!cotActual) {
-    toast('No hay cotización seleccionada', 'err');
-    return;
-  }
-  const modelo = construirModeloPdfGuardada(cotActual);
-  const elabPdf = document.getElementById('ver-elaborado')?.value.trim();
-  if (elabPdf) modelo.elaborador = elabPdf;
   
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({
-    unit: 'mm',
-    format: 'a4',
-    orientation: 'portrait'
-  });
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 12;
-  const contentWidth = pageWidth - margin * 2;
-
-  const logoImg = await cargarLogoBase64();
-
-  const addFirstHeader = (doc, modelo, logoImg) => {
-    let y = 15;
-    if (logoImg) {
-      doc.addImage(logoImg, 'JPEG', margin, y, 25, 25);
-      y += 5;
-    }
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('SEST', margin + (logoImg ? 30 : 0), y + 8);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text('Servicios Eléctricos y Seguridad Tapia', margin + (logoImg ? 30 : 0), y + 14);
-    doc.text('Cotización formal para su proyecto. Valide plazos y especificaciones técnicas.', margin + (logoImg ? 30 : 0), y + 20);
-    doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin + (logoImg ? 30 : 0), y + 26);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text('COTIZACIÓN', pageWidth - margin, y + 8, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.text(modelo.numero, pageWidth - margin, y + 16, { align: 'right' });
-    doc.setFontSize(8);
-    doc.setTextColor(80, 80, 80);
-    doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, y + 24, { align: 'right' });
-    
-    doc.setDrawColor(200, 160, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y + 34, pageWidth - margin, y + 34);
-    
-    y += 44;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('CLIENTE', margin, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    doc.text(modelo.cliente.nombre || 'Sin cliente', margin, y + 6);
-    let yLine = y + 12;
-    if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
-    yLine += 5;
-    if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
-    yLine += 5;
-    if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
-    yLine += 5;
-    if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
-    
-    yLine += 8;
-    if (modelo.descripcionTrabajo) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('Descripción del trabajo', margin, yLine);
-      doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
-      doc.text(lines, margin, yLine + 6);
-      yLine += 12 + (lines.length * 5);
-    }
-    return yLine + 6;
-  };
-
-  const addCompactHeader = (doc, modelo, pageNum) => {
+  const rightHeight = 42; // Altura base de la tarjeta
+  const maxHeight = Math.max(leftHeight, rightHeight);
+  let columnY = yAfterTable;
+  
+  // Verificar si cabe en la página actual
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (columnY + maxHeight + 30 > pageHeight - 15) {
+    doc.addPage();
+    columnY = margin + 10;
+    // Encabezado compacto para nueva página
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
     doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
     doc.setFontSize(8);
     doc.setTextColor(80, 80, 80);
-    doc.text(`Página ${pageNum}`, pageWidth - margin, 15, { align: 'right' });
+    doc.text(`Página ${doc.internal.getNumberOfPages()}`, pageWidth - margin, 15, { align: 'right' });
     doc.setDrawColor(200, 160, 0);
     doc.setLineWidth(0.3);
     doc.line(margin, 20, pageWidth - margin, 20);
-    return 25;
-  };
-
-  const tableData = modelo.items.map((it, idx) => [
-    (idx + 1).toString(),
-    it.desc || '—',
-    it.cant.toString(),
-    it.unidad,
-    formatMoney(it.pUnit),
-    it.ivaSi ? '15%' : 'No',
-    formatMoney(it.sub)
-  ]);
-  const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
-  const subtotal = modelo.subtotal;
-  const descuento = modelo.descuentoValor;
-  const iva = modelo.ivaValor;
-  const total = modelo.total;
-  const descuentoPorcentaje = modelo.descuentoPct;
-
-  const drawTotalsCard = (doc, yStart) => {
-    const cardWidth = 70;
-    const cardX = pageWidth - margin - cardWidth;
-    let currentY = yStart;
+    columnY = 28;
+  }
+  
+  // ============================================================
+  // COLUMNA IZQUIERDA: FORMA DE PAGO
+  // ============================================================
+  if (modelo.formaPago) {
+    const leftX = margin;
+    const leftWidth = leftColWidth;
     
     doc.setFillColor(248, 248, 248);
     doc.setDrawColor(200, 160, 0);
     doc.setLineWidth(0.3);
-    doc.roundedRect(cardX, currentY, cardWidth, 45, 3, 3, 'FD');
+    doc.roundedRect(leftX, columnY, leftWidth, maxHeight, 3, 3, 'FD');
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(100, 100, 100);
-    doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, currentY + 6, { align: 'center' });
+    doc.text('FORMA DE PAGO', leftX + leftWidth/2, columnY + 5, { align: 'center' });
     
     doc.setDrawColor(200, 160, 0);
     doc.setLineWidth(0.2);
-    doc.line(cardX + 5, currentY + 9, cardX + cardWidth - 5, currentY + 9);
+    doc.line(leftX + 5, columnY + 8, leftX + leftWidth - 5, columnY + 8);
     
-    let y = currentY + 14;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
-    
-    doc.text('Subtotal sin IVA:', cardX + 5, y);
-    doc.text(formatMoney(subtotal), cardX + cardWidth - 5, y, { align: 'right' });
-    y += 5;
-    
-    if (descuento > 0) {
-      doc.setTextColor(200, 100, 100);
-      doc.text(`Descuento (${descuentoPorcentaje}%):`, cardX + 5, y);
-      doc.text(`-${formatMoney(descuento)}`, cardX + cardWidth - 5, y, { align: 'right' });
-      y += 5;
-      doc.setTextColor(60, 60, 60);
+    let textY = columnY + 14;
+    for (let i = 0; i < formaPagoLines.length; i++) {
+      doc.text(formaPagoLines[i], leftX + 5, textY);
+      textY += 5;
     }
-    
-    doc.text(`${modelo.ivaSumarioText || 'IVA'}:`, cardX + 5, y);
-    doc.text(formatMoney(iva), cardX + cardWidth - 5, y, { align: 'right' });
-    y += 7;
-    
-    doc.setDrawColor(200, 160, 0);
-    doc.line(cardX + 5, y - 2, cardX + cardWidth - 5, y - 2);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(200, 160, 0);
-    doc.text('TOTAL:', cardX + 5, y + 2);
-    doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
-    
-    return currentY + 45;
-  };
-
-  let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
-  doc.autoTable({
-    head: tableHeaders,
-    body: tableData,
-    startY: firstHeaderY,
-    margin: { top: margin, right: margin, left: margin, bottom: margin },
-    styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak', textColor: [40, 40, 40] },
-    headStyles: { fillColor: [30, 30, 60], textColor: 255, fontSize: 8, halign: 'center', valign: 'middle' },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
-    columnStyles: {
-      0: { cellWidth: 8, halign: 'center' },
-      1: { cellWidth: 'auto', halign: 'left' },
-      2: { cellWidth: 12, halign: 'center' },
-      3: { cellWidth: 18, halign: 'center' },
-      4: { cellWidth: 20, halign: 'right' },
-      5: { cellWidth: 12, halign: 'center' },
-      6: { cellWidth: 22, halign: 'right' }
-    },
-    didDrawPage: function(data) {
-      if (data.pageNumber === 1) {
-        if (data.startY !== firstHeaderY + 2) {
-          data.startY = firstHeaderY + 2;
-        }
-      } else {
-        const compactY = addCompactHeader(doc, modelo, data.pageNumber);
-        if (data.startY !== compactY + 2) {
-          data.startY = compactY + 2;
-        }
-      }
-    }
-  });
-
-  let yAfterTable = doc.lastAutoTable.finalY + 6;
-  if (modelo.formaPago) {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Forma de pago:', margin, yAfterTable);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    doc.text(modelo.formaPago, margin + 30, yAfterTable);
-    yAfterTable += 6;
   }
+  
+  // ============================================================
+  // COLUMNA DERECHA: TARJETA DE TOTALES
+  // ============================================================
+  const cardWidth = rightColWidth;
+  const cardX = pageWidth - margin - cardWidth;
+  let currentY = columnY;
+  
+  doc.setFillColor(248, 248, 248);
+  doc.setDrawColor(200, 160, 0);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(cardX, currentY, cardWidth, maxHeight, 3, 3, 'FD');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(100, 100, 100);
+  doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, currentY + 5, { align: 'center' });
+  
+  doc.setDrawColor(200, 160, 0);
+  doc.setLineWidth(0.2);
+  doc.line(cardX + 5, currentY + 8, cardX + cardWidth - 5, currentY + 8);
+  
+  let y = currentY + 12;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  
+  doc.text('Subtotal sin IVA:', cardX + 5, y);
+  doc.text(formatMoney(subtotal), cardX + cardWidth - 5, y, { align: 'right' });
+  y += 5;
+  
+  if (descuento > 0) {
+    doc.setTextColor(200, 100, 100);
+    doc.text(`Descuento (${descuentoPorcentaje}%):`, cardX + 5, y);
+    doc.text(`-${formatMoney(descuento)}`, cardX + cardWidth - 5, y, { align: 'right' });
+    y += 5;
+    doc.setTextColor(60, 60, 60);
+  }
+  
+  doc.text(`${modelo.ivaSumarioText || 'IVA'}:`, cardX + 5, y);
+  doc.text(formatMoney(iva), cardX + cardWidth - 5, y, { align: 'right' });
+  y += 6;
+  
+  doc.setDrawColor(200, 160, 0);
+  doc.line(cardX + 5, y - 2, cardX + cardWidth - 5, y - 2);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(200, 160, 0);
+  doc.text('TOTAL:', cardX + 5, y + 2);
+  doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
+  
+  // ============================================================
+  // SECCIÓN: NOTAS Y CONDICIONES (debajo, ancho completo)
+  // ============================================================
+  let notasY = columnY + maxHeight + 8;
+  
   if (modelo.notas) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text('Notas y condiciones:', margin, yAfterTable);
+    doc.text('NOTAS Y CONDICIONES', margin, notasY);
+    
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
     const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
-    doc.text(notasLines, margin, yAfterTable + 5);
-    yAfterTable += 8 + (notasLines.length * 4);
+    doc.text(notasLines, margin, notasY + 6);
+    notasY += 12 + (notasLines.length * 4);
   }
+  
+  let finalY = notasY + 5;
 
   drawTotalsCard(doc, yAfterTable + 4);
 
