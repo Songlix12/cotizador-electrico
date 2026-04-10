@@ -3332,7 +3332,7 @@ async function exportarPDFNc() {
   });
 
   // Después de la tabla, agregar forma de pago y notas (si existen)
-  let yAfterTable = doc.lastAutoTable.finalY + 6;
+  let yAfterTable = doc.lastAutoTable.finalY + 2;
   if (modelo.formaPago) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
@@ -3356,7 +3356,7 @@ async function exportarPDFNc() {
   }
 
   // Dibujar tarjeta de totales justo después de notas (o después de tabla si no hay notas)
-  let totalsY = yAfterTable + 4;
+  let totalsY = yAfterTable + 1;
   drawTotalsCard(doc, totalsY);
 
   // Pie de página en todas las páginas
