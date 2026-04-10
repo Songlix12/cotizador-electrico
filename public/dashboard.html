@@ -3096,7 +3096,7 @@ async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
   }
 }
 
-//------------------------------------
+//==============================================================================================================================
 // Función auxiliar para formatear moneda
 function formatMoney(valor) {
   return '$' + valor.toFixed(2);
@@ -3124,14 +3124,21 @@ async function cargarLogoBase64() {
 }
 
 // Exportar PDF de nueva cotización (con totales en tarjeta elegante)
-async function exportarPDFNc() {
-  const todos = [...cotItems, ...cotAdic];
-  if (!todos.length) {
-    toast('Sin materiales para generar PDF', 'err');
+async function exportarPDF() {
+  if (!cotActual) {
+    toast('No hay cotización seleccionada', 'err');
     return;
   }
 
-  const modelo = construirModeloPdfNuevaCot();
+  _mostrarLoadingPdf('Preparando documento…');
+  _actualizarLoadingPdf('Cargando cotización guardada…', 15);
+
+  const modelo = construirModeloPdfGuardada(cotActual);
+  const elabPdf = document.getElementById('ver-elaborado')?.value.trim();
+  if (elabPdf) modelo.elaborador = elabPdf;
+  
+  _actualizarLoadingPdf('Generando PDF...', 35);
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
     unit: 'mm',
@@ -3143,9 +3150,9 @@ async function exportarPDFNc() {
   const margin = 12;
   const contentWidth = pageWidth - margin * 2;
 
+  _actualizarLoadingPdf('Cargando logo...', 45);
   const logoImg = await cargarLogoBase64();
 
-  // Encabezado primera página
   const addFirstHeader = (doc, modelo, logoImg) => {
     let y = 15;
     if (logoImg) {
@@ -3207,7 +3214,6 @@ async function exportarPDFNc() {
     return yLine + 6;
   };
 
-  // Encabezado compacto para páginas siguientes
   const addCompactHeader = (doc, modelo, pageNum) => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
@@ -3222,14 +3228,13 @@ async function exportarPDFNc() {
     return 25;
   };
 
-  // Preparar datos de la tabla
   const tableData = modelo.items.map((it, idx) => [
     (idx + 1).toString(),
     it.desc || '—',
     it.cant.toString(),
     it.unidad,
     formatMoney(it.pUnit),
-    (it.ivaPct && it.ivaPct > 0) ? it.ivaPct + '%' : 'No',
+    it.ivaSi ? '15%' : 'No',
     formatMoney(it.sub)
   ]);
   const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
@@ -3239,60 +3244,8 @@ async function exportarPDFNc() {
   const total = modelo.total;
   const descuentoPorcentaje = modelo.descuentoPct;
 
-  // Función mejorada para dibujar los totales en una tarjeta a la derecha
-  const drawTotalsCard = (doc, yStart) => {
-    const cardWidth = 70;
-    const cardX = pageWidth - margin - cardWidth;
-    let currentY = yStart;
-    
-    doc.setFillColor(248, 248, 248);
-    doc.setDrawColor(200, 160, 0);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(cardX, currentY, cardWidth, 45, 3, 3, 'FD');
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(100, 100, 100);
-    doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, currentY + 5, { align: 'center' });
-    
-    doc.setDrawColor(200, 160, 0);
-    doc.setLineWidth(0.2);
-    doc.line(cardX + 5, currentY + 8, cardX + cardWidth - 5, currentY + 8);
-    
-    let y = currentY + 12;
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-    
-    doc.text('Subtotal sin IVA:', cardX + 5, y);
-    doc.text(formatMoney(subtotal), cardX + cardWidth - 5, y, { align: 'right' });
-    y += 5;
-    
-    if (descuento > 0) {
-      doc.setTextColor(200, 100, 100);
-      doc.text(`Descuento (${descuentoPorcentaje}%):`, cardX + 5, y);
-      doc.text(`-${formatMoney(descuento)}`, cardX + cardWidth - 5, y, { align: 'right' });
-      y += 5;
-      doc.setTextColor(60, 60, 60);
-    }
-    
-    doc.text(`${modelo.ivaSumarioText || 'IVA'}:`, cardX + 5, y);
-    doc.text(formatMoney(iva), cardX + cardWidth - 5, y, { align: 'right' });
-    y += 6;
-    
-    doc.setDrawColor(200, 160, 0);
-    doc.line(cardX + 5, y - 2, cardX + cardWidth - 5, y - 2);
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(200, 160, 0);
-    doc.text('TOTAL:', cardX + 5, y + 2);
-    doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
-    
-    return currentY + 28; // altura reducida de 45 a 42
-  };
+  _actualizarLoadingPdf('Diseñando tabla de materiales...', 60);
 
-  // Generar tabla principal
   let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
   doc.autoTable({
     head: tableHeaders,
@@ -3325,15 +3278,13 @@ async function exportarPDFNc() {
     }
   });
 
+  _actualizarLoadingPdf('Agregando forma de pago y totales...', 75);
 
-  // ============================================================
-  // SECCIÓN: FORMA DE PAGO + TARJETA DE TOTALES (una al lado de la otra)
-  // ============================================================
+  // SECCIÓN: FORMA DE PAGO + TARJETA DE TOTALES
   let yAfterTable = doc.lastAutoTable.finalY + 4;
-  const leftColWidth = 80;  // Ancho de la columna izquierda (forma de pago)
-  const rightColWidth = 70; // Ancho de la columna derecha (tarjeta)
+  const leftColWidth = 80;
+  const rightColWidth = 70;
   
-  // Calcular altura de la forma de pago
   let formaPagoLines = [];
   let leftHeight = 0;
   if (modelo.formaPago) {
@@ -3343,16 +3294,14 @@ async function exportarPDFNc() {
     leftHeight = 20 + (formaPagoLines.length * 5);
   }
   
-  const rightHeight = 42; // Altura base de la tarjeta
+  const rightHeight = 42;
   const maxHeight = Math.max(leftHeight, rightHeight);
   let columnY = yAfterTable;
   
-  // Verificar si cabe en la página actual
   const pageHeight = doc.internal.pageSize.getHeight();
   if (columnY + maxHeight + 30 > pageHeight - 15) {
     doc.addPage();
     columnY = margin + 10;
-    // Encabezado compacto para nueva página
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
@@ -3366,9 +3315,6 @@ async function exportarPDFNc() {
     columnY = 28;
   }
   
-  // ============================================================
-  // COLUMNA IZQUIERDA: FORMA DE PAGO
-  // ============================================================
   if (modelo.formaPago) {
     const leftX = margin;
     const leftWidth = leftColWidth;
@@ -3397,28 +3343,24 @@ async function exportarPDFNc() {
     }
   }
   
-  // ============================================================
-  // COLUMNA DERECHA: TARJETA DE TOTALES
-  // ============================================================
   const cardWidth = rightColWidth;
   const cardX = pageWidth - margin - cardWidth;
-  let currentY = columnY;
   
   doc.setFillColor(248, 248, 248);
   doc.setDrawColor(200, 160, 0);
   doc.setLineWidth(0.3);
-  doc.roundedRect(cardX, currentY, cardWidth, maxHeight, 3, 3, 'FD');
+  doc.roundedRect(cardX, columnY, cardWidth, maxHeight, 3, 3, 'FD');
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(100, 100, 100);
-  doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, currentY + 5, { align: 'center' });
+  doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, columnY + 5, { align: 'center' });
   
   doc.setDrawColor(200, 160, 0);
   doc.setLineWidth(0.2);
-  doc.line(cardX + 5, currentY + 8, cardX + cardWidth - 5, currentY + 8);
+  doc.line(cardX + 5, columnY + 8, cardX + cardWidth - 5, columnY + 8);
   
-  let y = currentY + 12;
+  let y = columnY + 12;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
@@ -3448,11 +3390,7 @@ async function exportarPDFNc() {
   doc.text('TOTAL:', cardX + 5, y + 2);
   doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
   
-  // ============================================================
-  // SECCIÓN: NOTAS Y CONDICIONES (debajo, ancho completo)
-  // ============================================================
   let notasY = columnY + maxHeight + 8;
-  
   if (modelo.notas) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
@@ -3463,11 +3401,11 @@ async function exportarPDFNc() {
     doc.setTextColor(60, 60, 60);
     const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
     doc.text(notasLines, margin, notasY + 6);
-    notasY += 12 + (notasLines.length * 4);
   }
   
-  let finalY = notasY + 5;
-
+  _actualizarLoadingPdf('Finalizando documento...', 90);
+  await new Promise(r => setTimeout(r, 200));
+  
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -3483,6 +3421,10 @@ async function exportarPDFNc() {
   }
 
   doc.save(`${modelo.numero}.pdf`);
+  
+  _actualizarLoadingPdf('¡Listo! Descargando…', 100);
+  await new Promise(r => setTimeout(r, 400));
+  _ocultarLoadingPdf();
   toast('PDF descargado ✓', 'ok');
 }
 //-------==============================================================================
