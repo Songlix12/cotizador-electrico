@@ -3124,6 +3124,318 @@ async function cargarLogoBase64() {
 }
 
 // Exportar PDF de nueva cotización (con totales en tarjeta elegante)
+async function exportarPDFNc() {
+  const todos = [...cotItems, ...cotAdic];
+  if (!todos.length) {
+    toast('Sin materiales para generar PDF', 'err');
+    return;
+  }
+
+  // Mostrar overlay de carga
+  _mostrarLoadingPdf('Preparando documento…');
+  _actualizarLoadingPdf('Construyendo datos de la cotización…', 10);
+
+  const modelo = construirModeloPdfNuevaCot();
+  _actualizarLoadingPdf('Generando PDF...', 30);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    unit: 'mm',
+    format: 'a4',
+    orientation: 'portrait'
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 12;
+  const contentWidth = pageWidth - margin * 2;
+
+  _actualizarLoadingPdf('Cargando logo...', 40);
+  const logoImg = await cargarLogoBase64();
+
+  // Encabezado primera página
+  const addFirstHeader = (doc, modelo, logoImg) => {
+    let y = 15;
+    if (logoImg) {
+      doc.addImage(logoImg, 'JPEG', margin, y, 25, 25);
+      y += 5;
+    }
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('SEST', margin + (logoImg ? 30 : 0), y + 8);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Servicios Eléctricos y Seguridad Tapia', margin + (logoImg ? 30 : 0), y + 14);
+    doc.text('Cotización formal para su proyecto. Valide plazos y especificaciones técnicas.', margin + (logoImg ? 30 : 0), y + 20);
+    doc.text(`Documento elaborado por: ${modelo.elaborador || usuario?.nombre || ''}`, margin + (logoImg ? 30 : 0), y + 26);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('COTIZACIÓN', pageWidth - margin, y + 8, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(modelo.numero, pageWidth - margin, y + 16, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`${modelo.fechaFmt} · Válida ${modelo.validez} días`, pageWidth - margin, y + 24, { align: 'right' });
+    
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 34, pageWidth - margin, y + 34);
+    
+    y += 44;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('CLIENTE', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text(modelo.cliente.nombre || 'Sin cliente', margin, y + 6);
+    let yLine = y + 12;
+    if (modelo.cliente.ruc) doc.text(`RUC/C.I.: ${modelo.cliente.ruc}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.tel) doc.text(`Tel: ${modelo.cliente.tel}`, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.email) doc.text(modelo.cliente.email, margin, yLine);
+    yLine += 5;
+    if (modelo.cliente.dir) doc.text(modelo.cliente.dir, margin, yLine);
+    
+    yLine += 8;
+    if (modelo.descripcionTrabajo) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Descripción del trabajo', margin, yLine);
+      doc.setFont('helvetica', 'normal');
+      const lines = doc.splitTextToSize(modelo.descripcionTrabajo, contentWidth);
+      doc.text(lines, margin, yLine + 6);
+      yLine += 12 + (lines.length * 5);
+    }
+    return yLine + 6;
+  };
+
+  // Encabezado compacto para páginas siguientes
+  const addCompactHeader = (doc, modelo, pageNum) => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Página ${pageNum}`, pageWidth - margin, 15, { align: 'right' });
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 20, pageWidth - margin, 20);
+    return 25;
+  };
+
+  // Preparar datos de la tabla
+  const tableData = modelo.items.map((it, idx) => [
+    (idx + 1).toString(),
+    it.desc || '—',
+    it.cant.toString(),
+    it.unidad,
+    formatMoney(it.pUnit),
+    (it.ivaPct && it.ivaPct > 0) ? it.ivaPct + '%' : 'No',
+    formatMoney(it.sub)
+  ]);
+  const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
+  const subtotal = modelo.subtotal;
+  const descuento = modelo.descuentoValor;
+  const iva = modelo.ivaValor;
+  const total = modelo.total;
+  const descuentoPorcentaje = modelo.descuentoPct;
+
+  _actualizarLoadingPdf('Diseñando tabla de materiales...', 55);
+
+  // Generar tabla principal
+  let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
+  doc.autoTable({
+    head: tableHeaders,
+    body: tableData,
+    startY: firstHeaderY,
+    margin: { top: margin, right: margin, left: margin, bottom: margin },
+    styles: { fontSize: 8, cellPadding: 2.5, valign: 'middle', overflow: 'linebreak', textColor: [40, 40, 40] },
+    headStyles: { fillColor: [30, 30, 60], textColor: 255, fontSize: 8, halign: 'center', valign: 'middle' },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 'auto', halign: 'left' },
+      2: { cellWidth: 12, halign: 'center' },
+      3: { cellWidth: 18, halign: 'center' },
+      4: { cellWidth: 20, halign: 'right' },
+      5: { cellWidth: 12, halign: 'center' },
+      6: { cellWidth: 22, halign: 'right' }
+    },
+    didDrawPage: function(data) {
+      if (data.pageNumber === 1) {
+        if (data.startY !== firstHeaderY + 2) {
+          data.startY = firstHeaderY + 2;
+        }
+      } else {
+        const compactY = addCompactHeader(doc, modelo, data.pageNumber);
+        if (data.startY !== compactY + 2) {
+          data.startY = compactY + 2;
+        }
+      }
+    }
+  });
+
+  _actualizarLoadingPdf('Agregando forma de pago y totales...', 75);
+
+  // ============================================================
+  // SECCIÓN: FORMA DE PAGO + TARJETA DE TOTALES
+  // ============================================================
+  let yAfterTable = doc.lastAutoTable.finalY + 4;
+  const leftColWidth = 80;
+  const rightColWidth = 70;
+  
+  let formaPagoLines = [];
+  let leftHeight = 0;
+  if (modelo.formaPago) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    formaPagoLines = doc.splitTextToSize(modelo.formaPago, leftColWidth - 10);
+    leftHeight = 20 + (formaPagoLines.length * 5);
+  }
+  
+  const rightHeight = 42;
+  const maxHeight = Math.max(leftHeight, rightHeight);
+  let columnY = yAfterTable;
+  
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (columnY + maxHeight + 30 > pageHeight - 15) {
+    doc.addPage();
+    columnY = margin + 10;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`SEST - Cotización ${modelo.numero}`, margin, 15);
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Página ${doc.internal.getNumberOfPages()}`, pageWidth - margin, 15, { align: 'right' });
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 20, pageWidth - margin, 20);
+    columnY = 28;
+  }
+  
+  // COLUMNA IZQUIERDA: FORMA DE PAGO
+  if (modelo.formaPago) {
+    const leftX = margin;
+    const leftWidth = leftColWidth;
+    
+    doc.setFillColor(248, 248, 248);
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(leftX, columnY, leftWidth, maxHeight, 3, 3, 'FD');
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(100, 100, 100);
+    doc.text('FORMA DE PAGO', leftX + leftWidth/2, columnY + 5, { align: 'center' });
+    
+    doc.setDrawColor(200, 160, 0);
+    doc.setLineWidth(0.2);
+    doc.line(leftX + 5, columnY + 8, leftX + leftWidth - 5, columnY + 8);
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    let textY = columnY + 14;
+    for (let i = 0; i < formaPagoLines.length; i++) {
+      doc.text(formaPagoLines[i], leftX + 5, textY);
+      textY += 5;
+    }
+  }
+  
+  // COLUMNA DERECHA: TARJETA DE TOTALES
+  const cardWidth = rightColWidth;
+  const cardX = pageWidth - margin - cardWidth;
+  
+  doc.setFillColor(248, 248, 248);
+  doc.setDrawColor(200, 160, 0);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(cardX, columnY, cardWidth, maxHeight, 3, 3, 'FD');
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(100, 100, 100);
+  doc.text('RESUMEN DE LA COTIZACIÓN', cardX + cardWidth/2, columnY + 5, { align: 'center' });
+  
+  doc.setDrawColor(200, 160, 0);
+  doc.setLineWidth(0.2);
+  doc.line(cardX + 5, columnY + 8, cardX + cardWidth - 5, columnY + 8);
+  
+  let y = columnY + 12;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  
+  doc.text('Subtotal sin IVA:', cardX + 5, y);
+  doc.text(formatMoney(subtotal), cardX + cardWidth - 5, y, { align: 'right' });
+  y += 5;
+  
+  if (descuento > 0) {
+    doc.setTextColor(200, 100, 100);
+    doc.text(`Descuento (${descuentoPorcentaje}%):`, cardX + 5, y);
+    doc.text(`-${formatMoney(descuento)}`, cardX + cardWidth - 5, y, { align: 'right' });
+    y += 5;
+    doc.setTextColor(60, 60, 60);
+  }
+  
+  doc.text(`${modelo.ivaSumarioText || 'IVA'}:`, cardX + 5, y);
+  doc.text(formatMoney(iva), cardX + cardWidth - 5, y, { align: 'right' });
+  y += 6;
+  
+  doc.setDrawColor(200, 160, 0);
+  doc.line(cardX + 5, y - 2, cardX + cardWidth - 5, y - 2);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(200, 160, 0);
+  doc.text('TOTAL:', cardX + 5, y + 2);
+  doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
+  
+  // NOTAS Y CONDICIONES
+  let notasY = columnY + maxHeight + 8;
+  if (modelo.notas) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('NOTAS Y CONDICIONES', margin, notasY);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    const notasLines = doc.splitTextToSize(modelo.notas, contentWidth);
+    doc.text(notasLines, margin, notasY + 6);
+  }
+  
+  _actualizarLoadingPdf('Finalizando documento...', 90);
+  await new Promise(r => setTimeout(r, 200));
+  
+  // Pie de página
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      `SEST · Servicios Eléctricos y Seguridad Tapia · Documento generado el ${new Date().toLocaleDateString('es-EC')}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 8,
+      { align: 'center' }
+    );
+  }
+
+  doc.save(`${modelo.numero}.pdf`);
+  
+  _actualizarLoadingPdf('¡Listo! Descargando…', 100);
+  await new Promise(r => setTimeout(r, 400));
+  _ocultarLoadingPdf();
+  toast('PDF descargado ✓', 'ok');
+}
 async function exportarPDF() {
   if (!cotActual) {
     toast('No hay cotización seleccionada', 'err');
