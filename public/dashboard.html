@@ -1167,7 +1167,7 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <label class="calc-lbl"><i data-lucide="git-branch" style="width:13px;height:13px"></i> Tipo de circuito</label>
               <select class="calc-inp" id="cc-circuito" onchange="calcCable()">
                 <option value="mono-ln">Monofásico L–N (120 V)</option>
-                <option value="mono-ll" selected>Bivalente L1–L2 (240 V)</option>
+                <option value="mono-ll" selected>Monofasico L1–L2 (240 V)</option>
               </select>
             </div>
 
@@ -1497,6 +1497,14 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <div class="calc-panel-sub">Breakers termomagnéticos · Fusibles · Poder de ruptura</div>
             </div>
             <span class="calc-panel-norm">NEC Art. 240 / 430</span>
+            <div style="display:flex;gap:6px;margin-left:auto">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="abrirHistorialProtecciones()" title="Ver protecciones guardadas">
+                <i data-lucide="folder-open" style="width:14px;height:14px"></i> Mis cálculos
+              </button>
+              <button type="button" class="btn btn-ok btn-sm" onclick="guardarProteccion()" id="btn-save-prot">
+                <i data-lucide="save" style="width:14px;height:14px"></i> Guardar
+              </button>
+            </div>
           </div>
           <div class="calc-panel-body">
 
@@ -1618,6 +1626,14 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
               <div class="calc-panel-sub">Dimensionamiento de canalizaciones eléctricas por llenado</div>
             </div>
             <span class="calc-panel-norm">NEC Chapter 9</span>
+            <div style="display:flex;gap:6px;margin-left:auto">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="abrirHistorialTuberias()" title="Ver tuberías guardadas">
+                <i data-lucide="folder-open" style="width:14px;height:14px"></i> Mis cálculos
+              </button>
+              <button type="button" class="btn btn-ok btn-sm" onclick="guardarTuberia()" id="btn-save-tub">
+                <i data-lucide="save" style="width:14px;height:14px"></i> Guardar
+              </button>
+            </div>
           </div>
           <div class="calc-panel-body">
 
@@ -3450,7 +3466,7 @@ const SISTEMAS_EC = {
     desc: 'Dos líneas de 120 V + neutro. Tomacorrientes y luz: L–N (120 V). Ducha, cocina, A/C: L1–L2 (240 V).',
     circuitos: [
       {value:'mono-ln', label:'Monofásico L–N (120 V) — tomacorrientes, iluminación'},
-      {value:'mono-ll', label:'Bivalente L1–L2 (240 V) — ducha, cocina, A/C'},
+      {value:'mono-ll', label:'Monofasico L1–L2 (240 V) — ducha, cocina, A/C'},
     ],
     defaultCircuito: 'mono-ll',
     fases: 1, tension: 240
@@ -3631,7 +3647,7 @@ function calcCable() {
   // Nota conductor neutro (bifásico Ecuador)
   let notaNeutro = '';
   if (sys === '120/240' && circuito === 'mono-ll') {
-    notaNeutro = '<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);margin-top:10px"><strong style="color:var(--info)">🔌 Sistema 120/240 V Ecuador:</strong> En circuitos bivalentes L1–L2 (240 V), el conductor de tierra (EGC) debe ser del mismo calibre. Si hay neutro en el circuito (cargas mixtas 120+240 V), el neutro también debe ser del mismo calibre que los conductores de fase.</div>';
+    notaNeutro = '<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);margin-top:10px"><strong style="color:var(--info)">🔌 Sistema 120/240 V Ecuador:</strong> En circuitos monofasico L1–L2 (240 V), el conductor de tierra (EGC) debe ser del mismo calibre. Si hay neutro en el circuito (cargas mixtas 120+240 V), el neutro también debe ser del mismo calibre que los conductores de fase.</div>';
   }
   if (sys === '380' && nFases === 3) {
     notaNeutro = '<div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--t2);margin-top:10px"><strong style="color:var(--info)">⚡ Sistema trifásico 380 V:</strong> El conductor neutro puede ser reducido al 70% del calibre de fase si la carga es balanceada y no hay armónicos de tercer orden. De lo contrario, usar mismo calibre.</div>';
@@ -5204,6 +5220,277 @@ function guardarCalcCable()      { abrirGuardarCalcCable(); }
 function abrirModalCableCalcs()  { abrirHistorialCalcCable(); }
 function exportarPDFCableCalc()  { exportarPDFCable(); }
 
+// ═══════════════════════════════════════════════════════════════
+// PROTECCIONES — GUARDAR / CARGAR / ELIMINAR
+// tipo = 'proteccion_calc' en la tabla electrical_projects
+// ═══════════════════════════════════════════════════════════════
+let _prCalcsCache = [];
+
+function _prSnapshot(){
+  return {
+    Ic:    document.getElementById('pr-Ic')?.value||'',
+    tipo:  document.getElementById('pr-tipo')?.value||'gral',
+    fases: document.getElementById('pr-fases')?.value||'1',
+    v:     document.getElementById('pr-v')?.value||'220',
+    kvaCC: document.getElementById('pr-kva-cc')?.value||'150',
+    z:     document.getElementById('pr-z')?.value||'5',
+  };
+}
+
+function _prRestore(snap){
+  if(!snap)return;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('pr-Ic', snap.Ic);
+  set('pr-tipo', snap.tipo);
+  set('pr-v', snap.v);
+  set('pr-kva-cc', snap.kvaCC);
+  set('pr-z', snap.z);
+  // Restaurar fases (radio)
+  const fasesVal = snap.fases||'1';
+  set('pr-fases', fasesVal);
+  document.querySelectorAll('#calctab-cortocircuito .pf-radio-btn').forEach(btn=>{
+    btn.classList.remove('on');
+  });
+  const faseBtns = document.querySelectorAll('#calctab-cortocircuito .pf-radio-group .pf-radio-btn');
+  if(fasesVal==='1'&&faseBtns[0]) faseBtns[0].classList.add('on');
+  if(fasesVal==='3'&&faseBtns[1]) faseBtns[1].classList.add('on');
+  calcProtecciones();
+}
+
+function _prResumen(snap){
+  if(!snap)return '—';
+  return `Ic: ${snap.Ic||'—'} A · ${snap.tipo||'gral'} · ${snap.fases==='3'?'Trifásico':'Monofásico'} · ${snap.v||'—'} V`;
+}
+
+async function guardarProteccion(){
+  const snap=_prSnapshot();
+  if(!snap.Ic||parseFloat(snap.Ic)<=0){toast('Ingresa una corriente de carga válida antes de guardar','err');return;}
+  const nombre=prompt('Nombre para este cálculo de protección:','Protección circuito');
+  if(!nombre)return;
+  const cliente=prompt('Proyecto / Cliente (opcional):','')||'';
+  setBL('btn-save-prot',true);
+  const payload={
+    nombre,cliente,ubicacion:'',
+    tipo:'proteccion_calc',
+    temp_f:'1.0',
+    sistema: snap.v||'220',
+    cargas:[snap],
+  };
+  try{
+    const r=await api('electrical-projects/index',{method:'POST',body:JSON.stringify(payload)});
+    if(isErr(r)){toast(r?.msg||'Error al guardar','err');}
+    else{toast('✅ Protección guardada correctamente','ok');}
+  }catch(e){toast('Error de conexión','err');}
+  setBL('btn-save-prot',false,'Guardar');
+}
+
+async function abrirHistorialProtecciones(){
+  openModal('m-protecciones');
+  const listEl=document.getElementById('pr-historial-list');
+  listEl.innerHTML='<div class="loading"><div class="spin"></div><p>Cargando…</p></div>';
+  try{
+    const r=await api('electrical-projects/index');
+    if(isErr(r)){listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">${r?.msg||'Error al cargar'}</div>`;return;}
+    const todos=Array.isArray(r)?r:(r?.data?r.data:[]);
+    const calcs=todos.filter(p=>p.tipo==='proteccion_calc');
+    _prCalcsCache=calcs;
+    if(!calcs.length){
+      listEl.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3)">
+        <i data-lucide="inbox" style="width:36px;height:36px;display:block;margin:0 auto 10px"></i>
+        <p>No hay cálculos guardados.</p>
+        <p style="font-size:12px;margin-top:4px">Usa el botón <strong style="color:var(--acc)">Guardar</strong> después de calcular.</p>
+      </div>`;refreshIcons();return;
+    }
+    calcs.sort((a,b)=>new Date(b.created_at||b.creado_en||0)-new Date(a.created_at||a.creado_en||0));
+    listEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">
+      ${calcs.map(c=>{
+        const cargasArr=_parseCargasField(c.cargas);
+        const snap=cargasArr[0]||{};
+        const fecha=c.created_at||c.creado_en?new Date(c.created_at||c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+        return`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--err)">
+            <i data-lucide="shield-alert" style="width:18px;height:18px"></i>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13px;color:var(--t1);margin-bottom:2px">${c.nombre}</div>
+            ${c.cliente?`<div style="font-size:12px;color:var(--t3);margin-bottom:2px">📁 ${c.cliente}</div>`:''}
+            <div style="font-size:11px;color:var(--t3);font-family:'DM Mono',monospace">${_prResumen(snap)}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:4px">🕒 ${fecha}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            <button type="button" class="btn btn-acc btn-sm" onclick="cargarProteccion(${c.id})">
+              <i data-lucide="upload" style="width:13px;height:13px"></i> Cargar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarProteccion(${c.id},this)">
+              <i data-lucide="trash-2" style="width:13px;height:13px"></i>
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    refreshIcons();
+  }catch(e){listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">Error de conexión</div>`;}
+}
+
+async function cargarProteccion(id){
+  closeModal('m-protecciones');
+  let record=_prCalcsCache.find(c=>String(c.id)===String(id));
+  if(!record){
+    const r=await api('electrical-projects/index');
+    if(isErr(r)){toast('Error al cargar','err');return;}
+    const todos=Array.isArray(r)?r:(r?.data?r.data:[]);
+    _prCalcsCache=todos.filter(p=>p.tipo==='proteccion_calc');
+    record=_prCalcsCache.find(c=>String(c.id)===String(id));
+  }
+  if(!record){toast('No se encontró el registro','err');return;}
+  const snap=_parseCargasField(record.cargas)[0]||null;
+  if(!snap){toast('Sin datos de cálculo en este registro','err');return;}
+  _prRestore(snap);
+  irCalcTab('cortocircuito');
+  toast(`✅ Protección "${record.nombre}" cargada`,'ok');
+}
+
+async function eliminarProteccion(id,btnEl){
+  if(!confirm('¿Eliminar este cálculo de protección?'))return;
+  if(btnEl){btnEl.disabled=true;btnEl.textContent='…';}
+  const r=await api(`electrical-projects/index?id=${id}`,{method:'DELETE'});
+  if(isErr(r)){toast(r?.msg||'Error al eliminar','err');if(btnEl){btnEl.disabled=false;btnEl.innerHTML='<i data-lucide="trash-2" style="width:13px;height:13px"></i>';refreshIcons();}return;}
+  toast('Cálculo eliminado','ok');
+  abrirHistorialProtecciones();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TUBERÍAS / CONDUIT — GUARDAR / CARGAR / ELIMINAR
+// tipo = 'tuberia_calc' en la tabla electrical_projects
+// ═══════════════════════════════════════════════════════════════
+let _tbCalcsCache = [];
+
+function _tbSnapshot(){
+  return {
+    tipo:       document.getElementById('tb-tipo')?.value||'EMT',
+    ncond:      document.getElementById('tb-ncond')?.value||'3',
+    awg:        document.getElementById('tb-awg')?.value||'12',
+    aislamiento:document.getElementById('tb-aislamiento')?.value||'THHN',
+  };
+}
+
+function _tbRestore(snap){
+  if(!snap)return;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  set('tb-tipo', snap.tipo);
+  set('tb-ncond', snap.ncond);
+  set('tb-awg', snap.awg);
+  set('tb-aislamiento', snap.aislamiento);
+  // Restaurar botones de tipo conduit
+  const tipoBtns=document.querySelectorAll('#calctab-tuberia .pf-radio-group .pf-radio-btn');
+  const tipoMap={'EMT':0,'PVC40':1,'IMC':2,'RMC':3};
+  tipoBtns.forEach(b=>b.classList.remove('on'));
+  const idx=tipoMap[snap.tipo]??0;
+  if(tipoBtns[idx]) tipoBtns[idx].classList.add('on');
+  calcTuberia();
+}
+
+function _tbResumen(snap){
+  if(!snap)return '—';
+  return `${snap.tipo||'EMT'} · ${snap.ncond||'3'} cond. × AWG ${snap.awg||'12'} · ${snap.aislamiento||'THHN'}`;
+}
+
+async function guardarTuberia(){
+  const snap=_tbSnapshot();
+  const nombre=prompt('Nombre para este cálculo de tubería:','Conduit circuito');
+  if(!nombre)return;
+  const cliente=prompt('Proyecto / Cliente (opcional):','')||'';
+  setBL('btn-save-tub',true);
+  const payload={
+    nombre,cliente,ubicacion:'',
+    tipo:'tuberia_calc',
+    temp_f:'1.0',
+    sistema: snap.tipo||'EMT',
+    cargas:[snap],
+  };
+  try{
+    const r=await api('electrical-projects/index',{method:'POST',body:JSON.stringify(payload)});
+    if(isErr(r)){toast(r?.msg||'Error al guardar','err');}
+    else{toast('✅ Tubería guardada correctamente','ok');}
+  }catch(e){toast('Error de conexión','err');}
+  setBL('btn-save-tub',false,'Guardar');
+}
+
+async function abrirHistorialTuberias(){
+  openModal('m-tuberias');
+  const listEl=document.getElementById('tb-historial-list');
+  listEl.innerHTML='<div class="loading"><div class="spin"></div><p>Cargando…</p></div>';
+  try{
+    const r=await api('electrical-projects/index');
+    if(isErr(r)){listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">${r?.msg||'Error al cargar'}</div>`;return;}
+    const todos=Array.isArray(r)?r:(r?.data?r.data:[]);
+    const calcs=todos.filter(p=>p.tipo==='tuberia_calc');
+    _tbCalcsCache=calcs;
+    if(!calcs.length){
+      listEl.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3)">
+        <i data-lucide="inbox" style="width:36px;height:36px;display:block;margin:0 auto 10px"></i>
+        <p>No hay cálculos guardados.</p>
+        <p style="font-size:12px;margin-top:4px">Usa el botón <strong style="color:var(--acc)">Guardar</strong> después de calcular.</p>
+      </div>`;refreshIcons();return;
+    }
+    calcs.sort((a,b)=>new Date(b.created_at||b.creado_en||0)-new Date(a.created_at||a.creado_en||0));
+    listEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">
+      ${calcs.map(c=>{
+        const cargasArr=_parseCargasField(c.cargas);
+        const snap=cargasArr[0]||{};
+        const fecha=c.created_at||c.creado_en?new Date(c.created_at||c.creado_en).toLocaleDateString('es-EC',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+        return`<div style="background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ok)">
+            <i data-lucide="circle-dashed" style="width:18px;height:18px"></i>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:13px;color:var(--t1);margin-bottom:2px">${c.nombre}</div>
+            ${c.cliente?`<div style="font-size:12px;color:var(--t3);margin-bottom:2px">📁 ${c.cliente}</div>`:''}
+            <div style="font-size:11px;color:var(--t3);font-family:'DM Mono',monospace">${_tbResumen(snap)}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:4px">🕒 ${fecha}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            <button type="button" class="btn btn-acc btn-sm" onclick="cargarTuberia(${c.id})">
+              <i data-lucide="upload" style="width:13px;height:13px"></i> Cargar
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTuberia(${c.id},this)">
+              <i data-lucide="trash-2" style="width:13px;height:13px"></i>
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+    refreshIcons();
+  }catch(e){listEl.innerHTML=`<div style="text-align:center;padding:24px;color:var(--err)">Error de conexión</div>`;}
+}
+
+async function cargarTuberia(id){
+  closeModal('m-tuberias');
+  let record=_tbCalcsCache.find(c=>String(c.id)===String(id));
+  if(!record){
+    const r=await api('electrical-projects/index');
+    if(isErr(r)){toast('Error al cargar','err');return;}
+    const todos=Array.isArray(r)?r:(r?.data?r.data:[]);
+    _tbCalcsCache=todos.filter(p=>p.tipo==='tuberia_calc');
+    record=_tbCalcsCache.find(c=>String(c.id)===String(id));
+  }
+  if(!record){toast('No se encontró el registro','err');return;}
+  const snap=_parseCargasField(record.cargas)[0]||null;
+  if(!snap){toast('Sin datos de cálculo en este registro','err');return;}
+  _tbRestore(snap);
+  irCalcTab('tuberia');
+  toast(`✅ Tubería "${record.nombre}" cargada`,'ok');
+}
+
+async function eliminarTuberia(id,btnEl){
+  if(!confirm('¿Eliminar este cálculo de tubería?'))return;
+  if(btnEl){btnEl.disabled=true;btnEl.textContent='…';}
+  const r=await api(`electrical-projects/index?id=${id}`,{method:'DELETE'});
+  if(isErr(r)){toast(r?.msg||'Error al eliminar','err');if(btnEl){btnEl.disabled=false;btnEl.innerHTML='<i data-lucide="trash-2" style="width:13px;height:13px"></i>';refreshIcons();}return;}
+  toast('Cálculo eliminado','ok');
+  abrirHistorialTuberias();
+}
+
 // ───────────────────────────────────────────────────────────────
 // Verificar conexión Neon al abrir la tab Cables
 // ───────────────────────────────────────────────────────────────
@@ -5257,9 +5544,12 @@ function abrirModalBalances() {
   const cont = document.getElementById('bc-saved-list-container');
   if(cont) cont.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)"><div class="spin" style="margin:0 auto 8px"></div><p>Cargando proyectos…</p></div>';
   openModal('m-balances');
-  _loadBalancesFromDB().then(balances => {
+  _loadBalancesFromDB().then(allRecords => {
   const cont = document.getElementById('bc-saved-list-container');
   if (!cont) return;
+    // Filtrar SOLO registros de balance de cargas (excluir cable_calc, proteccion_calc, tuberia_calc)
+    const TIPOS_EXCLUIDOS = ['cable_calc','proteccion_calc','tuberia_calc'];
+    const balances = allRecords.filter(b => !TIPOS_EXCLUIDOS.includes(b.tipo));
     if (!balances.length) {
       cont.innerHTML = `<div style="text-align:center;padding:28px;color:var(--t3)">
         <i data-lucide="inbox" style="width:32px;height:32px;margin-bottom:8px;display:block;margin:0 auto 8px"></i>
@@ -5695,6 +5985,46 @@ async function generarInformePDF() {
           <i data-lucide="inbox" style="width:32px;height:32px;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto"></i>
           <p>Sin cálculos guardados</p>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Historial de Protecciones -->
+<div class="modal-bg" id="m-protecciones" onclick="if(event.target===this)closeModal('m-protecciones')">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i data-lucide="shield-alert" style="width:18px;height:18px;color:var(--err)"></i>
+        Historial de Cálculos de Protecciones
+      </span>
+      <button type="button" onclick="closeModal('m-protecciones')" class="btn btn-ghost btn-sm">
+        <i data-lucide="x" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div style="padding:16px">
+      <div id="pr-historial-list" style="min-height:80px">
+        <div class="loading"><div class="spin"></div><p>Cargando…</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Historial de Tuberías / Conduit -->
+<div class="modal-bg" id="m-tuberias" onclick="if(event.target===this)closeModal('m-tuberias')">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <span style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i data-lucide="circle-dashed" style="width:18px;height:18px;color:var(--ok)"></i>
+        Historial de Cálculos de Tuberías / Conduit
+      </span>
+      <button type="button" onclick="closeModal('m-tuberias')" class="btn btn-ghost btn-sm">
+        <i data-lucide="x" style="width:14px;height:14px"></i>
+      </button>
+    </div>
+    <div style="padding:16px">
+      <div id="tb-historial-list" style="min-height:80px">
+        <div class="loading"><div class="spin"></div><p>Cargando…</p></div>
       </div>
     </div>
   </div>
