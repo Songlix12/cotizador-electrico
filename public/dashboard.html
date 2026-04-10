@@ -3289,12 +3289,10 @@ async function exportarPDFNc() {
     },
     didDrawPage: function(data) {
       if (data.pageNumber === 1) {
-        // Ya se dibujó el encabezado grande, ajustar startY si es necesario
         if (data.startY !== firstHeaderY + 2) {
           data.startY = firstHeaderY + 2;
         }
       } else {
-        // Para páginas siguientes, dibujar encabezado compacto
         const compactY = addCompactHeader(doc, modelo, data.pageNumber);
         if (data.startY !== compactY + 2) {
           data.startY = compactY + 2;
