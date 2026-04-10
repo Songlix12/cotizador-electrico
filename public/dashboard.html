@@ -531,7 +531,7 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
 .btn-guardar:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .vp-toolbar{display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap}
 /* PDF plantilla (solo relleno en memoria; la captura real se hace en overlay visible) */
-#pdf-template{display:none;width:794px;max-width:794px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;box-sizing:border-box;}
+#pdf-template{display:none;width:794px;max-width:794px; min-height: auto;  background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13px;padding:48px;line-height:1.5;box-sizing:border-box; overflow:visible;}
 .pdf-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
 .pdf-logo{width:80px;height:80px;border-radius:8px;overflow:hidden}
 .pdf-logo img{width:100%;height:100%;object-fit:cover}
@@ -2782,9 +2782,13 @@ function construirModeloPdfGuardada(c){
 
 /**
  * HTML solo para PDF: fondo blanco, tipografía clara, tabla tipo factura.
- * No depende del tema oscuro del dashboard (.pdf-doc-prof aísla estilos).
+ * Paginación manual: divide items en chunks A4, encabezado en primera página,
+ * totales solo en la última. Cada página usa page-break-after:always.
  */
 function htmlDocumentoCotizacionPdfProfesional(m){
+  const ITEMS_PAG1  = 22; // filas en la primera página (tiene encabezado)
+  const ITEMS_PAGN  = 30; // filas en páginas siguientes (sin encabezado grande)
+
   const ivaTxt=it=>{
     if(it.ivaPct!=null&&it.ivaPct!==''){
       const p=Number(it.ivaPct);
@@ -2795,16 +2799,8 @@ function htmlDocumentoCotizacionPdfProfesional(m){
     if(it.ivaSi===false)return 'No';
     return '\u2014';
   };
-  const filas=m.items.map((it,i)=>`
-    <tr class="pdf-prof-tr">
-      <td class="pdf-prof-td pdf-prof-td-c">${i+1}</td>
-      <td class="pdf-prof-td pdf-prof-td-desc">${escPdf(it.desc||'\u2014')}</td>
-      <td class="pdf-prof-td pdf-prof-td-c pdf-prof-mono">${escPdf(String(it.cant))}</td>
-      <td class="pdf-prof-td">${escPdf(it.unidad)}</td>
-      <td class="pdf-prof-td pdf-prof-td-r pdf-prof-mono">$${Number(it.pUnit).toFixed(2)}</td>
-      <td class="pdf-prof-td pdf-prof-td-c pdf-prof-td-iva">${ivaTxt(it)}</td>
-      <td class="pdf-prof-td pdf-prof-td-r pdf-prof-mono pdf-prof-td-strong">$${Number(it.sub).toFixed(2)}</td>
-    </tr>`).join('');
+
+  // ── Helpers de fragmentos ──
   const filaDesc=m.descuentoValor>0.009?`
     <div class="pdf-prof-sum-row"><span>Descuento (${Number(m.descuentoPct).toFixed(0)}%)</span><span class="pdf-prof-mono pdf-prof-sum-ok">-$${Number(m.descuentoValor).toFixed(2)}</span></div>`:'';
   const bloqueDesc=m.descripcionTrabajo?`
@@ -2821,10 +2817,132 @@ function htmlDocumentoCotizacionPdfProfesional(m){
   const cliTel=m.cliente.tel?`<div class="pdf-prof-cli-line">Tel: ${escPdf(m.cliente.tel)}</div>`:'';
   const cliEm=m.cliente.email?`<div class="pdf-prof-cli-line">${escPdf(m.cliente.email)}</div>`:'';
   const cliDir=m.cliente.dir?`<div class="pdf-prof-cli-line">${escPdf(m.cliente.dir)}</div>`:'';
-  return`<div class="pdf-doc-prof">
+
+  // ── thead reutilizable ──
+  const theadHtml=`<thead>
+    <tr>
+      <th class="pdf-prof-th pdf-prof-th-c">#</th>
+      <th class="pdf-prof-th">Descripci\u00f3n</th>
+      <th class="pdf-prof-th pdf-prof-th-c">Cant.</th>
+      <th class="pdf-prof-th">Unidad</th>
+      <th class="pdf-prof-th pdf-prof-th-r">P. unit.</th>
+      <th class="pdf-prof-th pdf-prof-th-c">IVA %</th>
+      <th class="pdf-prof-th pdf-prof-th-r">Subtotal</th>
+    </tr>
+  </thead>`;
+  const colgroupHtml=`<colgroup>
+    <col style="width:4%"/><col style="width:34%"/><col style="width:8%"/>
+    <col style="width:12%"/><col style="width:12%"/><col style="width:8%"/><col style="width:22%"/>
+  </colgroup>`;
+
+  // ── Función que genera filas HTML para un slice de items ──
+  const generarFilas=(slice,offsetIdx)=>slice.map((it,j)=>`
+    <tr class="pdf-prof-tr">
+      <td class="pdf-prof-td pdf-prof-td-c">${offsetIdx+j+1}</td>
+      <td class="pdf-prof-td pdf-prof-td-desc">${escPdf(it.desc||'\u2014')}</td>
+      <td class="pdf-prof-td pdf-prof-td-c pdf-prof-mono">${escPdf(String(it.cant))}</td>
+      <td class="pdf-prof-td">${escPdf(it.unidad)}</td>
+      <td class="pdf-prof-td pdf-prof-td-r pdf-prof-mono">$${Number(it.pUnit).toFixed(2)}</td>
+      <td class="pdf-prof-td pdf-prof-td-c pdf-prof-td-iva">${ivaTxt(it)}</td>
+      <td class="pdf-prof-td pdf-prof-td-r pdf-prof-mono pdf-prof-td-strong">$${Number(it.sub).toFixed(2)}</td>
+    </tr>`).join('');
+
+  // ── Dividir items en páginas ──
+  const chunks=[];
+  if(m.items.length<=ITEMS_PAG1){
+    chunks.push(m.items.slice()); // todo en una sola página
+  } else {
+    chunks.push(m.items.slice(0,ITEMS_PAG1));
+    let i=ITEMS_PAG1;
+    while(i<m.items.length){chunks.push(m.items.slice(i,i+ITEMS_PAGN));i+=ITEMS_PAGN;}
+  }
+  const totalPags=chunks.length;
+
+  // ── Bloque de totales (solo última página) ──
+  const bloqueTotales=`
+  <div class="pdf-prof-sums">
+    <div class="pdf-prof-sum-row"><span>Subtotal sin IVA</span><span class="pdf-prof-mono">$${Number(m.subtotal).toFixed(2)}</span></div>
+    ${filaDesc}
+    <div class="pdf-prof-sum-row"><span>${escPdf(m.ivaSumarioText||'IVA')}</span><span class="pdf-prof-mono">$${Number(m.ivaValor).toFixed(2)}</span></div>
+    <div class="pdf-prof-total-row"><span>TOTAL</span><span>$${Number(m.total).toFixed(2)}</span></div>
+  </div>
+  ${bloqueForma}${bloqueNotas}
+  <div class="pdf-prof-footer">SEST \u00b7 Servicios El\u00e9ctricos y Seguridad Tapia \u00b7 Documento generado el ${escPdf(new Date().toLocaleDateString('es-EC'))}</div>`;
+
+  // ── Construir páginas ──
+  let paginasHtml='';
+  chunks.forEach((chunk,pgIdx)=>{
+    const esPrimera=pgIdx===0;
+    const esUltima=pgIdx===totalPags-1;
+    const offsetIdx=esPrimera?0:ITEMS_PAG1+(pgIdx-1)*ITEMS_PAGN;
+    const esBreak=!esUltima?'page-break-after:always;':'';
+
+    let contenidoPagina='';
+
+    if(esPrimera){
+      // Encabezado completo solo en primera página
+      contenidoPagina+=`
+      <div class="pdf-prof-top">
+        <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
+        <div>
+          <div class="pdf-prof-co-name">Servicios El\u00e9ctricos y Seguridad Tapia</div>
+          <div class="pdf-prof-co-brand">SEST</div>
+          <div class="pdf-prof-co-sub">Cotizaci\u00f3n formal para su proyecto. Valide plazos y especificaciones t\u00e9cnicas con nuestro equipo.</div>
+          <div class="pdf-prof-co-elab">Documento elaborado por: <strong>${escPdf(m.elaborador)||'\u2014'}</strong></div>
+        </div>
+        <div class="pdf-prof-meta">
+          <div class="pdf-prof-meta-tit">Cotizaci\u00f3n</div>
+          <div class="pdf-prof-meta-num">${escPdf(m.numero)}</div>
+          <div class="pdf-prof-meta-fch">${escPdf(m.fechaFmt)} \u00b7 V\u00e1lida ${m.validez} d\u00edas</div>
+        </div>
+      </div>
+      <div class="pdf-prof-two">
+        <div>
+          <div class="pdf-prof-lbl">Elaborado por</div>
+          <div class="pdf-prof-cli-name">SEST</div>
+          <div class="pdf-prof-cli-line">Servicios El\u00e9ctricos y Seguridad Tapia</div>
+        </div>
+        <div>
+          <div class="pdf-prof-lbl">Cliente</div>
+          <div class="pdf-prof-cli-name">${escPdf(m.cliente.nombre)}</div>
+          ${cliEmp}${cliRuc}${cliTel}${cliEm}${cliDir}
+        </div>
+      </div>
+      ${bloqueDesc}`;
+    } else {
+      // Encabezado compacto de continuación en páginas 2+
+      contenidoPagina+=`
+      <div class="pdf-prof-cont-header">
+        <div>
+          <span class="pdf-prof-cont-brand">SEST</span>
+          <span class="pdf-prof-cont-num">Cotización ${escPdf(m.numero)}</span>
+        </div>
+        <div class="pdf-prof-cont-pag">Página ${pgIdx+1} / ${totalPags}</div>
+      </div>`;
+    }
+
+    // Tabla de items de esta página
+    contenidoPagina+=`
+    <div class="pdf-prof-table-wrap">
+      <table class="pdf-prof-table">
+        ${colgroupHtml}
+        ${theadHtml}
+        <tbody>${generarFilas(chunk,offsetIdx)}</tbody>
+      </table>
+    </div>`;
+
+    // Totales y pie solo en última página
+    if(esUltima) contenidoPagina+=bloqueTotales;
+
+    paginasHtml+=`<div class="pdf-doc-prof" style="${esBreak}padding:24px 28px;">${contenidoPagina}</div>`;
+    if(!esUltima) paginasHtml+=`<div class="pdf-page-break"></div>`;
+  });
+
+  return`<div id="pdf-root-wrapper" style="background:#fff;width:100%;">
 <style type="text/css">
-.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.5;color:#0a0a0a;background:#fff;width:100%;max-width:720px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision;}
+.pdf-doc-prof{font-family:'DM Sans','Segoe UI',system-ui,-apple-system,sans-serif;font-size:13px;line-height:1.5;color:#0a0a0a;background:#fff;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision;}
 .pdf-doc-prof *{box-sizing:border-box;}
+.pdf-page-break{page-break-after:always;height:0;overflow:hidden;}
 .pdf-prof-top{display:grid;grid-template-columns:88px 1fr minmax(200px,240px);gap:20px 24px;align-items:start;padding-bottom:22px;border-bottom:3px solid #d4a017;margin-bottom:22px;}
 .pdf-prof-logo{width:88px;height:88px;border-radius:10px;object-fit:cover;object-position:center;display:block;border:1px solid #d1d5db;image-rendering:auto;-ms-interpolation-mode:bicubic;}
 .pdf-prof-co-name{font-size:11px;font-weight:700;letter-spacing:.12em;color:#1e293b;text-transform:uppercase;margin-bottom:6px;}
@@ -2843,6 +2961,10 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 .pdf-prof-desc-box{margin:0 0 20px;padding:14px 16px;background:#f1f5f9;border-left:4px solid #d4a017;border-radius:0 8px 8px 0;}
 .pdf-prof-desc-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;color:#334155;text-transform:uppercase;margin-bottom:6px;}
 .pdf-prof-desc-txt{font-size:13px;color:#0a0a0a;font-weight:500;line-height:1.5;}
+.pdf-prof-cont-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:2px solid #d4a017;margin-bottom:16px;}
+.pdf-prof-cont-brand{font-size:16px;font-weight:800;color:#000;margin-right:10px;}
+.pdf-prof-cont-num{font-size:12px;color:#475569;font-weight:500;}
+.pdf-prof-cont-pag{font-size:11px;color:#475569;font-weight:600;}
 .pdf-prof-table-wrap{width:100%;overflow:visible;margin-bottom:22px;}
 .pdf-prof-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px;border:1px solid #94a3b8;}
 .pdf-prof-th{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:left;color:#0a0a0a;background:#e2e8f0;padding:10px 8px;border:1px solid #94a3b8;vertical-align:bottom;}
@@ -2851,12 +2973,13 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 .pdf-prof-td{padding:9px 8px;border:1px solid #cbd5e1;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;color:#0f172a;font-weight:500;}
 .pdf-prof-td-c{text-align:center;}
 .pdf-prof-td-r{text-align:right;}
-.pdf-prof-td-desc{font-weight:600;color:#000000; }
+.pdf-prof-td-desc{font-weight:600;color:#000000;}
 .pdf-prof-td-iva{font-size:11.5px;color:#0f172a;font-weight:600;}
 .pdf-prof-td-strong{font-weight:700;color:#000000;}
 .pdf-prof-mono{font-family:'DM Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+.pdf-prof-tr{page-break-inside:avoid;}
 .pdf-prof-tr:nth-child(even) .pdf-prof-td{background:#f8fafc;}
-.pdf-prof-sums{max-width:320px;margin-left:auto;margin-bottom:20px;}
+.pdf-prof-sums{max-width:320px;margin-left:auto;margin-bottom:20px;page-break-inside:avoid;}
 .pdf-prof-sum-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:13px;color:#0f172a;gap:24px;font-weight:600;}
 .pdf-prof-sum-ok{color:#0f6f2e;}
 .pdf-prof-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:14px;border-top:3px solid #d4a017;font-size:20px;font-weight:800;color:#b8860b;letter-spacing:-.02em;}
@@ -2867,60 +2990,7 @@ function htmlDocumentoCotizacionPdfProfesional(m){
 .pdf-prof-notas-body{margin-top:8px;color:#0f172a;font-size:12px;font-weight:500;line-height:1.5;}
 .pdf-prof-footer{margin-top:28px;padding-top:16px;border-top:1px solid #cbd5e1;text-align:center;font-size:10px;color:#475569;font-weight:500;}
 </style>
-  <div class="pdf-prof-top">
-    <img class="pdf-prof-logo" src="logo.jpg" alt="SEST" width="88" height="88" decoding="sync"/>
-    <div>
-      <div class="pdf-prof-co-name">Servicios El\u00e9ctricos y Seguridad Tapia</div>
-      <div class="pdf-prof-co-brand">SEST</div>
-      <div class="pdf-prof-co-sub">Cotizaci\u00f3n formal para su proyecto. Valide plazos y especificaciones t\u00e9cnicas con nuestro equipo.</div>
-      <div class="pdf-prof-co-elab">Documento elaborado por: <strong>${escPdf(m.elaborador)||'\u2014'}</strong></div>
-    </div>
-    <div class="pdf-prof-meta">
-      <div class="pdf-prof-meta-tit">Cotizaci\u00f3n</div>
-      <div class="pdf-prof-meta-num">${escPdf(m.numero)}</div>
-      <div class="pdf-prof-meta-fch">${escPdf(m.fechaFmt)} \u00b7 V\u00e1lida ${m.validez} d\u00edas</div>
-    </div>
-  </div>
-  <div class="pdf-prof-two">
-    <div>
-      <div class="pdf-prof-lbl">Elaborado por</div>
-      <div class="pdf-prof-cli-name">SEST</div>
-      <div class="pdf-prof-cli-line">Servicios El\u00e9ctricos y Seguridad Tapia</div>
-    </div>
-    <div>
-      <div class="pdf-prof-lbl">Cliente</div>
-      <div class="pdf-prof-cli-name">${escPdf(m.cliente.nombre)}</div>
-      ${cliEmp}${cliRuc}${cliTel}${cliEm}${cliDir}
-    </div>
-  </div>
-  ${bloqueDesc}
-  <div class="pdf-prof-table-wrap">
-    <table class="pdf-prof-table">
-      <colgroup>
-        <col style="width:4%"/><col style="width:34%"/><col style="width:8%"/><col style="width:12%"/><col style="width:12%"/><col style="width:8%"/><col style="width:22%"/>
-      </colgroup>
-      <thead>
-        <tr>
-          <th class="pdf-prof-th pdf-prof-th-c">#</th>
-          <th class="pdf-prof-th">Descripci\u00f3n</th>
-          <th class="pdf-prof-th pdf-prof-th-c">Cant.</th>
-          <th class="pdf-prof-th">Unidad</th>
-          <th class="pdf-prof-th pdf-prof-th-r">P. unit.</th>
-          <th class="pdf-prof-th pdf-prof-th-c">IVA %</th>
-          <th class="pdf-prof-th pdf-prof-th-r">Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>${filas}</tbody>
-    </table>
-  </div>
-  <div class="pdf-prof-sums">
-    <div class="pdf-prof-sum-row"><span>Subtotal sin IVA</span><span class="pdf-prof-mono">$${Number(m.subtotal).toFixed(2)}</span></div>
-    ${filaDesc}
-    <div class="pdf-prof-sum-row"><span>${escPdf(m.ivaSumarioText||'IVA')}</span><span class="pdf-prof-mono">$${Number(m.ivaValor).toFixed(2)}</span></div>
-    <div class="pdf-prof-total-row"><span>TOTAL</span><span>$${Number(m.total).toFixed(2)}</span></div>
-  </div>
-  ${bloqueForma}${bloqueNotas}
-  <div class="pdf-prof-footer">SEST \u00b7 Servicios El\u00e9ctricos y Seguridad Tapia \u00b7 Documento generado el ${escPdf(new Date().toLocaleDateString('es-EC'))}</div>
+${paginasHtml}
 </div>`;
 }
 
@@ -2930,7 +3000,7 @@ function escalaCanvasPdf(){ return 3; }
 // ── Opciones base de html2pdf (A4, retina, sin compresión) ───────
 const PDF_WIDTH_PX = 794; // ancho A4 a 96 dpi — tamaño constante en móvil y desktop
 const html2pdfOptsPdf={
-  margin:[8,8,8,8],
+  margin:[10,10,10,10],
   image:{type:'png',quality:1},
   html2canvas:{
     scale:3,
@@ -2942,11 +3012,11 @@ const html2pdfOptsPdf={
     scrollY:0,
     letterRendering:true,
     imageTimeout:15000,
-    windowWidth:PDF_WIDTH_PX,   // 🔑 fuerza ancho A4 aunque la pantalla sea pequeña
-    windowHeight:1123            // A4 altura
+    windowWidth:PDF_WIDTH_PX   // 🔑 fuerza ancho A4 — NO poner windowHeight para no truncar contenido
   },
   jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:false},
-  pagebreak:{mode:['avoid-all','css','legacy']}
+  // 'css' respeta page-break-after/page-break-inside del CSS; 'legacy' como fallback
+  pagebreak:{mode:['css','legacy'],before:'.pdf-page-break',avoid:'.pdf-prof-tr'}
 };
 
 // ── Overlay moderno de carga PDF ─────────────────────────────────
@@ -3039,8 +3109,8 @@ function _ocultarLoadingPdf(){
 
 /**
  * Genera PDF a tamaño A4 real tanto en móvil como en desktop.
- * El truco clave: el clon siempre tiene width=794px fijo y el canvas
- * usa windowWidth=794 para simular pantalla A4 independientemente del viewport.
+ * Usa un contenedor oculto independiente (#pdf-capture-host) con ancho fijo 794px.
+ * El contenido ya viene pre-paginado desde htmlDocumentoCotizacionPdfProfesional.
  */
 async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
   if(!sourceEl){toast('No hay contenido para el PDF.','err');return;}
@@ -3051,9 +3121,11 @@ async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
   // Contenedor oculto fuera del viewport — 794px fijo siempre
   const host = document.createElement('div');
   host.id = 'pdf-capture-host';
-  host.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;overflow:visible;z-index:-1;';
+  // position:absolute con left negativo para que no afecte el scroll
+  host.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;overflow:visible;z-index:-1;background:#ffffff;';
   const clone = sourceEl.cloneNode(true);
   clone.removeAttribute('id');
+  // overflow:visible es crítico — nunca hidden ni scroll en el nodo capturado
   clone.style.cssText = 'display:block;width:794px;box-sizing:border-box;background:#ffffff;color:#111827;overflow:visible;';
   host.appendChild(clone);
   document.body.appendChild(host);
@@ -3062,23 +3134,27 @@ async function htmlAPdfDesdeNodoFuente(sourceEl,filename){
     _actualizarLoadingPdf('Cargando fuentes e imágenes…', 25);
     if(document.fonts&&document.fonts.ready) await document.fonts.ready.catch(()=>{});
     await esperarImagenesEn(clone);
-    await delayPdf(80);
-    for(let i=0;i<6;i++) await new Promise(r=>requestAnimationFrame(r));
+    // Esperar a que el layout se estabilice
+    await delayPdf(150);
+    for(let i=0;i<8;i++) await new Promise(r=>requestAnimationFrame(r));
 
     _actualizarLoadingPdf('Renderizando páginas…', 55);
     await delayPdf(60);
 
     _actualizarLoadingPdf('Construyendo el PDF…', 78);
-    await html2pdf().set({
+
+    const opts={
       ...html2pdfOptsPdf,
       filename,
       html2canvas:{
         ...html2pdfOptsPdf.html2canvas,
         scale:3,
-        windowWidth:PDF_WIDTH_PX,
-        windowHeight:1123
+        windowWidth:PDF_WIDTH_PX
+        // ⚠️ NO windowHeight — dejar que html2canvas mida el alto real del elemento
       }
-    }).from(clone).save();
+    };
+
+    await html2pdf().set(opts).from(clone).save();
 
     _actualizarLoadingPdf('¡Listo! Descargando…', 100);
     await delayPdf(500);
