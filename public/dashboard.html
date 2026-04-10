@@ -5138,7 +5138,7 @@ async function exportarPDFCable(){
 
   // Construir HTML del PDF
   const htmlPDF=`
-  <div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111827;background:#fff;padding:40px;max-width:750px;margin:0 auto">
+  <div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111827;background:#fff;padding:24px 28px;width:100%;box-sizing:border-box">
     <!-- ENCABEZADO -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #f5c800;padding-bottom:16px;margin-bottom:20px">
       <div>
@@ -5604,7 +5604,7 @@ async function _exportarPDFProteccion(snap, nombre, cliente, notas){
   const sqrt3=fases===3?Math.sqrt(3):1;
   const Sb=kvaCC*1000;const InomTx=Sb/(V*sqrt3);const Icc=InomTx/(Zpct/100);const IccKA=Icc/1000;
   let prKA=6;if(IccKA>6)prKA=10;if(IccKA>10)prKA=25;if(IccKA>25)prKA=50;
-  const html=`<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#fff;padding:40px;max-width:750px;margin:0 auto">
+  const html=`<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#fff;padding:24px 28px;width:100%;box-sizing:border-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #ef4444;padding-bottom:16px;margin-bottom:20px">
       <div><div style="font-size:22px;font-weight:900;color:#111">SEST</div>
         <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Servicios Eléctricos y Seguridad Tapia</div></div>
@@ -5820,7 +5820,7 @@ async function _exportarPDFTuberia(snap, nombre, cliente, notas){
   const [nomSel,areaSel]=conduitSel;
   const pctLlenado=(totalArea/areaSel*100);
   const colorFill=pctLlenado>(factor*100)?'#dc2626':'#16a34a';
-  const html=`<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#fff;padding:40px;max-width:750px;margin:0 auto">
+  const html=`<div style="font-family:'Helvetica Neue',Arial,sans-serif;color:#111;background:#fff;padding:24px 28px;width:100%;box-sizing:border-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #22c55e;padding-bottom:16px;margin-bottom:20px">
       <div><div style="font-size:22px;font-weight:900">SEST</div>
         <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Servicios Eléctricos y Seguridad Tapia</div></div>
