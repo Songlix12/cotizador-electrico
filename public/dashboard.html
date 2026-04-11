@@ -3221,7 +3221,7 @@ async function exportarPDFNc() {
     return yLine + 8;
   };
 
-  // Encabezado compacto para páginas siguientes (corregido: más espacio)
+  // Encabezado compacto para páginas siguientes (solo texto, sin línea)
   const addCompactHeader = (doc, modelo, pageNum) => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
@@ -3230,10 +3230,7 @@ async function exportarPDFNc() {
     doc.setFontSize(8);
     doc.setTextColor(80, 80, 80);
     doc.text(`Página ${pageNum}`, pageWidth - margin, 12, { align: 'right' });
-    doc.setDrawColor(200, 160, 0);
-    doc.setLineWidth(0.3);
-    doc.line(margin, 18, pageWidth - margin, 18);
-    return 26; // Aumentado de 22 a 24 para más espacio
+    return 18;
   };
 
   // Preparar datos de la tabla
@@ -3413,80 +3410,75 @@ async function exportarPDFNc() {
   }
   
   // ============================================================
-  // SECCIÓN DE FIRMAS (Cliente e Ingeniero)
+  // SECCIÓN DE FIRMAS (simplificada: solo Nombre y Cédula)
   // ============================================================
-// ============================================================
-// SECCIÓN DE FIRMAS (simplificada: solo Nombre y Cédula)
-// ============================================================
-let firmaY = notasY + 15;
-
-if (firmaY + 35 > pageHeight - 20) {
-  doc.addPage();
-  firmaY = 30;
-  // Encabezado compacto en la nueva página
+  let firmaY = notasY + 15;
+  
+  if (firmaY + 35 > pageHeight - 20) {
+    doc.addPage();
+    firmaY = 30;
+    const compactY = addCompactHeader(doc, modelo, doc.internal.getNumberOfPages());
+    firmaY = compactY + 10;
+  }
+  
+  // Línea decorativa antes de firmas
   doc.setDrawColor(200, 160, 0);
   doc.setLineWidth(0.3);
-  doc.line(margin, 12, pageWidth - margin, 12);
-  firmaY = 20;
-}
-
-// Línea decorativa antes de firmas
-doc.setDrawColor(200, 160, 0);
-doc.setLineWidth(0.3);
-doc.line(margin, firmaY - 5, pageWidth - margin, firmaY - 5);
-
-doc.setFontSize(9);
-doc.setFont('helvetica', 'bold');
-doc.setTextColor(100, 100, 100);
-doc.text('ACEPTACIÓN DE LA COTIZACIÓN', pageWidth / 2, firmaY, { align: 'center' });
-
-// Cuadro de firma del cliente (izquierda)
-const firmaClienteX = margin;
-const firmaClienteWidth = (pageWidth - margin * 3) / 2;
-const firmaIngenieroX = pageWidth - margin - firmaClienteWidth;
-
-doc.setDrawColor(180, 180, 180);
-doc.setLineWidth(0.2);
-
-// Firma del cliente
-doc.line(firmaClienteX + 10, firmaY + 15, firmaClienteX + firmaClienteWidth - 10, firmaY + 15);
-doc.setFontSize(8);
-doc.setFont('helvetica', 'normal');
-doc.setTextColor(100, 100, 100);
-doc.text('Firma del Cliente', firmaClienteX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
-doc.text('Nombre completo:', firmaClienteX + 10, firmaY + 28);
-doc.text('Cédula / RUC:', firmaClienteX + 10, firmaY + 35);
-
-// Líneas para datos del cliente
-doc.setDrawColor(200, 200, 200);
-doc.line(firmaClienteX + 55, firmaY + 26, firmaClienteX + firmaClienteWidth - 10, firmaY + 26);
-doc.line(firmaClienteX + 55, firmaY + 33, firmaClienteX + firmaClienteWidth - 10, firmaY + 33);
-
-// Pre-llenar nombre del cliente
-const nombreCliente = modelo.cliente.nombre || '_________________________';
-doc.setFont('helvetica', 'normal');
-doc.setTextColor(80, 80, 80);
-doc.text(nombreCliente, firmaClienteX + 58, firmaY + 28);
-doc.text(modelo.cliente.ruc || '_________________________', firmaClienteX + 58, firmaY + 35);
-
-// Firma del ingeniero (derecha)
-doc.line(firmaIngenieroX + 10, firmaY + 15, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 15);
-doc.setFontSize(8);
-doc.setFont('helvetica', 'normal');
-doc.setTextColor(100, 100, 100);
-doc.text('Firma del Ingeniero', firmaIngenieroX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
-doc.text('Nombre completo:', firmaIngenieroX + 10, firmaY + 28);
-doc.text('Cédula / RUC:', firmaIngenieroX + 10, firmaY + 35);
-
-// Pre-llenar nombre del ingeniero (desde el campo "Documento elaborado por")
-const nombreIngeniero = modelo.elaborador || usuario?.nombre || '_________________________';
-const rucIngeniero = modelo.ingenieroRuc || '_________________________';
-doc.text(nombreIngeniero, firmaIngenieroX + 58, firmaY + 28);
-doc.text(rucIngeniero, firmaIngenieroX + 58, firmaY + 35);
-
-// Líneas para los datos del ingeniero
-doc.line(firmaIngenieroX + 58, firmaY + 26, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 26);
-doc.line(firmaIngenieroX + 58, firmaY + 33, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 33);
+  doc.line(margin, firmaY - 5, pageWidth - margin, firmaY - 5);
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(100, 100, 100);
+  doc.text('ACEPTACIÓN DE LA COTIZACIÓN', pageWidth / 2, firmaY, { align: 'center' });
+  
+  const firmaClienteX = margin;
+  const firmaClienteWidth = (pageWidth - margin * 3) / 2;
+  const firmaIngenieroX = pageWidth - margin - firmaClienteWidth;
+  
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.2);
+  
+  // Firma del cliente
+  doc.line(firmaClienteX + 10, firmaY + 15, firmaClienteX + firmaClienteWidth - 10, firmaY + 15);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('Firma del Cliente', firmaClienteX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
+  doc.text('Nombre completo:', firmaClienteX + 10, firmaY + 28);
+  doc.text('Cédula / RUC:', firmaClienteX + 10, firmaY + 35);
+  
+  doc.setDrawColor(200, 200, 200);
+  doc.line(firmaClienteX + 55, firmaY + 26, firmaClienteX + firmaClienteWidth - 10, firmaY + 26);
+  doc.line(firmaClienteX + 55, firmaY + 33, firmaClienteX + firmaClienteWidth - 10, firmaY + 33);
+  
+  // Pre-llenar nombre y cédula del cliente
+  const nombreCliente = modelo.cliente.nombre || '_________________________';
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  doc.text(nombreCliente, firmaClienteX + 58, firmaY + 28);
+  doc.text(modelo.cliente.ruc || '_________________________', firmaClienteX + 58, firmaY + 35);
+  
+  // Firma del ingeniero
+  doc.line(firmaIngenieroX + 10, firmaY + 15, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 15);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  doc.text('Firma del Ingeniero', firmaIngenieroX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
+  doc.text('Nombre completo:', firmaIngenieroX + 10, firmaY + 28);
+  doc.text('Cédula / RUC:', firmaIngenieroX + 10, firmaY + 35);
+  
+  // Pre-llenar nombre y cédula del ingeniero
+  const nombreIngeniero = modelo.elaborador || usuario?.nombre || '_________________________';
+  const rucIngeniero = modelo.ingenieroRuc || '_________________________';
+  doc.text(nombreIngeniero, firmaIngenieroX + 58, firmaY + 28);
+  doc.text(rucIngeniero, firmaIngenieroX + 58, firmaY + 35);
+  
+  doc.line(firmaIngenieroX + 58, firmaY + 26, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 26);
+  doc.line(firmaIngenieroX + 58, firmaY + 33, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 33);
+  
+  _actualizarLoadingPdf('Finalizando documento...', 90);
+  await new Promise(r => setTimeout(r, 200));
+  
   // Pie de página
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
@@ -3509,20 +3501,18 @@ doc.line(firmaIngenieroX + 58, firmaY + 33, firmaIngenieroX + firmaClienteWidth 
   _ocultarLoadingPdf();
   toast('PDF descargado ✓', 'ok');
 }
-async function exportarPDF() {
-  if (!cotActual) {
-    toast('No hay cotización seleccionada', 'err');
+async function exportarPDFNc() {
+  const todos = [...cotItems, ...cotAdic];
+  if (!todos.length) {
+    toast('Sin materiales para generar PDF', 'err');
     return;
   }
 
   _mostrarLoadingPdf('Preparando documento…');
-  _actualizarLoadingPdf('Cargando cotización guardada…', 15);
+  _actualizarLoadingPdf('Construyendo datos de la cotización…', 10);
 
-  const modelo = construirModeloPdfGuardada(cotActual);
-  const elabPdf = document.getElementById('ver-elaborado')?.value.trim();
-  if (elabPdf) modelo.elaborador = elabPdf;
-  
-  _actualizarLoadingPdf('Generando PDF...', 35);
+  const modelo = construirModeloPdfNuevaCot();
+  _actualizarLoadingPdf('Generando PDF...', 30);
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({
@@ -3535,9 +3525,10 @@ async function exportarPDF() {
   const margin = 12;
   const contentWidth = pageWidth - margin * 2;
 
-  _actualizarLoadingPdf('Cargando logo...', 45);
+  _actualizarLoadingPdf('Cargando logo...', 40);
   const logoImg = await cargarLogoBase64();
 
+  // Encabezado primera página
   const addFirstHeader = (doc, modelo, logoImg) => {
     let y = 15;
     if (logoImg) {
@@ -3599,6 +3590,7 @@ async function exportarPDF() {
     return yLine + 8;
   };
 
+  // Encabezado compacto para páginas siguientes (solo texto, sin línea)
   const addCompactHeader = (doc, modelo, pageNum) => {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
@@ -3607,19 +3599,17 @@ async function exportarPDF() {
     doc.setFontSize(8);
     doc.setTextColor(80, 80, 80);
     doc.text(`Página ${pageNum}`, pageWidth - margin, 12, { align: 'right' });
-    doc.setDrawColor(200, 160, 0);
-    doc.setLineWidth(0.3);
-    doc.line(margin, 18, pageWidth - margin, 18);
-    return 24;
+    return 18;
   };
 
+  // Preparar datos de la tabla
   const tableData = modelo.items.map((it, idx) => [
     (idx + 1).toString(),
     it.desc || '—',
     it.cant.toString(),
     it.unidad,
     formatMoney(it.pUnit),
-    it.ivaSi ? '15%' : 'No',
+    (it.ivaPct && it.ivaPct > 0) ? it.ivaPct + '%' : 'No',
     formatMoney(it.sub)
   ]);
   const tableHeaders = [['#', 'Descripción', 'Cant.', 'Unidad', 'P. unit.', 'IVA %', 'Subtotal']];
@@ -3629,8 +3619,9 @@ async function exportarPDF() {
   const total = modelo.total;
   const descuentoPorcentaje = modelo.descuentoPct;
 
-  _actualizarLoadingPdf('Diseñando tabla de materiales...', 60);
+  _actualizarLoadingPdf('Diseñando tabla de materiales...', 55);
 
+  // Generar tabla principal
   let firstHeaderY = await addFirstHeader(doc, modelo, logoImg);
   doc.autoTable({
     head: tableHeaders,
@@ -3665,7 +3656,9 @@ async function exportarPDF() {
 
   _actualizarLoadingPdf('Agregando forma de pago y totales...', 75);
 
+  // ============================================================
   // SECCIÓN: FORMA DE PAGO + TARJETA DE TOTALES
+  // ============================================================
   let yAfterTable = doc.lastAutoTable.finalY + 4;
   const leftColWidth = 80;
   const rightColWidth = 70;
@@ -3691,6 +3684,7 @@ async function exportarPDF() {
     columnY = compactY + 6;
   }
   
+  // COLUMNA IZQUIERDA: FORMA DE PAGO
   if (modelo.formaPago) {
     const leftX = margin;
     const leftWidth = leftColWidth;
@@ -3719,6 +3713,7 @@ async function exportarPDF() {
     }
   }
   
+  // COLUMNA DERECHA: TARJETA DE TOTALES
   const cardWidth = rightColWidth;
   const cardX = pageWidth - margin - cardWidth;
   
@@ -3766,6 +3761,7 @@ async function exportarPDF() {
   doc.text('TOTAL:', cardX + 5, y + 2);
   doc.text(formatMoney(total), cardX + cardWidth - 5, y + 2, { align: 'right' });
   
+  // NOTAS Y CONDICIONES
   let notasY = columnY + maxHeight + 8;
   if (modelo.notas) {
     doc.setFontSize(9);
@@ -3783,7 +3779,7 @@ async function exportarPDF() {
   }
   
   // ============================================================
-  // SECCIÓN DE FIRMAS
+  // SECCIÓN DE FIRMAS (simplificada: solo Nombre y Cédula)
   // ============================================================
   let firmaY = notasY + 15;
   
@@ -3794,6 +3790,7 @@ async function exportarPDF() {
     firmaY = compactY + 10;
   }
   
+  // Línea decorativa antes de firmas
   doc.setDrawColor(200, 160, 0);
   doc.setLineWidth(0.3);
   doc.line(margin, firmaY - 5, pageWidth - margin, firmaY - 5);
@@ -3810,6 +3807,7 @@ async function exportarPDF() {
   doc.setDrawColor(180, 180, 180);
   doc.setLineWidth(0.2);
   
+  // Firma del cliente
   doc.line(firmaClienteX + 10, firmaY + 15, firmaClienteX + firmaClienteWidth - 10, firmaY + 15);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -3817,27 +3815,40 @@ async function exportarPDF() {
   doc.text('Firma del Cliente', firmaClienteX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
   doc.text('Nombre completo:', firmaClienteX + 10, firmaY + 28);
   doc.text('Cédula / RUC:', firmaClienteX + 10, firmaY + 35);
-  doc.text('Fecha:', firmaClienteX + 10, firmaY + 42);
   
   doc.setDrawColor(200, 200, 200);
   doc.line(firmaClienteX + 55, firmaY + 26, firmaClienteX + firmaClienteWidth - 10, firmaY + 26);
   doc.line(firmaClienteX + 55, firmaY + 33, firmaClienteX + firmaClienteWidth - 10, firmaY + 33);
-  doc.line(firmaClienteX + 55, firmaY + 40, firmaClienteX + firmaClienteWidth - 10, firmaY + 40);
   
+  // Pre-llenar nombre y cédula del cliente
+  const nombreCliente = modelo.cliente.nombre || '_________________________';
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  doc.text(nombreCliente, firmaClienteX + 58, firmaY + 28);
+  doc.text(modelo.cliente.ruc || '_________________________', firmaClienteX + 58, firmaY + 35);
+  
+  // Firma del ingeniero
   doc.line(firmaIngenieroX + 10, firmaY + 15, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 15);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
   doc.text('Firma del Ingeniero', firmaIngenieroX + firmaClienteWidth / 2, firmaY + 20, { align: 'center' });
-  doc.text(`Nombre: ${modelo.elaborador || usuario?.nombre || ''}`, firmaIngenieroX + 10, firmaY + 28);
-  doc.text('Registro profesional:', firmaIngenieroX + 10, firmaY + 35);
-  doc.text('Sello de la empresa', firmaIngenieroX + 10, firmaY + 42);
+  doc.text('Nombre completo:', firmaIngenieroX + 10, firmaY + 28);
+  doc.text('Cédula / RUC:', firmaIngenieroX + 10, firmaY + 35);
   
-  doc.line(firmaIngenieroX + 10, firmaY + 33, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 33);
+  // Pre-llenar nombre y cédula del ingeniero
+  const nombreIngeniero = modelo.elaborador || usuario?.nombre || '_________________________';
+  const rucIngeniero = modelo.ingenieroRuc || '_________________________';
+  doc.text(nombreIngeniero, firmaIngenieroX + 58, firmaY + 28);
+  doc.text(rucIngeniero, firmaIngenieroX + 58, firmaY + 35);
+  
+  doc.line(firmaIngenieroX + 58, firmaY + 26, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 26);
+  doc.line(firmaIngenieroX + 58, firmaY + 33, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 33);
   
   _actualizarLoadingPdf('Finalizando documento...', 90);
   await new Promise(r => setTimeout(r, 200));
   
+  // Pie de página
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
