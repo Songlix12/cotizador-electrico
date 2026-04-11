@@ -3436,11 +3436,11 @@ async function exportarPDFNc() {
   doc.line(firmaClienteX + 55, firmaY + 33, firmaClienteX + firmaClienteWidth - 10, firmaY + 33);
   
   // Pre-llenar nombre y cédula del cliente
-  const nombreCliente = modelo.cliente.nombre || '_________________________';
+  const nombreCliente = modelo.cliente.nombre || '';
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
   doc.text(nombreCliente, firmaClienteX + 58, firmaY + 28);
-  doc.text(modelo.cliente.ruc || '_________________________', firmaClienteX + 58, firmaY + 35);
+  doc.text(modelo.cliente.ruc || '', firmaClienteX + 58, firmaY + 35);
   
   // Firma del ingeniero
   doc.line(firmaIngenieroX + 10, firmaY + 15, firmaIngenieroX + firmaClienteWidth - 10, firmaY + 15);
@@ -3452,8 +3452,8 @@ async function exportarPDFNc() {
   doc.text('Cédula / RUC:', firmaIngenieroX + 10, firmaY + 35);
   
   // Pre-llenar nombre y cédula del ingeniero
-  const nombreIngeniero = modelo.elaborador || usuario?.nombre || '_________________________';
-  const rucIngeniero = modelo.ingenieroRuc || '_________________________';
+  const nombreIngeniero = modelo.elaborador || usuario?.nombre || '';
+  const rucIngeniero = modelo.ingenieroRuc || '';
   doc.text(nombreIngeniero, firmaIngenieroX + 58, firmaY + 28);
   doc.text(rucIngeniero, firmaIngenieroX + 58, firmaY + 35);
   
