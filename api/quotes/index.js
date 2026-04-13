@@ -19,10 +19,12 @@ export default async function handler(req, res) {
   if (!user) return res.status(401).json({error:'No autorizado'});
   const sql = getDb();
   try { await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS compartir_datos BOOLEAN DEFAULT false`; } catch(e) {}
+  try { await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS compartir_cotizaciones BOOLEAN DEFAULT false`; } catch(e) {}
+  try { await sql`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS compartir_con JSONB DEFAULT '[]'`; } catch(e) {}
   const {id, equipo} = req.query;
   try {
     if (req.method==='GET') {
-      // Equipo mode: return quotes from users who have compartir_datos=true
+      // Modo equipo: cotizaciones compartidas con el usuario actual
       if (equipo === '1') {
         const rows = await sql`
           SELECT c.id,c.numero,c.titulo,c.estado,c.total,c.subtotal,c.iva_valor,c.descuento_valor,c.creado_en,
@@ -31,13 +33,20 @@ export default async function handler(req, res) {
           FROM cotizaciones c
           LEFT JOIN clientes cl ON c.cliente_id=cl.id
           JOIN usuarios u ON c.usuario_id=u.id
-          WHERE u.compartir_datos=true
+          WHERE u.id != ${user.id}
+            AND (u.compartir_cotizaciones=true OR u.compartir_datos=true)
+            AND (
+              jsonb_array_length(COALESCE(u.compartir_con,'[]'::jsonb)) = 0
+              OR u.compartir_con @> ${JSON.stringify([user.id])}::jsonb
+            )
           ORDER BY c.creado_en DESC LIMIT 500`;
         return res.status(200).json(rows);
       }
 
       if (id) {
-        const cots = await sql`
+        const idInt = parseInt(id);
+        // Propias
+        const own = await sql`
           SELECT c.*,
             cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa,
             cl.email AS cliente_email, cl.telefono AS cliente_telefono,
@@ -46,15 +55,38 @@ export default async function handler(req, res) {
           FROM cotizaciones c
           LEFT JOIN clientes cl ON c.cliente_id=cl.id
           LEFT JOIN usuarios u ON c.usuario_id=u.id
-          WHERE c.id=${parseInt(id)} AND c.usuario_id=${user.id}`;
-        if (!cots.length) return res.status(404).json({error:'No encontrada'});
+          WHERE c.id=${idInt} AND c.usuario_id=${user.id}`;
+        if (own.length) {
+          const items = await sql`
+            SELECT ci.*, m.codigo, m.nombre AS material_nombre, m.unidad AS material_unidad
+            FROM cotizacion_items ci LEFT JOIN materiales m ON ci.material_id=m.id
+            WHERE ci.cotizacion_id=${idInt} ORDER BY ci.id`;
+          return res.status(200).json({...own[0], items});
+        }
+        // Compartidas (solo lectura)
+        const shared = await sql`
+          SELECT c.*,
+            cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa,
+            cl.email AS cliente_email, cl.telefono AS cliente_telefono,
+            cl.ruc_cedula AS cliente_ruc, cl.direccion AS cliente_direccion,
+            u.nombre AS usuario_nombre
+          FROM cotizaciones c
+          LEFT JOIN clientes cl ON c.cliente_id=cl.id
+          JOIN usuarios u ON c.usuario_id=u.id
+          WHERE c.id=${idInt}
+            AND (u.compartir_cotizaciones=true OR u.compartir_datos=true)
+            AND (
+              jsonb_array_length(COALESCE(u.compartir_con,'[]'::jsonb)) = 0
+              OR u.compartir_con @> ${JSON.stringify([user.id])}::jsonb
+            )`;
+        if (!shared.length) return res.status(404).json({error:'No encontrada'});
         const items = await sql`
           SELECT ci.*, m.codigo, m.nombre AS material_nombre, m.unidad AS material_unidad
-          FROM cotizacion_items ci
-          LEFT JOIN materiales m ON ci.material_id=m.id
-          WHERE ci.cotizacion_id=${parseInt(id)} ORDER BY ci.id`;
-        return res.status(200).json({...cots[0], items});
+          FROM cotizacion_items ci LEFT JOIN materiales m ON ci.material_id=m.id
+          WHERE ci.cotizacion_id=${idInt} ORDER BY ci.id`;
+        return res.status(200).json({...shared[0], items, _compartida:true});
       }
+
       const rows = await sql`
         SELECT c.id,c.numero,c.titulo,c.estado,c.total,c.subtotal,c.iva_valor,c.descuento_valor,c.creado_en,
           cl.nombre AS cliente_nombre, cl.empresa AS cliente_empresa
@@ -87,8 +119,23 @@ export default async function handler(req, res) {
 
     if (req.method==='PUT') {
       if (!id) return res.status(400).json({error:'ID requerido'});
-      const own = await sql`SELECT id FROM cotizaciones WHERE id=${parseInt(id)} AND usuario_id=${user.id}`;
-      if (!own.length) return res.status(403).json({error:'No tienes permiso'});
+      const idInt = parseInt(id);
+
+      // Verificar propiedad O que esté compartida con este usuario
+      const own = await sql`SELECT id FROM cotizaciones WHERE id=${idInt} AND usuario_id=${user.id}`;
+      if (!own.length) {
+        // Verificar si es compartida y el dueño le ha dado acceso
+        const shared = await sql`
+          SELECT c.id FROM cotizaciones c
+          JOIN usuarios u ON c.usuario_id=u.id
+          WHERE c.id=${idInt}
+            AND (u.compartir_cotizaciones=true OR u.compartir_datos=true)
+            AND (
+              jsonb_array_length(COALESCE(u.compartir_con,'[]'::jsonb)) = 0
+              OR u.compartir_con @> ${JSON.stringify([user.id])}::jsonb
+            )`;
+        if (!shared.length) return res.status(403).json({error:'No tienes permiso para editar esta cotización'});
+      }
 
       const {estado, titulo, notas, _fullEdit, items, descuento_pct, iva_pct, validez_dias, descripcion, cliente_id} = req.body;
 
@@ -106,23 +153,19 @@ export default async function handler(req, res) {
           descripcion=COALESCE(${descripcion||null},descripcion),
           notas=COALESCE(${notas||null},notas),
           cliente_id=COALESCE(${cliId},cliente_id),
-          subtotal=${sub},
-          descuento_pct=${dp},
-          descuento_valor=${dv},
-          iva_pct=${ip},
-          iva_valor=${iv},
-          total=${total},
+          subtotal=${sub}, descuento_pct=${dp}, descuento_valor=${dv},
+          iva_pct=${ip}, iva_valor=${iv}, total=${total},
           validez_dias=COALESCE(${validez_dias||null},validez_dias),
           actualizado_en=NOW()
-          WHERE id=${parseInt(id)} RETURNING *`;
-        await sql`DELETE FROM cotizacion_items WHERE cotizacion_id=${parseInt(id)}`;
+          WHERE id=${idInt} RETURNING *`;
+        await sql`DELETE FROM cotizacion_items WHERE cotizacion_id=${idInt}`;
         for (const item of items) {
-          await sql`INSERT INTO cotizacion_items(cotizacion_id,material_id,descripcion,cantidad,unidad,precio_unitario,descuento_pct) VALUES(${parseInt(id)},${item.material_id||null},${item.descripcion||''},${parseFloat(item.cantidad)||1},${item.unidad||'unidad'},${parseFloat(item.precio_unitario)||0},${parseFloat(item.descuento_pct)||0})`;
+          await sql`INSERT INTO cotizacion_items(cotizacion_id,material_id,descripcion,cantidad,unidad,precio_unitario,descuento_pct) VALUES(${idInt},${item.material_id||null},${item.descripcion||''},${parseFloat(item.cantidad)||1},${item.unidad||'unidad'},${parseFloat(item.precio_unitario)||0},${parseFloat(item.descuento_pct)||0})`;
         }
         return res.status(200).json(r[0]);
       }
 
-      const r = await sql`UPDATE cotizaciones SET estado=COALESCE(${estado||null},estado),titulo=COALESCE(${titulo||null},titulo),notas=COALESCE(${notas||null},notas),actualizado_en=NOW() WHERE id=${parseInt(id)} RETURNING *`;
+      const r = await sql`UPDATE cotizaciones SET estado=COALESCE(${estado||null},estado),titulo=COALESCE(${titulo||null},titulo),notas=COALESCE(${notas||null},notas),actualizado_en=NOW() WHERE id=${idInt} RETURNING *`;
       return res.status(200).json(r[0]);
     }
 

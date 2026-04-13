@@ -928,14 +928,12 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button type="button" class="btn btn-ghost" onclick="limpiarCot(true)"><i data-lucide="eraser" style="width:16px;height:16px"></i> Limpiar</button>
-          <button type="button" class="btn btn-ghost" onclick="irSubTab('vista-previa');generarVP()"><i data-lucide="eye" style="width:16px;height:16px"></i> Vista Previa</button>
           <button type="button" class="btn btn-acc" id="btn-guardar-top" onclick="guardarCot()"><i data-lucide="save" style="width:16px;height:16px"></i><span class="btn-lbl">Guardar</span></button>
         </div>
       </div>
       <div class="cot-tabs" role="tablist">
         <button type="button" role="tab" class="cot-tab on" data-subtab="base-mat" id="ctab-base-mat" onclick="irSubTab('base-mat')" aria-selected="true"><i data-lucide="package"></i> Base de Materiales</button>
         <button type="button" role="tab" class="cot-tab" data-subtab="cotizacion" id="ctab-cotizacion" onclick="irSubTab('cotizacion')" aria-selected="false"><i data-lucide="clipboard-list"></i> Cotizaci&#243;n</button>
-        <button type="button" role="tab" class="cot-tab" data-subtab="vista-previa" id="ctab-vista-previa" onclick="irSubTab('vista-previa');generarVP()" aria-selected="false"><i data-lucide="file-down"></i> Vista Previa &amp; PDF</button>
       </div>
 
       <!-- TAB 1 -->
@@ -1072,22 +1070,12 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
                 <div class="res-total"><span>TOTAL</span><span class="v" id="nc-t-total">$0.00</span></div>
                 <div class="res-note" style="display:flex;gap:8px;align-items:flex-start"><i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;margin-top:2px"></i><span>El IVA se elige por &#237;tem (0%, 5%, 12% o 15%). Por defecto 15%.</span></div>
                 <button type="button" class="btn-guardar" id="btn-guardar-cot" onclick="guardarCot()"><i data-lucide="save" style="width:18px;height:18px;flex-shrink:0"></i><span class="btn-lbl">Guardar Cotizaci&#243;n</span></button>
-                <button type="button" class="btn btn-ghost" style="width:100%;margin-top:8px;justify-content:center" onclick="irSubTab('vista-previa');generarVP()"><i data-lucide="file-down" style="width:16px;height:16px"></i> Vista Previa &amp; PDF</button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- TAB 3 -->
-      <div id="ctab-content-vista-previa" data-subpanel="vista-previa" style="display:none" role="tabpanel">
-        <div class="vp-toolbar">
-          <button type="button" class="btn btn-ghost" onclick="irSubTab('cotizacion')"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Volver a editar</button>
-          <button type="button" class="btn btn-info" onclick="exportarPDFNc()"><i data-lucide="download" style="width:16px;height:16px"></i> Exportar PDF</button>
-          <button type="button" class="btn btn-acc" onclick="guardarCot()"><i data-lucide="save" style="width:16px;height:16px"></i> Guardar Cotizaci&#243;n</button>
-        </div>
-        <div id="nc-preview-content"><div class="empty"><div class="empty-ico" style="display:flex;justify-content:center"><i data-lucide="eye" style="width:36px;height:36px;color:var(--t3)"></i></div><p>Agrega materiales y datos del cliente para ver la vista previa</p></div></div>
-      </div>
     </div><!-- /sec-nueva-cot -->
 
     <!-- MATERIALES -->
@@ -1815,18 +1803,37 @@ mark{background:rgba(245,200,0,.25);color:var(--t1);border-radius:2px;padding:0 
       <div class="card" style="margin-bottom:16px">
         <div class="card-head">
           <div class="card-title" style="display:flex;align-items:center;gap:8px"><i data-lucide="users-2" style="width:18px;height:18px;stroke-width:2;color:var(--acc)"></i> Datos del Equipo</div>
-          <div class="card-tools">
-            <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:6px 12px">
-              <span style="font-size:12px;color:var(--t2)">Compartir mis datos:</span>
-              <div id="eq-share-toggle" onclick="toggleCompartirDatos()" style="width:36px;height:20px;border-radius:99px;background:var(--s4);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:1px solid var(--bd2)">
-                <div id="eq-share-knob" style="position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--t3);transition:left .2s"></div>
+        </div>
+        <div style="padding:14px 18px;border-bottom:1px solid var(--bd)">
+          <div style="font-size:12px;color:var(--t3);margin-bottom:14px">Elige qu&#233; datos compartes y con qui&#233;nes. Solo los usuarios seleccionados ver&#225;n tu informaci&#243;n.</div>
+          <!-- Toggles granulares -->
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:8px 14px">
+              <i data-lucide="file-text" style="width:14px;height:14px;color:var(--acc)"></i>
+              <span style="font-size:12px;color:var(--t2)">Mis cotizaciones:</span>
+              <div id="eq-toggle-cots" onclick="toggleCompartirTipo('cotizaciones')" style="width:36px;height:20px;border-radius:99px;background:var(--s4);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:1px solid var(--bd2)">
+                <div id="eq-knob-cots" style="position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--t3);transition:left .2s"></div>
               </div>
-              <span id="eq-share-lbl" style="font-size:12px;color:var(--t3);font-weight:600">Desactivado</span>
+              <span id="eq-lbl-cots" style="font-size:12px;color:var(--t3);font-weight:600">Desactivado</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:8px 14px">
+              <i data-lucide="users" style="width:14px;height:14px;color:var(--acc)"></i>
+              <span style="font-size:12px;color:var(--t2)">Mis clientes:</span>
+              <div id="eq-toggle-clis" onclick="toggleCompartirTipo('clientes')" style="width:36px;height:20px;border-radius:99px;background:var(--s4);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:1px solid var(--bd2)">
+                <div id="eq-knob-clis" style="position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--t3);transition:left .2s"></div>
+              </div>
+              <span id="eq-lbl-clis" style="font-size:12px;color:var(--t3);font-weight:600">Desactivado</span>
             </div>
           </div>
-        </div>
-        <div style="padding:10px 18px;font-size:12px;color:var(--t3);border-bottom:1px solid var(--bd)">
-          Al activar, tus cotizaciones y clientes ser&#225;n visibles para todos los miembros del equipo. Los datos de otros usuarios que han compartido tambi&#233;n aparecer&#225;n aqu&#237;.
+          <!-- Selector de usuarios con quienes compartir -->
+          <div id="eq-usuarios-wrap" style="display:none">
+            <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">&#191;Con qui&#233;nes compartir?</div>
+            <div id="eq-usuarios-lista" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px">
+              <div class="loading" style="padding:4px 0"><div class="spin" style="width:16px;height:16px;border-width:2px"></div></div>
+            </div>
+            <div style="font-size:11px;color:var(--t3);margin-top:6px">Deja todos sin marcar para compartir con todo el equipo.</div>
+            <button type="button" class="btn btn-acc" style="margin-top:10px;height:32px;font-size:12px" onclick="guardarPrefsCompartir()"><i data-lucide="save" style="width:13px;height:13px"></i> Guardar preferencias</button>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -2074,6 +2081,9 @@ async function cargarTodo(){
   sTxt('s-cots',cots.length);sTxt('s-clis',clis.length);sTxt('s-mats',mats.length);
   actualizarContadores();
   renderRecientes();
+  // Cargar también los clientes compartidos para que aparezcan en el buscador
+  const dc2=await api('clients/index?equipo=1');
+  if(!isErr(dc2)&&Array.isArray(dc2)&&dc2.length) _mergeClientesCompartidos(dc2);
 }
 function poblarCats(){
   ['bm-cat','mat-cat','nc-bm-cat'].forEach(id=>{
@@ -2476,8 +2486,9 @@ function buscarClienteNc(){
     const res=clis.filter(c=>match(`${c.nombre} ${c.empresa||''} ${c.ruc_cedula||''} ${c.email||''}`,q)).slice(0,8);
     if(!res.length){drop.innerHTML=`<div style="padding:12px 14px;color:var(--t3);font-size:13px">Sin resultados</div>`;drop.style.display='block';return;}
     drop.innerHTML=res.map(c=>`<div style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:background .1s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="seleccionarClienteNc(${c.id})">
-      <div style="font-size:13px;font-weight:600;color:var(--t1)">${c.nombre}${c.empresa?` <span style="font-weight:400;color:var(--t3);font-size:12px">/ ${c.empresa}</span>`:''}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--t1)">${c.nombre}${c.empresa?` <span style="font-weight:400;color:var(--t3);font-size:12px">/ ${c.empresa}</span>`:''}${c._compartido?` <span style="font-size:10px;background:rgba(200,160,0,.18);color:var(--acc);border-radius:4px;padding:1px 5px;vertical-align:middle">compartido</span>`:''}</div>
       ${c.ruc_cedula?`<div style="font-size:11px;color:var(--t3)">RUC: ${c.ruc_cedula}${c.telefono?` · ${c.telefono}`:''}</div>`:''}
+      ${c._compartidoPor?`<div style="font-size:10px;color:var(--t3)">Por: ${c._compartidoPor}</div>`:''}
     </div>`).join('');
     drop.style.display='block';
   },120);
@@ -3422,6 +3433,14 @@ async function exportarPDFNc() {
   }
   
   
+  // Variables de layout para la sección de firmas
+  const firmaClienteX = margin;
+  const firmaClienteWidth = (pageWidth - margin * 3) / 2;
+  const firmaIngenieroX = pageWidth - margin - firmaClienteWidth;
+
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.2);
+
   // Firma del cliente
   doc.line(firmaClienteX + 10, firmaY + 15, firmaClienteX + firmaClienteWidth - 10, firmaY + 15);
   doc.setFontSize(8);
@@ -3946,28 +3965,9 @@ async function togglePermisoAdmin(userId,darPermiso){
   cargarUsuarios();
 }
 
-/* ═══════════ EQUIPO (datos compartidos) ═══════════ */
-let miCompartir=false;
-async function cargarEquipo(){
-  const ru=await api('users/index');
-  if(!isErr(ru)){const yo=ru.find(u=>u.id===usuario?.id);if(yo){miCompartir=!!(yo.compartir_datos);_actualizarToggleCompartir();}}
-  const [rq,rc]=await Promise.all([api('quotes/index?equipo=1'),api('clients/index?equipo=1')]);
-  const tblCots=document.getElementById('tbl-eq-cots');
-  if(tblCots){
-    if(isErr(rq)||!Array.isArray(rq)||!rq.length){tblCots.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="file-text" style="width:36px;height:36px"></i></div><p>Ning\u00fan usuario ha compartido cotizaciones todav\u00eda</p></div>';}
-    else{tblCots.innerHTML=tablaCotsHTML(rq,false);}
-    refreshIcons();
-  }
-  const tblClis=document.getElementById('tbl-eq-clis');
-  if(tblClis){
-    if(isErr(rc)||!Array.isArray(rc)||!rc.length){tblClis.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="users" style="width:36px;height:36px"></i></div><p>Ning\u00fan usuario ha compartido clientes todav\u00eda</p></div>';}
-    else{tblClis.innerHTML=`<table><thead><tr><th>Nombre</th><th>Empresa</th><th>Tel\u00e9fono</th><th>Email</th><th>Compartido por</th></tr></thead><tbody>${rc.map(c=>`<tr><td style="font-weight:500">${c.nombre}</td><td style="color:var(--t2)">${c.empresa||'\u2014'}</td><td style="color:var(--t3)">${c.telefono||'\u2014'}</td><td style="color:var(--t3)">${c.email||'\u2014'}</td><td style="font-size:12px;color:var(--t3)">${c.usuario_nombre||'\u2014'}</td></tr>`).join('')}</tbody></table>`;}
-    refreshIcons();
-  }
-}
-// ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
 // CALCULADORA ELÉCTRICA NEC
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════ */
 
 // ── Tabla AWG NEC 310.15(B)(16) ─────────────────────────
 const AWG_TABLE = [
@@ -5133,7 +5133,15 @@ function calcTuberia() {
   `;
 }
 
+// ── Estado compartir granular ──────────────────────────────
+let miCompartir=false; // legacy - keep for compatibility
+let miCompartirCots=false;
+let miCompartirClis=false;
+let miCompartirCon=[];   // [] = todos, [id,id,...] = solo esos
+let equipoUsuarios=[];   // lista de usuarios del equipo
+
 function _actualizarToggleCompartir(){
+  // legacy toggle (ya no se usa en UI pero se mantiene por compatibilidad)
   const tog=document.getElementById('eq-share-toggle');
   const knob=document.getElementById('eq-share-knob');
   const lbl=document.getElementById('eq-share-lbl');
@@ -5141,15 +5149,190 @@ function _actualizarToggleCompartir(){
   if(knob){knob.style.left=miCompartir?'18px':'3px';knob.style.background=miCompartir?'#fff':'var(--t3)';}
   if(lbl){lbl.textContent=miCompartir?'Activado':'Desactivado';lbl.style.color=miCompartir?'var(--ok)':'var(--t3)';}
 }
-async function toggleCompartirDatos(){
-  const nuevo=!miCompartir;
-  const r=await api(`users/index?id=${usuario?.id}`,{method:'PUT',body:JSON.stringify({compartir_datos:nuevo})});
-  if(isErr(r)){toast(r.msg||'Error al cambiar','err');return;}
-  miCompartir=nuevo;_actualizarToggleCompartir();
-  toast(nuevo?'\u2728 Tus datos ahora son visibles para el equipo':'Datos privados. Ya no se comparten.','info');
-  cargarEquipo();
+
+function _actualizarTogglesGranulares(){
+  const setToggle=(togId,knobId,lblId,val)=>{
+    const tog=document.getElementById(togId);
+    const knob=document.getElementById(knobId);
+    const lbl=document.getElementById(lblId);
+    if(tog)tog.style.background=val?'var(--ok)':'var(--s4)';
+    if(knob){knob.style.left=val?'18px':'3px';knob.style.background=val?'#fff':'var(--t3)';}
+    if(lbl){lbl.textContent=val?'Activado':'Desactivado';lbl.style.color=val?'var(--ok)':'var(--t3)';}
+  };
+  setToggle('eq-toggle-cots','eq-knob-cots','eq-lbl-cots',miCompartirCots);
+  setToggle('eq-toggle-clis','eq-knob-clis','eq-lbl-clis',miCompartirClis);
+  const wrap=document.getElementById('eq-usuarios-wrap');
+  if(wrap)wrap.style.display=(miCompartirCots||miCompartirClis)?'block':'none';
 }
 
+async function toggleCompartirTipo(tipo){
+  if(tipo==='cotizaciones') miCompartirCots=!miCompartirCots;
+  else if(tipo==='clientes') miCompartirClis=!miCompartirClis;
+  _actualizarTogglesGranulares();
+  // Cargar lista de usuarios si hace falta
+  if((miCompartirCots||miCompartirClis)&&!equipoUsuarios.length) await _cargarEquipoUsuarios();
+  _renderUsuariosLista();
+  // Auto-guardar el toggle inmediatamente
+  await _guardarCompartir();
+}
+
+async function _cargarEquipoUsuarios(){
+  try{
+    const r=await api('users/index?todos=1');
+    if(!isErr(r)&&Array.isArray(r)) equipoUsuarios=r.filter(u=>u.id!==usuario?.id&&u.activo!==false);
+  }catch(e){}
+}
+
+function _renderUsuariosLista(){
+  const el=document.getElementById('eq-usuarios-lista');
+  if(!el)return;
+  if(!equipoUsuarios.length){el.innerHTML=`<span style="font-size:12px;color:var(--t3)">No hay otros usuarios en el equipo</span>`;return;}
+  el.innerHTML=equipoUsuarios.map(u=>{
+    const sel=miCompartirCon.includes(u.id);
+    return `<div onclick="_toggleUsuarioCon(${u.id})" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid ${sel?'var(--acc)':'var(--bd2)'};background:${sel?'var(--acc-dim,rgba(200,160,0,.12))':'var(--s2)'}; transition:.15s">
+      <div style="width:18px;height:18px;border-radius:50%;background:var(--s3);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--t2)">${(u.nombre||'?')[0].toUpperCase()}</div>
+      <span style="font-size:12px;font-weight:${sel?'600':'400'};color:${sel?'var(--acc)':'var(--t2)'}">${u.nombre}</span>
+      ${sel?'<i data-lucide="check" style="width:12px;height:12px;color:var(--acc)"></i>':''}
+    </div>`;
+  }).join('');
+  refreshIcons();
+}
+
+function _toggleUsuarioCon(id){
+  if(miCompartirCon.includes(id)) miCompartirCon=miCompartirCon.filter(x=>x!==id);
+  else miCompartirCon.push(id);
+  _renderUsuariosLista();
+}
+
+async function _guardarCompartir(){
+  const body={compartir_cotizaciones:miCompartirCots,compartir_clientes:miCompartirClis,compartir_con:miCompartirCon};
+  const r=await api(`users/index?id=${usuario?.id}`,{method:'PUT',body:JSON.stringify(body)});
+  if(isErr(r)){toast(r.msg||'Error al guardar','err');return false;}
+  miCompartir=miCompartirCots||miCompartirClis;
+  return true;
+}
+
+async function guardarPrefsCompartir(){
+  const ok=await _guardarCompartir();
+  if(ok){toast('✨ Preferencias guardadas','ok');cargarEquipo();}
+}
+
+// legacy - mantenido por compatibilidad
+async function toggleCompartirDatos(){
+  miCompartirCots=!miCompartir;
+  miCompartirClis=!miCompartir;
+  const ok=await _guardarCompartir();
+  if(ok){
+    miCompartir=miCompartirCots;
+    _actualizarToggleCompartir();
+    _actualizarTogglesGranulares();
+    toast(miCompartir?'✨ Tus datos ahora son visibles para el equipo':'Datos privados. Ya no se comparten.','info');
+    cargarEquipo();
+  }
+}
+
+async function cargarEquipo(){
+  // Cargar estado del usuario actual
+  const ru=await api('users/index?todos=1');
+  if(!isErr(ru)&&Array.isArray(ru)){
+    const yo=ru.find(u=>u.id===usuario?.id);
+    if(yo){
+      miCompartirCots=!!(yo.compartir_cotizaciones??yo.compartir_datos);
+      miCompartirClis=!!(yo.compartir_clientes??yo.compartir_datos);
+      miCompartirCon=Array.isArray(yo.compartir_con)?yo.compartir_con:[];
+      miCompartir=miCompartirCots||miCompartirClis;
+      _actualizarToggleCompartir();
+      _actualizarTogglesGranulares();
+    }
+    equipoUsuarios=ru.filter(u=>u.id!==usuario?.id&&u.activo!==false);
+    if(miCompartirCots||miCompartirClis) _renderUsuariosLista();
+  }
+
+  const [rq,rc]=await Promise.all([api('quotes/index?equipo=1'),api('clients/index?equipo=1')]);
+
+  // Tabla cotizaciones compartidas (con botón editar)
+  const tblCots=document.getElementById('tbl-eq-cots');
+  if(tblCots){
+    if(isErr(rq)||!Array.isArray(rq)||!rq.length){
+      tblCots.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="file-text" style="width:36px;height:36px"></i></div><p>Ningún usuario ha compartido cotizaciones todavía</p></div>';
+    } else {
+      tblCots.innerHTML=`<table><thead><tr><th>N°</th><th>Título / Cliente</th><th>Estado</th><th>Total</th><th>Usuario</th><th>Acciones</th></tr></thead>
+        <tbody>${rq.map(c=>`<tr>
+          <td style="font-size:11px;color:var(--t3)">${c.numero||'—'}</td>
+          <td><div style="font-weight:500;color:var(--t1)">${c.titulo||'—'}</div><div style="font-size:11px;color:var(--t3)">${c.cliente_nombre||'Sin cliente'}</div></td>
+          <td><span class="badge ${c.estado==='aprobada'?'ok':c.estado==='rechazada'?'err':'warn'}">${c.estado||'—'}</span></td>
+          <td style="font-weight:600">$${(+c.total||0).toFixed(2)}</td>
+          <td style="font-size:12px;color:var(--t3)">${c.usuario_nombre||'—'}</td>
+          <td><button class="btn btn-ghost" style="height:28px;font-size:11px;padding:0 8px" onclick="editarCotCompartida(${c.id})"><i data-lucide="pencil" style="width:13px;height:13px"></i> Editar</button></td>
+        </tr>`).join('')}</tbody></table>`;
+    }
+    refreshIcons();
+  }
+
+  // Tabla clientes compartidos
+  const tblClis=document.getElementById('tbl-eq-clis');
+  if(tblClis){
+    if(isErr(rc)||!Array.isArray(rc)||!rc.length){
+      tblClis.innerHTML='<div class="empty"><div class="empty-ico" style="display:flex;justify-content:center;color:var(--t3)"><i data-lucide="users" style="width:36px;height:36px"></i></div><p>Ningún usuario ha compartido clientes todavía</p></div>';
+    } else {
+      tblClis.innerHTML=`<table><thead><tr><th>Nombre</th><th>Empresa</th><th>Teléfono</th><th>Email</th><th>Compartido por</th></tr></thead>
+        <tbody>${rc.map(c=>`<tr>
+          <td style="font-weight:500">${c.nombre}</td>
+          <td style="color:var(--t2)">${c.empresa||'—'}</td>
+          <td style="color:var(--t3)">${c.telefono||'—'}</td>
+          <td style="color:var(--t3)">${c.email||'—'}</td>
+          <td style="font-size:12px;color:var(--t3)">${c.usuario_nombre||'—'}</td>
+        </tr>`).join('')}</tbody></table>`;
+    }
+    // Merge shared clients into clis for search
+    _mergeClientesCompartidos(rc);
+    refreshIcons();
+  }
+}
+
+// Merge clientes compartidos en el array global clis para que el buscador los encuentre
+let _clisCompartidasIds=new Set();
+function _mergeClientesCompartidos(compartidos){
+  if(!Array.isArray(compartidos)||!compartidos.length)return;
+  const nuevos=compartidos.filter(c=>!clis.some(x=>x.id===c.id));
+  if(nuevos.length){
+    clis=[...clis,...nuevos.map(c=>({...c,_compartido:true,_compartidoPor:c.usuario_nombre}))];
+    nuevos.forEach(c=>_clisCompartidasIds.add(c.id));
+  }
+}
+
+// Editar cotización compartida de otro usuario (abre en el editor)
+async function editarCotCompartida(id){
+  // Carga la cotización usando el endpoint equipo para permitir acceso
+  const r=await api(`quotes/index?id=${id}&equipo=1`);
+  if(isErr(r)){toast(r.msg||'No se pudo cargar la cotización','err');return;}
+  // Reutilizamos la lógica de prepEditarCot pero con datos ya cargados
+  cotEditandoId=id;
+  limpiarCot(false);
+  sSet('nc-numero',r.numero||'');
+  sSet('nc-fecha',(r.creado_en||new Date().toISOString()).split('T')[0]);
+  sSet('nc-validez',r.validez_dias||30);
+  sSet('nc-cliente-id',r.cliente_id||'');
+  sSet('nc-cliente',r.cliente_nombre||r.titulo||'');
+  sSet('nc-ruc',r.cliente_ruc||'');
+  sSet('nc-telefono',r.cliente_telefono||'');
+  sSet('nc-email',r.cliente_email||'');
+  sSet('nc-direccion',r.cliente_direccion||'');
+  const notasRaw=r.notas||'';
+  sSet('nc-notas',notasRaw.split('\n').filter(l=>!l.startsWith('Forma de pago:')).join('\n').trim());
+  sSet('nc-descripcion',r.descripcion||'');
+  sSet('nc-descuento',r.descuento_pct||0);
+  cotItems=(r.items||[]).map(it=>({material_id:it.material_id||null,descripcion:it.descripcion||it.material_nombre||'',cantidad:parseFloat(it.cantidad)||1,unidad:it.unidad||it.material_unidad||'unidad',precio_unitario:parseFloat(it.precio_unitario)||0,iva_pct:15,tiene_iva:true}));
+  cotAdic=[];
+  renderItems();renderAdic();calcTotals();
+  ir('nueva-cot');irSubTab('cotizacion');
+  const eyebrow=document.querySelector('.nc-eyebrow');
+  const title=document.querySelector('.nc-title');
+  if(eyebrow)eyebrow.textContent='Editando cotización compartida';
+  if(title)title.innerHTML=`<i data-lucide="pencil" style="width:26px;height:26px;stroke-width:2;color:var(--acc)"></i> ${r.numero||'Cotización'}`;
+  refreshIcons();
+  toast(`Editando "${r.numero}" de ${r.usuario_nombre||'otro usuario'}. Guarda para actualizar.`,'info');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // BACKEND REQUIRED ENDPOINT: /api/electrical-projects/index
@@ -7156,6 +7339,42 @@ async function generarInformePDF() {
 
 <!-- PDF INFORME (oculto para renderizado) -->
 <div id="pdf-informe" style="display:none;position:absolute;left:-9999px;top:0;width:794px"></div>
+
+<!-- Offline / PWA: Service Worker -->
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>{
+      console.log('[SW] Registrado:',reg.scope);
+    }).catch(err=>console.warn('[SW] No se pudo registrar:',err));
+  });
+}
+// Indicador de estado de red
+(function(){
+  function mostrarEstadoRed(){
+    const online=navigator.onLine;
+    let banner=document.getElementById('sw-offline-banner');
+    if(!online){
+      if(!banner){
+        banner=document.createElement('div');
+        banner.id='sw-offline-banner';
+        banner.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:99999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+        banner.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M12 20h.01"/></svg> Sin conexión – trabajando en modo offline';
+        document.body.appendChild(banner);
+      }
+    } else {
+      if(banner){
+        banner.style.background='#27ae60';
+        banner.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Conexión restaurada';
+        setTimeout(()=>banner.remove(),3000);
+      }
+    }
+  }
+  window.addEventListener('online', mostrarEstadoRed);
+  window.addEventListener('offline', mostrarEstadoRed);
+  mostrarEstadoRed();
+})();
+</script>
 
 </body>
 </html>
